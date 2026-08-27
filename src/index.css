@@ -1,0 +1,307 @@
+:root {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  line-height: 1.5;
+  color: #1a2b3c;
+  background: linear-gradient(180deg, #e8f4ff 0%, #fff8e8 100%);
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: #0b6bcb;
+}
+
+.app {
+  min-height: 100vh;
+}
+
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid #d0e3f5;
+}
+
+.brand {
+  font-weight: 700;
+  text-decoration: none;
+  color: inherit;
+  font-size: 1.1rem;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1rem;
+}
+
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.page h1 {
+  margin-top: 0;
+}
+
+.lead {
+  font-size: 1.1rem;
+  max-width: 42rem;
+}
+
+.webmcp-banner {
+  background: #fff3cd;
+  border-bottom: 1px solid #ffda6a;
+  padding: 0.75rem 1.5rem;
+}
+
+.btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn.primary {
+  background: #0b6bcb;
+  color: white;
+}
+
+.btn.secondary {
+  background: #e8eef5;
+  color: #1a2b3c;
+}
+
+.btn.danger {
+  background: #ffe0e0;
+  color: #8b1a1a;
+}
+
+.btn.large {
+  padding: 0.75rem 1.25rem;
+  font-size: 1.05rem;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+.lab-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.lab-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  border: 2px solid #cce5ff;
+  transition: transform 0.15s;
+}
+
+.lab-card:hover {
+  transform: translateY(-2px);
+}
+
+.subject-tag {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: #0b6bcb;
+}
+
+.lab-shell {
+  background: white;
+  border-radius: 20px;
+  padding: 1.25rem;
+  box-shadow: 0 8px 24px rgba(0, 40, 80, 0.08);
+}
+
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.standard-chip {
+  font-size: 0.9rem;
+  color: #456;
+}
+
+.standard-chip span {
+  font-weight: 700;
+  margin-right: 0.5rem;
+}
+
+.lab-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.check-result {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.check-result.ok {
+  background: #d8f5e3;
+}
+
+.check-result.warn {
+  background: #fff0cc;
+}
+
+.agent-ready {
+  color: #0a6847;
+  font-size: 0.95rem;
+}
+
+.target-number {
+  font-size: 3rem;
+  font-weight: 800;
+  margin: 0.25rem 0;
+}
+
+.block-tray,
+.linking-row,
+.predict-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1rem 0;
+}
+
+.block-btn {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  border: 2px solid #99c2ff;
+  background: white;
+  cursor: pointer;
+}
+
+.block-area {
+  min-height: 120px;
+  padding: 1rem;
+  background: #f4f9ff;
+  border-radius: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.block {
+  font-size: 1.5rem;
+}
+
+.form-grid label {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.form-grid input {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 0.35rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.inline-field {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chip-btn {
+  min-height: 44px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid #aaccee;
+  background: white;
+  cursor: pointer;
+}
+
+.revision-card {
+  background: #eef6ff;
+  padding: 1rem;
+  border-radius: 12px;
+  margin: 1rem 0;
+}
+
+.paragraph-preview {
+  background: #fafafa;
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+.object-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.object-card {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.classify-btns {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+th,
+td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.judge-prompts code {
+  display: block;
+  margin-top: 0.35rem;
+  padding: 0.5rem;
+  background: #f5f5f5;
+  border-radius: 8px;
+  white-space: pre-wrap;
+}
