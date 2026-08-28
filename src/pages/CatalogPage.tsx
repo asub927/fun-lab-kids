@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { listStandards } from "../data/standards";
+import { listStandards, isPlayable } from "../data/standards";
 
 export function CatalogPage() {
   const standards = listStandards();
@@ -8,8 +8,7 @@ export function CatalogPage() {
     <div className="page catalog">
       <h1 className="hero-title">Standards Catalog</h1>
       <p className="lead">
-        Browse NCSCOS-aligned standards. Grade 2 showcase labs are fully playable; other grades are
-        catalog-only in P0.
+        Full NCSCOS-aligned catalog. Grade 2 standards are playable; other grades arrive in Phase 2.
       </p>
       <div className="table-wrap">
         <table>
@@ -31,20 +30,10 @@ export function CatalogPage() {
                 <td>{s.subject}</td>
                 <td>{s.strand}</td>
                 <td>
-                  {s.activityType.startsWith("showcase:") ? (
-                    <Link
-                      to={
-                        s.subject === "math"
-                          ? "/demo/math"
-                          : s.subject === "ela"
-                            ? "/demo/ela"
-                            : "/demo/science"
-                      }
-                    >
-                      Open Lab
-                    </Link>
+                  {isPlayable(s) ? (
+                    <Link to={`/lab/${encodeURIComponent(s.code)}`}>Open Lab</Link>
                   ) : (
-                    s.activityType
+                    "Coming soon"
                   )}
                 </td>
               </tr>

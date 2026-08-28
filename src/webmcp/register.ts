@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useApp } from "../context/AppContext";
-import { listStandards, findStandard } from "../data/standards";
+import { listStandards, findStandard, listGrade2Standards } from "../data/standards";
+import { getProgressSnapshot } from "../services/progress";
+import { labHint } from "../boards";
 import type { LabId } from "../types";
 
 function jsonSchema(
@@ -171,32 +173,31 @@ export function useWebMCPCurriculum() {
       await register(
         gen,
         "set_active_standard",
-        "Switch to a standard's lab by code (Grade 2 showcase only in P0)",
+        "Switch to a standard's lab by code (Grade 2 NCSCOS)",
         jsonSchema({ code: { type: "string" } }),
         (input) => {
-          const standard = findStandard(String(input.code));
+          const code = String(input.code);
+          const standard = findStandard(code);
           if (!standard) return { error: "Standard not found" };
-          const map: Record<string, LabId> = {
-            "showcase:place-value": "place-value",
-            "showcase:opinion-builder": "opinion-builder",
-            "showcase:matter-lab": "matter-lab",
-          };
-          const lab = map[standard.activityType];
-          if (!lab) return { error: "No lab for this standard in P0", standard };
-          appRef.current.setActiveLab(lab, standard.code);
-          return { ok: true, lab, standard: standard.code };
+          const ok = appRef.current.setActiveStandard(code);
+          if (!ok) return { error: "No lab for this standard", standard: code };
+          return { ok: true, lab: appRef.current.labId, standard: code };
         },
       );
 
       await register(
         gen,
         "get_progress",
-        "Session-local progress snapshot",
+        "Grade 2 progress snapshot (localStorage)",
         jsonSchema({}),
         () => ({
-          lastCheck: appRef.current.lastCheck,
+          grade2: listGrade2Standards().map((s) => ({
+            code: s.code,
+            ...(getProgressSnapshot()[s.code] ?? { completed: false, bestScore: 0 }),
+          })),
           activeStandard: appRef.current.activeStandard?.code ?? null,
           labId: appRef.current.labId,
+          lastCheck: appRef.current.lastCheck,
         }),
         true,
       );
@@ -316,14 +317,7 @@ export function useWebMCPLab(activeLabId: LabId | null) {
         "request_hint",
         "Get a non-spoiling hint for the active lab",
         jsonSchema({}),
-        () => {
-          const hints: Record<LabId, string> = {
-            "place-value": "Use hundreds, tens, and ones blocks. Group ten ones into a ten.",
-            "opinion-builder": "Add a topic, your opinion, two reasons, and a linking word like because.",
-            "matter-lab": "Classify each object, heat above 0°C, predict ice becomes liquid.",
-          };
-          return { hint: hints[activeLabId] };
-        },
+        () => ({ hint: labHint(appRef.current.boardState) }),
         true,
       );
 

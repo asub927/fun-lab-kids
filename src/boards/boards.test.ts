@@ -11,6 +11,14 @@ import {
   checkMatter,
   createMatterState,
 } from "./matterLab";
+import {
+  applyTemplateAction,
+  checkTemplate,
+  createTemplateState,
+} from "./templates";
+import { labIdFromStandardActivity, createBoardState, runBoardCheck } from "./index";
+import { listGrade2Standards } from "../data/standards";
+import { resolveLabForStandard } from "../data/activities";
 
 describe("place value board", () => {
   it("builds target 243 from blocks", () => {
@@ -55,5 +63,46 @@ describe("matter lab", () => {
     state = applyMatterAction(state, { action: "predict_state", state: "liquid" });
     state = applyMatterAction(state, { action: "run_state_change" });
     expect(checkMatter(state).ok).toBe(true);
+  });
+});
+
+describe("grade 2 curriculum coverage", () => {
+  it("lists all NCSCOS grade 2 standards as playable", () => {
+    const all = listGrade2Standards();
+    expect(all.length).toBeGreaterThanOrEqual(75);
+    for (const s of all) {
+      expect(resolveLabForStandard(s.code)).not.toBeNull();
+    }
+  });
+});
+
+describe("template labs", () => {
+  it("passes word-problem with correct numeric answer", () => {
+    let state = createTemplateState("word-problem", "NC.2.OA.1", { answer: 63 });
+    state = applyTemplateAction(state, { action: "set_numeric", value: "63" });
+    expect(checkTemplate(state).ok).toBe(true);
+  });
+
+  it("passes checklist when all items checked", () => {
+    let state = createTemplateState("checklist", "SL.2.1", {
+      items: ["a", "b"],
+    });
+    state = applyTemplateAction(state, { action: "toggle_check", index: 0 });
+    state = applyTemplateAction(state, { action: "toggle_check", index: 1 });
+    expect(checkTemplate(state).ok).toBe(true);
+  });
+
+  it("creates board state from activity type mapping", () => {
+    const labId = labIdFromStandardActivity("word-problem");
+    expect(labId).toBe("word-problem");
+    const board = createBoardState("word-problem", {
+      standardCode: "NC.2.OA.1",
+      params: { answer: 10 },
+    });
+    expect(board.labId).toBe("word-problem");
+    if (board.labId === "word-problem") {
+      const checked = runBoardCheck({ ...board, numericAnswer: "10" });
+      expect(checked.ok).toBe(true);
+    }
   });
 });

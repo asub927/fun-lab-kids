@@ -18,18 +18,28 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173 and go to **Demo** for the Grade 2 judge path.
+Open http://localhost:5173 and go to **Grade 2** for the full kid app.
 
-## Judge demo deep links
+## Grade 2 app routes
 
-Guest mode — no child PII:
+Guest mode — no child PII; progress saves in localStorage on this device:
 
-| URL | Lab | Standard |
-| --- | --- | --- |
-| `/demo` | Jordan, Grade 2 hub | — |
-| `/demo/math` | Place Value Island | `NC.2.NBT.1` |
-| `/demo/ela` | Opinion Builder | `W.2.1` |
-| `/demo/science` | Matter Lab | `PS.2.1` |
+| URL | Purpose |
+| --- | --- |
+| `/grade-2` | Jordan's Grade 2 hub (Math, ELA, Science) |
+| `/grade-2/math` | All NC.2.* math standards |
+| `/grade-2/ela` | All Grade 2 ELA standards |
+| `/grade-2/science` | All Grade 2 science standards |
+| `/lab/:code` | Play any Grade 2 standard (e.g. `/lab/NC.2.NBT.1`) |
+
+Legacy judge deep links redirect automatically:
+
+| Old URL | Redirects to |
+| --- | --- |
+| `/demo` | `/grade-2` |
+| `/demo/math` | `/lab/NC.2.NBT.1` |
+| `/demo/ela` | `/lab/W.2.1` |
+| `/demo/science` | `/lab/2.P.2.1` |
 
 ## ChatGPT judge prompts
 
@@ -65,10 +75,14 @@ npm run build      # production build → dist/
 
 Deploy only after the local smoke checklist passes. See `netlify.toml`. Previews are free; batch production deploys to conserve hackathon credits.
 
-## Scope (P0 shipped)
+## Scope (Phase 1 shipped)
 
-- Grade 2 hub + three showcase labs + WebMCP tools + degradation banner
-- Starter standards catalog (expand to full K–5 in P1)
+- **NCSCOS-complete Grade 2** — 77 playable standards (23 Math, 41 ELA, 13 Science)
+- Hybrid template library + 3 showcase labs
+- Grade 2 hub, subject browsers, `/lab/:standardCode` routing
+- localStorage progress per standard
+- WebMCP tools + degradation banner
+- K–5 catalog stubs (non-G2 marked coming soon)
 
 ## Standards attribution
 

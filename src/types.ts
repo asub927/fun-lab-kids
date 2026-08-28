@@ -13,7 +13,25 @@ export type Standard = {
   sourceUrl?: string;
 };
 
-export type LabId = "place-value" | "opinion-builder" | "matter-lab";
+export type ShowcaseLabId = "place-value" | "opinion-builder" | "matter-lab";
+
+export type TemplateLabId =
+  | "word-problem"
+  | "numeric-flash"
+  | "equal-groups"
+  | "number-sense"
+  | "computation"
+  | "measurement"
+  | "time-money"
+  | "data-chart"
+  | "geometry"
+  | "writing-frame"
+  | "reading-response"
+  | "language-edit"
+  | "checklist"
+  | "science-inquiry";
+
+export type LabId = ShowcaseLabId | TemplateLabId;
 
 export type CheckResult = {
   ok: boolean;
@@ -65,7 +83,22 @@ export type MatterState = {
   observations: string[];
 };
 
-export type BoardState = PlaceValueState | OpinionState | MatterState;
+export type TemplateBoardState = {
+  labId: TemplateLabId;
+  standardCode: string;
+  params: Record<string, unknown>;
+  textResponse: string;
+  numericAnswer: string;
+  selectedOption: string;
+  checklist: boolean[];
+  frameFields: Record<string, string>;
+};
+
+export type BoardState =
+  | PlaceValueState
+  | OpinionState
+  | MatterState
+  | TemplateBoardState;
 
 export type PlaceValueAction =
   | { action: "place_block"; block: BlockType }
@@ -89,7 +122,14 @@ export type MatterAction =
   | { action: "add_observation"; text: string }
   | { action: "predict_state"; state: "solid" | "liquid" };
 
-export type BoardAction = PlaceValueAction | OpinionAction | MatterAction;
+export type TemplateAction =
+  | { action: "set_text"; text: string }
+  | { action: "set_numeric"; value: string }
+  | { action: "set_option"; value: string }
+  | { action: "toggle_check"; index: number }
+  | { action: "set_frame_field"; field: string; text: string };
+
+export type BoardAction = PlaceValueAction | OpinionAction | MatterAction | TemplateAction;
 
 declare global {
   interface ModelContextTool {
