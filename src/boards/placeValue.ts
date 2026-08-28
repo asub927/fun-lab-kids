@@ -35,7 +35,7 @@ export function applyPlaceValueAction(
       const ones = state.blocks.filter((b) => b === "one");
       if (ones.length < 10) return state;
       const rest = state.blocks.filter((b) => b !== "one");
-      const grouped = [...rest];
+      const grouped: BlockType[] = [...rest];
       for (let i = 0; i < Math.floor(ones.length / 10); i++) grouped.push("ten");
       const leftoverOnes = ones.length % 10;
       for (let i = 0; i < leftoverOnes; i++) grouped.push("one");

@@ -37,7 +37,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [activeStandard, setActiveStandard] = useState<Standard | null>(null);
   const [labId, setLabId] = useState<LabId | null>(null);
   const [boardState, setBoardState] = useState<BoardState | null>(null);
-  const [history, setHistory] = useState<BoardState[]>([]);
+  const [, setHistory] = useState<BoardState[]>([]);
   const [toolLog, setToolLog] = useState<ToolCallLogEntry[]>([]);
   const [lastCheck, setLastCheck] = useState<ReturnType<typeof runBoardCheck> | null>(
     null,
