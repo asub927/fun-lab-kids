@@ -62,7 +62,15 @@ export function LabShell({ title, children }: LabShellProps) {
           role="status"
           aria-live="polite"
         >
-          {lastCheck.feedback}
+          {lastCheck.ok && (
+            <div className="island-stamp" aria-hidden="true">
+              <div className="island-stamp-inner">
+                <span className="island-stamp-emoji">🏝</span>
+                <span className="island-stamp-label">Nice work!</span>
+              </div>
+            </div>
+          )}
+          <span>{lastCheck.feedback}</span>
         </div>
       )}
 
