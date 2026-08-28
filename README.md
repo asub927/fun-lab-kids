@@ -11,34 +11,68 @@ WebMCP Challenge project: a Synthesis-inspired learning web app where kids and a
 | **Deadline** | Sep 3, 2026 @ 1:00pm PDT |
 | **Hosting** | Netlify (local-first until smoke tests pass) |
 
-## Status
+## Quick start
 
-Scaffold + planning. See GitHub Issues for the P0–P3 scope ladder.
+```bash
+npm install
+npm run dev
+```
 
-## Demo (planned)
+Open http://localhost:5173 and go to **Demo** for the Grade 2 judge path.
 
-Guest deep links (no child PII):
+## Judge demo deep links
 
-- `/demo` — Jordan, Grade 2 hub
-- `/demo/math` — Place Value Island (`NC.2.NBT.1`)
-- `/demo/ela` — Opinion Builder (`W.2.1`)
-- `/demo/science` — Matter Lab (`PS.2.1`)
+Guest mode — no child PII:
 
-## Scope ladder
+| URL | Lab | Standard |
+| --- | --- | --- |
+| `/demo` | Jordan, Grade 2 hub | — |
+| `/demo/math` | Place Value Island | `NC.2.NBT.1` |
+| `/demo/ela` | Opinion Builder | `W.2.1` |
+| `/demo/science` | Matter Lab | `PS.2.1` |
 
-1. **P0** — Grade 2 hub + three showcase labs + WebMCP + live URL + video  
-2. **P1** — K–5 catalog browse + parent/coach panel  
-3. **P2** — Grade 2 template practice boards  
-4. **P3** — Secondary labs / other-grade startable boards  
+## ChatGPT judge prompts
+
+1. **Math:** `Open Place Value Island. Use tools to build 243 with hundreds, tens, and ones blocks, then run_check.`
+2. **ELA:** `Help me write an opinion about recess. Add two reasons and a linking word; suggest one revision and wait for my confirm.`
+3. **Science:** `Classify the objects, heat the ice, predict the state, then run_check.`
+
+## WebMCP testing
+
+Test in one of:
+
+- **ChatGPT** in-app browser (WebMCP enabled by default), or
+- **Chrome:** enable `chrome://flags/#enable-webmcp-testing` and restart
+
+If WebMCP is unavailable, a banner appears — the kid UI still works without an agent.
+
+### Registered tools (P0)
+
+Curriculum: `list_subjects`, `list_grades`, `list_standards`, `get_standard`, `search_standards`, `set_active_standard`, `get_progress`
+
+Board: `get_board_state`, `apply_board_action`, `undo`, `run_check`, `request_hint`, `ask_guiding_question`, `reveal_solution`, `reset_board`, `suggest_revision` (Opinion Builder)
+
+## Scripts
+
+```bash
+npm run dev        # local development
+npm run typecheck  # TypeScript
+npm run test       # board reducer tests
+npm run build      # production build → dist/
+```
+
+## Netlify
+
+Deploy only after the local smoke checklist passes. See `netlify.toml`. Previews are free; batch production deploys to conserve hackathon credits.
+
+## Scope (P0 shipped)
+
+- Grade 2 hub + three showcase labs + WebMCP tools + degradation banner
+- Starter standards catalog (expand to full K–5 in P1)
 
 ## Standards attribution
 
 Standards text from the North Carolina Standard Course of Study (NCSCOS). Attribution to NC DPI; **not** endorsed by DPI or any district.
-
-## WebMCP testing
-
-- ChatGPT in-app browser, or  
-- Chrome: `chrome://flags/#enable-webmcp-testing`
 
 ## License
 
