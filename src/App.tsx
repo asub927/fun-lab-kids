@@ -1,4 +1,4 @@
-import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Link, Route, Routes, useLocation } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
 import { WebMCPBanner } from "./components/WebMCPBanner";
 import { useWebMCPCurriculum } from "./webmcp/register";
@@ -8,6 +8,18 @@ import { MathLabPage } from "./pages/MathLabPage";
 import { ElaLabPage } from "./pages/ElaLabPage";
 import { ScienceLabPage } from "./pages/ScienceLabPage";
 import { CatalogPage } from "./pages/CatalogPage";
+
+type Accent = "green" | "pink" | "orange" | "yellow";
+
+function accentForPath(pathname: string): Accent {
+  if (pathname === "/") return "green";
+  if (pathname === "/demo") return "pink";
+  if (pathname === "/demo/math") return "green";
+  if (pathname === "/demo/ela") return "pink";
+  if (pathname === "/demo/science") return "orange";
+  if (pathname === "/catalog") return "yellow";
+  return "green";
+}
 
 export default function App() {
   return (
@@ -22,6 +34,17 @@ function AppShell() {
 
   return (
     <BrowserRouter>
+      <AppChrome />
+    </BrowserRouter>
+  );
+}
+
+function AppChrome() {
+  const { pathname } = useLocation();
+  const accent = accentForPath(pathname);
+
+  return (
+    <>
       <a className="skip-link" href="#main-content">
         Skip to main content
       </a>
@@ -32,11 +55,15 @@ function AppShell() {
             <span aria-hidden="true">🏝️</span> Inquiry Island
           </Link>
           <div className="nav-links">
-            <Link to="/demo">Demo</Link>
-            <Link to="/catalog">Catalog</Link>
+            <Link to="/demo" className={pathname.startsWith("/demo") ? "active" : undefined}>
+              Demo
+            </Link>
+            <Link to="/catalog" className={pathname === "/catalog" ? "active" : undefined}>
+              Catalog
+            </Link>
           </div>
         </nav>
-        <main id="main-content" tabIndex={-1}>
+        <main id="main-content" tabIndex={-1} data-accent={accent}>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/demo" element={<DemoHubPage />} />
@@ -47,6 +74,6 @@ function AppShell() {
           </Routes>
         </main>
       </div>
-    </BrowserRouter>
+    </>
   );
 }
