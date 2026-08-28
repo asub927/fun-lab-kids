@@ -1,23 +1,21 @@
-import { BrowserRouter, Link, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
 import { WebMCPBanner } from "./components/WebMCPBanner";
 import { useWebMCPCurriculum } from "./webmcp/register";
 import { HomePage } from "./pages/HomePage";
-import { DemoHubPage } from "./pages/DemoHubPage";
-import { MathLabPage } from "./pages/MathLabPage";
-import { ElaLabPage } from "./pages/ElaLabPage";
-import { ScienceLabPage } from "./pages/ScienceLabPage";
+import { Grade2HubPage } from "./pages/Grade2HubPage";
+import { SubjectBrowserPage } from "./pages/SubjectBrowserPage";
+import { StandardLabPage } from "./pages/StandardLabPage";
 import { CatalogPage } from "./pages/CatalogPage";
 
 type Accent = "green" | "pink" | "orange" | "yellow";
 
 function accentForPath(pathname: string): Accent {
   if (pathname === "/") return "green";
-  if (pathname === "/demo") return "pink";
-  if (pathname === "/demo/math") return "green";
-  if (pathname === "/demo/ela") return "pink";
-  if (pathname === "/demo/science") return "orange";
-  if (pathname === "/catalog") return "yellow";
+  if (pathname.startsWith("/grade-2/ela") || pathname.startsWith("/lab/W.")) return "pink";
+  if (pathname.startsWith("/grade-2/science") || pathname.startsWith("/lab/2.")) return "orange";
+  if (pathname.startsWith("/catalog")) return "yellow";
+  if (pathname.startsWith("/grade-2") || pathname.startsWith("/lab/NC.")) return "green";
   return "green";
 }
 
@@ -55,8 +53,8 @@ function AppChrome() {
             <span aria-hidden="true">🏝️</span> Inquiry Island
           </Link>
           <div className="nav-links">
-            <Link to="/demo" className={pathname.startsWith("/demo") ? "active" : undefined}>
-              Demo
+            <Link to="/grade-2" className={pathname.startsWith("/grade-2") || pathname.startsWith("/lab") ? "active" : undefined}>
+              Grade 2
             </Link>
             <Link to="/catalog" className={pathname === "/catalog" ? "active" : undefined}>
               Catalog
@@ -66,11 +64,14 @@ function AppChrome() {
         <main id="main-content" tabIndex={-1} data-accent={accent}>
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/demo" element={<DemoHubPage />} />
-            <Route path="/demo/math" element={<MathLabPage />} />
-            <Route path="/demo/ela" element={<ElaLabPage />} />
-            <Route path="/demo/science" element={<ScienceLabPage />} />
+            <Route path="/grade-2" element={<Grade2HubPage />} />
+            <Route path="/grade-2/:subject" element={<SubjectBrowserPage />} />
+            <Route path="/lab/:standardCode" element={<StandardLabPage />} />
             <Route path="/catalog" element={<CatalogPage />} />
+            <Route path="/demo" element={<Navigate to="/grade-2" replace />} />
+            <Route path="/demo/math" element={<Navigate to="/lab/NC.2.NBT.1" replace />} />
+            <Route path="/demo/ela" element={<Navigate to="/lab/W.2.1" replace />} />
+            <Route path="/demo/science" element={<Navigate to="/lab/2.P.2.1" replace />} />
           </Routes>
         </main>
       </div>

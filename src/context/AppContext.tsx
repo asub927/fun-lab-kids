@@ -1,10 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
-import type {
-  BoardState,
-  LabId,
-  Standard,
-  ToolCallLogEntry,
-} from "../types";
+import type { BoardState, LabId, Standard, ToolCallLogEntry } from "../types";
 import {
   applyBoardAction,
   createBoardState,
@@ -12,6 +7,8 @@ import {
   proposeRevision,
 } from "../boards";
 import { findStandard } from "../data/standards";
+import { resolveLabForStandard } from "../data/activities";
+import { recordCheckResult } from "../services/progress";
 
 type AppContextValue = {
   activeStandard: Standard | null;
@@ -20,6 +17,7 @@ type AppContextValue = {
   toolLog: ToolCallLogEntry[];
   lastCheck: ReturnType<typeof runBoardCheck> | null;
   setActiveLab: (labId: LabId, standardCode: string) => void;
+  setActiveStandard: (standardCode: string) => boolean;
   applyAction: (action: Record<string, unknown>) => BoardState | null;
   undo: () => void;
   runCheck: () => ReturnType<typeof runBoardCheck> | null;
@@ -34,24 +32,40 @@ type AppContextValue = {
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [activeStandard, setActiveStandard] = useState<Standard | null>(null);
+  const [activeStandard, setActiveStandardState] = useState<Standard | null>(null);
   const [labId, setLabId] = useState<LabId | null>(null);
   const [boardState, setBoardState] = useState<BoardState | null>(null);
+  const [activityParams, setActivityParams] = useState<Record<string, unknown>>({});
   const [, setHistory] = useState<BoardState[]>([]);
   const [toolLog, setToolLog] = useState<ToolCallLogEntry[]>([]);
-  const [lastCheck, setLastCheck] = useState<ReturnType<typeof runBoardCheck> | null>(
-    null,
-  );
+  const [lastCheck, setLastCheck] = useState<ReturnType<typeof runBoardCheck> | null>(null);
 
-  const setActiveLab = useCallback((nextLabId: LabId, standardCode: string) => {
+  const bootLab = useCallback((nextLabId: LabId, standardCode: string, params: Record<string, unknown>) => {
     const standard = findStandard(standardCode);
-    setActiveStandard(standard ?? null);
+    setActiveStandardState(standard ?? null);
     setLabId(nextLabId);
-    const initial = createBoardState(nextLabId);
-    setBoardState(initial);
+    setActivityParams(params);
+    setBoardState(createBoardState(nextLabId, { standardCode, params }));
     setHistory([]);
     setLastCheck(null);
   }, []);
+
+  const setActiveLab = useCallback(
+    (nextLabId: LabId, standardCode: string) => {
+      bootLab(nextLabId, standardCode, resolveLabForStandard(standardCode)?.params ?? {});
+    },
+    [bootLab],
+  );
+
+  const setActiveStandard = useCallback(
+    (standardCode: string) => {
+      const resolved = resolveLabForStandard(standardCode);
+      if (!resolved) return false;
+      bootLab(resolved.labId, standardCode, resolved.params);
+      return true;
+    },
+    [bootLab],
+  );
 
   const applyAction = useCallback(
     (action: Record<string, unknown>) => {
@@ -74,18 +88,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const runCheck = useCallback(() => {
-    if (!boardState) return null;
+    if (!boardState || !activeStandard) return null;
     const result = runBoardCheck(boardState);
     setLastCheck(result);
+    recordCheckResult(activeStandard.code, result.ok, result.score);
     return result;
-  }, [boardState]);
+  }, [boardState, activeStandard]);
 
   const resetBoard = useCallback(() => {
-    if (!labId) return;
-    setBoardState(createBoardState(labId));
+    if (!labId || !activeStandard) return;
+    setBoardState(
+      createBoardState(labId, { standardCode: activeStandard.code, params: activityParams }),
+    );
     setHistory([]);
     setLastCheck(null);
-  }, [labId]);
+  }, [labId, activeStandard, activityParams]);
 
   const proposeRevisionText = useCallback(
     (revision: string) => {
@@ -110,19 +127,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setBoardState({ ...boardState, pendingRevision: null });
   }, [boardState]);
 
-  const logToolCall = useCallback(
-    (entry: Omit<ToolCallLogEntry, "id" | "timestamp">) => {
-      setToolLog((log) => [
-        {
-          ...entry,
-          id: crypto.randomUUID(),
-          timestamp: Date.now(),
-        },
-        ...log,
-      ].slice(0, 50));
-    },
-    [],
-  );
+  const logToolCall = useCallback((entry: Omit<ToolCallLogEntry, "id" | "timestamp">) => {
+    setToolLog((log) =>
+      [{ ...entry, id: crypto.randomUUID(), timestamp: Date.now() }, ...log].slice(0, 50),
+    );
+  }, []);
 
   const getBoardSnapshot = useCallback(() => {
     if (!boardState) return null;
@@ -137,6 +146,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       toolLog,
       lastCheck,
       setActiveLab,
+      setActiveStandard,
       applyAction,
       undo,
       runCheck,
@@ -154,6 +164,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       toolLog,
       lastCheck,
       setActiveLab,
+      setActiveStandard,
       applyAction,
       undo,
       runCheck,

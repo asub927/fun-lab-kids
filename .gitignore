@@ -37,3 +37,5 @@ coverage/
 test-results/
 playwright-report/
 blob-report/
+.playwright-mcp/
+home-creative-mode.png
