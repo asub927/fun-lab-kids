@@ -11,13 +11,19 @@ export function MatterLab() {
   return (
     <div className="matter-lab">
       <div className="temp-control">
-        <label htmlFor="temp">Temperature: {boardState.temperatureC}°C</label>
+        <label htmlFor="temp-slider">
+          Temperature: <span className="tabular">{boardState.temperatureC}°C</span>
+        </label>
         <input
-          id="temp"
+          id="temp-slider"
+          name="temperature"
           type="range"
           min={-10}
           max={40}
           value={boardState.temperatureC}
+          aria-valuemin={-10}
+          aria-valuemax={40}
+          aria-valuenow={boardState.temperatureC}
           onChange={(e) =>
             applyAction({ action: "set_temperature", celsius: Number(e.target.value) })
           }
@@ -27,19 +33,22 @@ export function MatterLab() {
           className="btn primary"
           onClick={() => applyAction({ action: "run_state_change" })}
         >
-          Run heat/cool step
+          Run Heat/Cool Step
         </button>
       </div>
 
       <div className="object-grid">
         {boardState.objects.map((obj) => (
-          <div key={obj.id} className="object-card">
+          <article key={obj.id} className="object-card">
             <h3>{obj.name}</h3>
-            <p>Now: {obj.state}</p>
-            <div className="classify-btns">
+            <p>
+              Now: <strong>{obj.state}</strong>
+            </p>
+            <div className="classify-btns" role="group" aria-label={`Classify ${obj.name}`}>
               <button
                 type="button"
                 className={`btn ${boardState.classifications[obj.id] === "solid" ? "primary" : "secondary"}`}
+                aria-pressed={boardState.classifications[obj.id] === "solid"}
                 onClick={() =>
                   applyAction({
                     action: "classify_object",
@@ -53,6 +62,7 @@ export function MatterLab() {
               <button
                 type="button"
                 className={`btn ${boardState.classifications[obj.id] === "liquid" ? "primary" : "secondary"}`}
+                aria-pressed={boardState.classifications[obj.id] === "liquid"}
                 onClick={() =>
                   applyAction({
                     action: "classify_object",
@@ -64,15 +74,16 @@ export function MatterLab() {
                 Liquid
               </button>
             </div>
-          </div>
+          </article>
         ))}
       </div>
 
-      <div className="predict-row">
-        <span>Predict ice after heating:</span>
+      <fieldset className="predict-row">
+        <legend>Predict Ice After Heating</legend>
         <button
           type="button"
           className="btn secondary"
+          aria-pressed={boardState.prediction === "solid"}
           onClick={() => applyAction({ action: "predict_state", state: "solid" })}
         >
           Solid
@@ -80,19 +91,25 @@ export function MatterLab() {
         <button
           type="button"
           className="btn secondary"
+          aria-pressed={boardState.prediction === "liquid"}
           onClick={() => applyAction({ action: "predict_state", state: "liquid" })}
         >
           Liquid
         </button>
-        <span className="hint">Ice → {iceAfter} at {boardState.temperatureC}°C</span>
-      </div>
+        <p className="hint">
+          Ice → {iceAfter} at <span className="tabular">{boardState.temperatureC}°C</span>
+        </p>
+      </fieldset>
 
       {boardState.observations.length > 0 && (
-        <ul className="observations">
-          {boardState.observations.map((o, i) => (
-            <li key={i}>{o}</li>
-          ))}
-        </ul>
+        <section aria-label="Observations">
+          <h2 className="section-label">Observations</h2>
+          <ul className="observations">
+            {boardState.observations.map((o) => (
+              <li key={o}>{o}</li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );

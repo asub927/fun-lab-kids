@@ -19,47 +19,54 @@ export function LabShell({ title, children }: LabShellProps) {
   };
 
   return (
-    <div className="lab-shell">
+    <article className="lab-shell">
       <header className="lab-header">
         <div>
           <Link to="/demo" className="back-link">
-            ← Demo hub
+            ← Demo Hub
           </Link>
-          <h1>{title}</h1>
+          <h1 className="lab-title">{title}</h1>
           {activeStandard && (
             <p className="standard-chip">
-              <span>{activeStandard.code}</span> {activeStandard.text.slice(0, 120)}
+              <span translate="no">{activeStandard.code}</span>{" "}
+              {activeStandard.text.slice(0, 120)}
               {activeStandard.text.length > 120 ? "…" : ""}
             </p>
           )}
         </div>
-        <div className="lab-actions">
+        <div className="lab-actions" role="toolbar" aria-label="Board actions">
           <button type="button" className="btn secondary" onClick={undo}>
             Undo
           </button>
           <button type="button" className="btn primary" onClick={() => runCheck()}>
-            Check
+            Check Answer
           </button>
           <button type="button" className="btn secondary" onClick={handleReveal}>
-            Show answer
+            Show Answer
           </button>
           <button type="button" className="btn danger" onClick={handleReset}>
-            Reset
+            Reset Board
           </button>
         </div>
       </header>
 
       {hasWebMCP() && (
-        <p className="agent-ready">WebMCP tools are active — your agent can use this board.</p>
+        <p className="agent-ready" role="status">
+          WebMCP tools are active — your agent can use this board.
+        </p>
       )}
 
       {lastCheck && (
-        <div className={`check-result ${lastCheck.ok ? "ok" : "warn"}`} role="status">
+        <div
+          className={`check-result ${lastCheck.ok ? "ok" : "warn"}`}
+          role="status"
+          aria-live="polite"
+        >
           {lastCheck.feedback}
         </div>
       )}
 
       <div className="lab-board">{children}</div>
-    </div>
+    </article>
   );
 }

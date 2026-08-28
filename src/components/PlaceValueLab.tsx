@@ -18,16 +18,20 @@ export function PlaceValueLab() {
 
   return (
     <div className="place-value-lab">
-      <div className="target-card">
-        <h2>Build this number</h2>
-        <p className="target-number">{boardState.targetNumber}</p>
-        <p className="current-value">Your board: {value}</p>
-        <p className="counts">
+      <section className="target-card" aria-label="Target number">
+        <h2>Build This Number</h2>
+        <p className="target-number" aria-live="polite">
+          {boardState.targetNumber}
+        </p>
+        <p className="current-value">
+          Your board: <span className="tabular">{value}</span>
+        </p>
+        <p className="counts tabular">
           {counts.hundreds} hundreds · {counts.tens} tens · {counts.ones} ones
         </p>
-      </div>
+      </section>
 
-      <div className="block-tray">
+      <div className="block-tray" role="group" aria-label="Block tools">
         {BLOCKS.map((b) => (
           <button
             key={b.type}
@@ -36,7 +40,7 @@ export function PlaceValueLab() {
             onClick={() => applyAction({ action: "place_block", block: b.type })}
             aria-label={`Add ${b.label} block`}
           >
-            <span aria-hidden>{b.emoji}</span>
+            <span aria-hidden="true">{b.emoji}</span>
             {b.label}
           </button>
         ))}
@@ -45,25 +49,27 @@ export function PlaceValueLab() {
           className="btn secondary"
           onClick={() => applyAction({ action: "group_by_tens" })}
         >
-          Group 10 ones → 1 ten
-        </button>
-        <button
-          type="button"
-          className="btn secondary"
-          onClick={() =>
-            applyAction({ action: "compose_number", value: boardState.targetNumber })
-          }
-        >
-          Auto-build target
+          Group 10 Ones → 1 Ten
         </button>
       </div>
 
-      <div className="block-area" aria-label="Base-ten blocks">
-        {boardState.blocks.map((block, i) => (
-          <span key={`${block}-${i}`} className={`block piece-${block}`} title={block}>
-            {block === "hundred" ? "🟦" : block === "ten" ? "🟩" : "🟨"}
-          </span>
-        ))}
+      <div className="block-area" role="list" aria-label="Base-ten blocks on the board">
+        {boardState.blocks.length === 0 ? (
+          <p className="empty-state">Tap a block to start building…</p>
+        ) : (
+          boardState.blocks.map((block, i) => (
+            <span
+              key={`${block}-${i}`}
+              className={`block piece-${block}`}
+              role="listitem"
+              aria-label={block}
+            >
+              <span aria-hidden="true">
+                {block === "hundred" ? "🟦" : block === "ten" ? "🟩" : "🟨"}
+              </span>
+            </span>
+          ))
+        )}
       </div>
     </div>
   );

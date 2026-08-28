@@ -22,28 +22,31 @@ function AppShell() {
 
   return (
     <BrowserRouter>
-        <div className="app">
-          <WebMCPBanner />
-          <nav className="top-nav">
-            <Link to="/" className="brand">
-              🏝️ Inquiry Island
-            </Link>
-            <div className="nav-links">
-              <Link to="/demo">Demo</Link>
-              <Link to="/catalog">Catalog</Link>
-            </div>
-          </nav>
-          <main>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/demo" element={<DemoHubPage />} />
-              <Route path="/demo/math" element={<MathLabPage />} />
-              <Route path="/demo/ela" element={<ElaLabPage />} />
-              <Route path="/demo/science" element={<ScienceLabPage />} />
-              <Route path="/catalog" element={<CatalogPage />} />
-            </Routes>
-          </main>
-        </div>
-      </BrowserRouter>
+      <a className="skip-link" href="#main-content">
+        Skip to main content
+      </a>
+      <div className="app">
+        <WebMCPBanner />
+        <nav className="top-nav" aria-label="Main">
+          <Link to="/" className="brand">
+            <span aria-hidden="true">🏝️</span> Inquiry Island
+          </Link>
+          <div className="nav-links">
+            <Link to="/demo">Demo</Link>
+            <Link to="/catalog">Catalog</Link>
+          </div>
+        </nav>
+        <main id="main-content" tabIndex={-1}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/demo" element={<DemoHubPage />} />
+            <Route path="/demo/math" element={<MathLabPage />} />
+            <Route path="/demo/ela" element={<ElaLabPage />} />
+            <Route path="/demo/science" element={<ScienceLabPage />} />
+            <Route path="/catalog" element={<CatalogPage />} />
+          </Routes>
+        </main>
+      </div>
+    </BrowserRouter>
   );
 }

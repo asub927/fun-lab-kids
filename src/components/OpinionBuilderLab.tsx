@@ -15,9 +15,13 @@ export function OpinionBuilderLab() {
   return (
     <div className="opinion-lab">
       <div className="form-grid">
-        <label>
+        <label htmlFor="opinion-topic">
           Topic
           <input
+            id="opinion-topic"
+            name="topic"
+            autoComplete="off"
+            spellCheck={false}
             value={boardState.topic || topicInput}
             onChange={(e) => {
               setTopicInput(e.target.value);
@@ -25,9 +29,12 @@ export function OpinionBuilderLab() {
             }}
           />
         </label>
-        <label>
+        <label htmlFor="opinion-text">
           Opinion
           <input
+            id="opinion-text"
+            name="opinion"
+            autoComplete="off"
             value={boardState.opinion || opinionInput}
             onChange={(e) => {
               setOpinionInput(e.target.value);
@@ -35,13 +42,16 @@ export function OpinionBuilderLab() {
             }}
           />
         </label>
-        <label>
-          Add a reason
+        <label htmlFor="opinion-reason">
+          Add a Reason
           <div className="inline-field">
             <input
+              id="opinion-reason"
+              name="reason"
+              autoComplete="off"
               value={reasonInput}
               onChange={(e) => setReasonInput(e.target.value)}
-              placeholder="We need time to play and rest"
+              placeholder="We need time to play and rest…"
             />
             <button
               type="button"
@@ -52,14 +62,14 @@ export function OpinionBuilderLab() {
                 setReasonInput("");
               }}
             >
-              Add
+              Add Reason
             </button>
           </div>
         </label>
       </div>
 
-      <div className="linking-row">
-        <span>Linking words:</span>
+      <fieldset className="linking-row">
+        <legend>Linking Words</legend>
         {LINKING.map((word) => (
           <button
             key={word}
@@ -70,31 +80,35 @@ export function OpinionBuilderLab() {
             {word}
           </button>
         ))}
-      </div>
+      </fieldset>
 
       {boardState.pendingRevision && (
-        <div className="revision-card">
+        <div className="revision-card" role="region" aria-label="Agent suggestion">
           <p>
             <strong>Agent suggests:</strong> {boardState.pendingRevision}
           </p>
-          <button type="button" className="btn primary" onClick={acceptRevision}>
-            Accept
-          </button>
-          <button type="button" className="btn secondary" onClick={rejectRevision}>
-            Reject
-          </button>
+          <div className="revision-actions">
+            <button type="button" className="btn primary" onClick={acceptRevision}>
+              Accept
+            </button>
+            <button type="button" className="btn secondary" onClick={rejectRevision}>
+              Reject
+            </button>
+          </div>
         </div>
       )}
 
-      <div className="paragraph-preview">
-        <h2>Your paragraph</h2>
+      <section className="paragraph-preview" aria-label="Your paragraph">
+        <h2>Your Paragraph</h2>
         <p>{buildOpinionParagraph(boardState) || "Start writing your opinion…"}</p>
-        <ul>
-          {boardState.reasons.map((r, i) => (
-            <li key={i}>{r}</li>
-          ))}
-        </ul>
-      </div>
+        {boardState.reasons.length > 0 && (
+          <ul>
+            {boardState.reasons.map((r) => (
+              <li key={r}>{r}</li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

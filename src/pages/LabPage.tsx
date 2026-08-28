@@ -6,11 +6,10 @@ import { useWebMCPLab } from "../webmcp/register";
 type LabPageProps = {
   labId: LabId;
   standardCode: string;
-  title: string;
   children: React.ReactNode;
 };
 
-export function LabPage({ labId, standardCode, title, children }: LabPageProps) {
+export function LabPage({ labId, standardCode, children }: LabPageProps) {
   const { setActiveLab } = useApp();
 
   useLayoutEffect(() => {
@@ -19,10 +18,5 @@ export function LabPage({ labId, standardCode, title, children }: LabPageProps) 
 
   useWebMCPLab(labId);
 
-  return (
-    <>
-      <h1 className="sr-only">{title}</h1>
-      {children}
-    </>
-  );
+  return <div className="page lab-page">{children}</div>;
 }

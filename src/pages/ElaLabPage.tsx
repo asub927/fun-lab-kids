@@ -4,7 +4,7 @@ import { LabPage } from "./LabPage";
 
 export function ElaLabPage() {
   return (
-    <LabPage labId="opinion-builder" standardCode="W.2.1" title="Opinion Builder">
+    <LabPage labId="opinion-builder" standardCode="W.2.1">
       <LabShell title="Opinion Builder">
         <OpinionBuilderLab />
       </LabShell>
