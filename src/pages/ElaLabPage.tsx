@@ -1,21 +1,13 @@
-import { useEffect } from "react";
 import { LabShell } from "../components/LabShell";
 import { OpinionBuilderLab } from "../components/OpinionBuilderLab";
-import { useApp } from "../context/AppContext";
-import { useWebMCP } from "../webmcp/register";
+import { LabPage } from "./LabPage";
 
 export function ElaLabPage() {
-  const { setActiveLab, labId } = useApp();
-
-  useEffect(() => {
-    setActiveLab("opinion-builder", "W.2.1");
-  }, [setActiveLab]);
-
-  useWebMCP(labId);
-
   return (
-    <LabShell title="Opinion Builder">
-      <OpinionBuilderLab />
-    </LabShell>
+    <LabPage labId="opinion-builder" standardCode="W.2.1" title="Opinion Builder">
+      <LabShell title="Opinion Builder">
+        <OpinionBuilderLab />
+      </LabShell>
+    </LabPage>
   );
 }

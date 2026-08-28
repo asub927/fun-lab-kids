@@ -3,44 +3,58 @@ import { useApp } from "../context/AppContext";
 import { listStandards, findStandard } from "../data/standards";
 import type { LabId } from "../types";
 
-const CURRICULUM_TOOLS = [
-  "list_subjects",
-  "list_grades",
-  "list_standards",
-  "get_standard",
-  "search_standards",
-  "set_active_standard",
-  "get_progress",
-] as const;
-
-const BOARD_TOOLS = [
-  "get_board_state",
-  "apply_board_action",
-  "undo",
-  "run_check",
-  "request_hint",
-  "ask_guiding_question",
-  "reveal_solution",
-  "reset_board",
-  "suggest_revision",
-] as const;
-
-function jsonSchema(props: Record<string, unknown>, required?: string[]) {
+function jsonSchema(
+  props: Record<string, unknown>,
+  required?: string[],
+  allowExtra = false,
+) {
   return {
     type: "object",
     properties: props,
     required: required ?? Object.keys(props),
-    additionalProperties: false,
+    additionalProperties: allowExtra,
   };
 }
 
-export function useWebMCP(activeLabId: LabId | null) {
+const BOARD_ACTION_SCHEMA = jsonSchema(
+  {
+    action: { type: "string" },
+    block: { type: "string" },
+    value: { type: "number" },
+    other: { type: "number" },
+    part: { type: "string" },
+    text: { type: "string" },
+    word: { type: "string" },
+    objectId: { type: "string" },
+    classification: { type: "string" },
+    celsius: { type: "number" },
+    state: { type: "string" },
+    revision: { type: "string" },
+    question: { type: "string" },
+  },
+  ["action"],
+  true,
+);
+
+type AppApi = ReturnType<typeof useApp>;
+
+function useAppRef(app: AppApi) {
+  const ref = useRef(app);
+  ref.current = app;
+  return ref;
+}
+
+export function useWebMCPCurriculum() {
   const app = useApp();
+  const appRef = useAppRef(app);
   const registeredRef = useRef<string[]>([]);
 
   useEffect(() => {
     const mc = document.modelContext;
     if (!mc?.registerTool) return;
+
+    let cancelled = false;
+    let generation = 0;
 
     const unregisterAll = async () => {
       for (const name of registeredRef.current) {
@@ -54,12 +68,14 @@ export function useWebMCP(activeLabId: LabId | null) {
     };
 
     const register = async (
+      gen: number,
       name: string,
       description: string,
       inputSchema: Record<string, unknown>,
       execute: (input: Record<string, unknown>) => Promise<unknown> | unknown,
       readOnly = false,
     ) => {
+      if (cancelled || gen !== generation) return;
       await mc.registerTool({
         name,
         description,
@@ -68,7 +84,7 @@ export function useWebMCP(activeLabId: LabId | null) {
         execute: async (input) => {
           try {
             const result = await execute(input);
-            app.logToolCall({
+            appRef.current.logToolCall({
               tool: name,
               argsSummary: JSON.stringify(input).slice(0, 120),
               ok: true,
@@ -76,7 +92,7 @@ export function useWebMCP(activeLabId: LabId | null) {
             return result;
           } catch (err) {
             const message = err instanceof Error ? err.message : "Tool failed";
-            app.logToolCall({
+            appRef.current.logToolCall({
               tool: name,
               argsSummary: JSON.stringify(input).slice(0, 120),
               ok: false,
@@ -86,21 +102,20 @@ export function useWebMCP(activeLabId: LabId | null) {
           }
         },
       });
-      registeredRef.current.push(name);
+      if (!cancelled && gen === generation) registeredRef.current.push(name);
     };
 
     void (async () => {
+      generation += 1;
+      const gen = generation;
       await unregisterAll();
 
-      await register(
-        "list_subjects",
-        "List available subjects",
-        jsonSchema({}),
-        () => ["math", "ela", "science"],
-        true,
-      );
+      await register(gen, "list_subjects", "List available subjects", jsonSchema({}), () =>
+        ["math", "ela", "science"],
+      true);
 
       await register(
+        gen,
         "list_grades",
         "List grade levels with standards",
         jsonSchema({ subject: { type: "string", enum: ["math", "ela", "science"] } }, ["subject"]),
@@ -112,6 +127,7 @@ export function useWebMCP(activeLabId: LabId | null) {
       );
 
       await register(
+        gen,
         "list_standards",
         "List standards for a subject and grade",
         jsonSchema({
@@ -127,6 +143,7 @@ export function useWebMCP(activeLabId: LabId | null) {
       );
 
       await register(
+        gen,
         "get_standard",
         "Get full standard details by code",
         jsonSchema({ code: { type: "string" } }),
@@ -135,6 +152,7 @@ export function useWebMCP(activeLabId: LabId | null) {
       );
 
       await register(
+        gen,
         "search_standards",
         "Search standards by keyword",
         jsonSchema({ query: { type: "string" } }),
@@ -151,6 +169,7 @@ export function useWebMCP(activeLabId: LabId | null) {
       );
 
       await register(
+        gen,
         "set_active_standard",
         "Switch to a standard's lab by code (Grade 2 showcase only in P0)",
         jsonSchema({ code: { type: "string" } }),
@@ -164,65 +183,140 @@ export function useWebMCP(activeLabId: LabId | null) {
           };
           const lab = map[standard.activityType];
           if (!lab) return { error: "No lab for this standard in P0", standard };
-          app.setActiveLab(lab, standard.code);
+          appRef.current.setActiveLab(lab, standard.code);
           return { ok: true, lab, standard: standard.code };
         },
       );
 
       await register(
+        gen,
         "get_progress",
         "Session-local progress snapshot",
         jsonSchema({}),
         () => ({
-          lastCheck: app.lastCheck,
-          activeStandard: app.activeStandard?.code ?? null,
+          lastCheck: appRef.current.lastCheck,
+          activeStandard: appRef.current.activeStandard?.code ?? null,
+          labId: appRef.current.labId,
         }),
         true,
       );
+    })();
+
+    return () => {
+      cancelled = true;
+      generation += 1;
+      void unregisterAll();
+    };
+  }, [appRef]);
+}
+
+export function useWebMCPLab(activeLabId: LabId | null) {
+  const app = useApp();
+  const appRef = useAppRef(app);
+  const registeredRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    const mc = document.modelContext;
+    if (!mc?.registerTool) return;
+
+    let cancelled = false;
+    let generation = 0;
+
+    const unregisterAll = async () => {
+      for (const name of registeredRef.current) {
+        try {
+          await mc.unregisterTool(name);
+        } catch {
+          /* ignore */
+        }
+      }
+      registeredRef.current = [];
+    };
+
+    const register = async (
+      gen: number,
+      name: string,
+      description: string,
+      inputSchema: Record<string, unknown>,
+      execute: (input: Record<string, unknown>) => Promise<unknown> | unknown,
+      readOnly = false,
+    ) => {
+      if (cancelled || gen !== generation) return;
+      await mc.registerTool({
+        name,
+        description,
+        inputSchema,
+        annotations: readOnly ? { readOnlyHint: true } : undefined,
+        execute: async (input) => {
+          try {
+            const result = await execute(input);
+            appRef.current.logToolCall({
+              tool: name,
+              argsSummary: JSON.stringify(input).slice(0, 120),
+              ok: true,
+            });
+            return result;
+          } catch (err) {
+            const message = err instanceof Error ? err.message : "Tool failed";
+            appRef.current.logToolCall({
+              tool: name,
+              argsSummary: JSON.stringify(input).slice(0, 120),
+              ok: false,
+              message,
+            });
+            throw err;
+          }
+        },
+      });
+      if (!cancelled && gen === generation) registeredRef.current.push(name);
+    };
+
+    void (async () => {
+      generation += 1;
+      const gen = generation;
+      await unregisterAll();
+
+      if (!activeLabId) return;
 
       await register(
+        gen,
         "get_board_state",
         "Get current board state for the active lab",
         jsonSchema({}),
-        () => app.getBoardSnapshot() ?? { error: "No active lab" },
+        () => appRef.current.getBoardSnapshot() ?? { error: "No active lab" },
         true,
       );
 
       await register(
+        gen,
         "apply_board_action",
-        "Apply an action on the active lab board",
-        jsonSchema({
-          action: { type: "string" },
-        }),
+        "Apply an action on the active lab board (action plus payload fields)",
+        BOARD_ACTION_SCHEMA,
         (input) => {
-          const next = app.applyAction(input);
+          const next = appRef.current.applyAction(input);
           return next ?? { error: "No active lab" };
         },
       );
 
-      await register(
-        "undo",
-        "Undo the last board action",
-        jsonSchema({}),
-        () => {
-          app.undo();
-          return app.getBoardSnapshot();
-        },
-      );
+      await register(gen, "undo", "Undo the last board action", jsonSchema({}), () => {
+        appRef.current.undo();
+        return appRef.current.getBoardSnapshot();
+      });
 
       await register(
+        gen,
         "run_check",
         "Check whether the board meets the lab success criteria",
         jsonSchema({}),
-        () => app.runCheck() ?? { error: "No active lab" },
+        () => appRef.current.runCheck() ?? { error: "No active lab" },
       );
 
       await register(
+        gen,
         "request_hint",
         "Get a non-spoiling hint for the active lab",
         jsonSchema({}),
         () => {
-          if (!activeLabId) return { hint: "Open a lab first." };
           const hints: Record<LabId, string> = {
             "place-value": "Use hundreds, tens, and ones blocks. Group ten ones into a ten.",
             "opinion-builder": "Add a topic, your opinion, two reasons, and a linking word like because.",
@@ -234,6 +328,7 @@ export function useWebMCP(activeLabId: LabId | null) {
       );
 
       await register(
+        gen,
         "ask_guiding_question",
         "Surface a guiding question on the board for the child",
         jsonSchema({ question: { type: "string" } }),
@@ -242,8 +337,9 @@ export function useWebMCP(activeLabId: LabId | null) {
       );
 
       await register(
+        gen,
         "reveal_solution",
-        "Reveal the answer (requires child confirmation in UI — returns hint only via tool)",
+        "Reveal the answer (requires child confirmation in UI)",
         jsonSchema({}),
         () => ({
           message: "Ask the child to tap Show answer in the app to confirm.",
@@ -253,6 +349,7 @@ export function useWebMCP(activeLabId: LabId | null) {
       );
 
       await register(
+        gen,
         "reset_board",
         "Reset the board (requires confirmation in UI)",
         jsonSchema({}),
@@ -265,12 +362,13 @@ export function useWebMCP(activeLabId: LabId | null) {
 
       if (activeLabId === "opinion-builder") {
         await register(
+          gen,
           "suggest_revision",
           "Suggest a revision to the opinion sentence; child must confirm in UI",
           jsonSchema({ revision: { type: "string" } }),
           (input) => {
             const revision = String(input.revision);
-            app.proposeRevision(revision);
+            appRef.current.proposeRevision(revision);
             return {
               pendingRevision: revision,
               message: "Child must tap Accept or Reject in the app.",
@@ -281,13 +379,19 @@ export function useWebMCP(activeLabId: LabId | null) {
     })();
 
     return () => {
+      cancelled = true;
+      generation += 1;
       void unregisterAll();
     };
-  }, [activeLabId, app]);
+  }, [activeLabId, appRef]);
+}
+
+/** @deprecated use useWebMCPCurriculum + useWebMCPLab */
+export function useWebMCP(activeLabId: LabId | null) {
+  useWebMCPCurriculum();
+  useWebMCPLab(activeLabId);
 }
 
 export function hasWebMCP(): boolean {
   return typeof document !== "undefined" && !!document.modelContext?.registerTool;
 }
-
-export const REGISTERED_TOOL_NAMES = [...CURRICULUM_TOOLS, ...BOARD_TOOLS];

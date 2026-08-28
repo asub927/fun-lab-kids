@@ -1,6 +1,7 @@
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
 import { WebMCPBanner } from "./components/WebMCPBanner";
+import { useWebMCPCurriculum } from "./webmcp/register";
 import { HomePage } from "./pages/HomePage";
 import { DemoHubPage } from "./pages/DemoHubPage";
 import { MathLabPage } from "./pages/MathLabPage";
@@ -11,7 +12,16 @@ import { CatalogPage } from "./pages/CatalogPage";
 export default function App() {
   return (
     <AppProvider>
-      <BrowserRouter>
+      <AppShell />
+    </AppProvider>
+  );
+}
+
+function AppShell() {
+  useWebMCPCurriculum();
+
+  return (
+    <BrowserRouter>
         <div className="app">
           <WebMCPBanner />
           <nav className="top-nav">
@@ -35,6 +45,5 @@ export default function App() {
           </main>
         </div>
       </BrowserRouter>
-    </AppProvider>
   );
 }

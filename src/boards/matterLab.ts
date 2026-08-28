@@ -117,9 +117,9 @@ export function checkMatter(state: MatterState): CheckResult {
   }
 
   return {
-    ok: true,
-    score: 85,
-    feedback: "Classifications look good! Heat the ice above 0°C and predict liquid to finish.",
+    ok: false,
+    score: 70,
+    feedback: "Classifications look good! Heat the ice above 0°C, run the sim, and predict liquid to finish.",
   };
 }
 
