@@ -1,5 +1,13 @@
 import type { TemplateBoardState } from "../types";
 import { useApp } from "../context/AppContext";
+import {
+  BarChartVisual,
+  ClockVisual,
+  CoinVisual,
+  NumberLineVisual,
+  RulerVisual,
+  ShapeVisual,
+} from "./lab-visuals/LabVisuals";
 import { StrategyFromParams } from "./StrategyPanel";
 
 type TemplateLabProps = {
@@ -268,7 +276,154 @@ export function TemplateLab({ state }: TemplateLabProps) {
     );
   }
 
-  // measurement, time-money, data-chart, geometry, equal-groups default
+  if (state.labId === "number-sense" && p.mode === "mental-add") {
+    return (
+      <div className="template-lab">
+        <StrategyFromParams params={p} />
+        <p className="target-number tabular">{String(p.prompt)}</p>
+        <div className="answer-field">
+          <label htmlFor="mental-answer">
+            Your answer
+            <input
+              id="mental-answer"
+              type="number"
+              inputMode="numeric"
+              value={state.numericAnswer}
+              onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
+            />
+          </label>
+        </div>
+      </div>
+    );
+  }
+
+  if (state.labId === "measurement") {
+    const mode = String(p.mode ?? "measure");
+    return (
+      <div className="template-lab">
+        <StrategyFromParams params={p} />
+        <p className="story-card">{String(p.prompt)}</p>
+        {mode === "measure-twice" && (
+          <div className="measurement-pair">
+            <p>
+              First measure: {String((p.measure1 as { value?: number })?.value ?? "")}{" "}
+              {String((p.measure1 as { unit?: string })?.unit ?? "")}
+            </p>
+            <p>
+              Second measure: {String((p.measure2 as { value?: number })?.value ?? "")}{" "}
+              {String((p.measure2 as { unit?: string })?.unit ?? "")}
+            </p>
+          </div>
+        )}
+        {mode === "compare-length" && (
+          <div className="measurement-pair">
+            <p>
+              {String(p.objectA)}: {String(p.lengthA)} inches
+            </p>
+            <p>
+              {String(p.objectB)}: {String(p.lengthB)} inches
+            </p>
+          </div>
+        )}
+        {mode === "number-line" && (
+          <NumberLineVisual
+            start={Number(p.start)}
+            end={typeof p.end === "number" ? p.end : undefined}
+          />
+        )}
+        {(mode === "measure" || mode === "estimate") && typeof p.length === "number" && (
+          <RulerVisual length={Number(p.length)} unit={String(p.unit ?? "inches")} />
+        )}
+        {typeof p.object === "string" && mode !== "compare-length" && mode !== "measure-twice" && (
+          <p className="lab-object-label">Object: {p.object}</p>
+        )}
+        <div className="answer-field">
+          <label htmlFor="measurement-answer">
+            Your answer
+            <input
+              id="measurement-answer"
+              type="number"
+              inputMode="numeric"
+              value={state.numericAnswer}
+              onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
+            />
+          </label>
+        </div>
+      </div>
+    );
+  }
+
+  if (state.labId === "data-chart" && Array.isArray(p.categories) && Array.isArray(p.counts)) {
+    return (
+      <div className="template-lab">
+        <StrategyFromParams params={p} />
+        <BarChartVisual categories={p.categories as string[]} counts={p.counts as number[]} />
+        <p className="story-card">{String(p.prompt ?? p.question)}</p>
+        <div className="answer-field">
+          <label htmlFor="chart-answer">
+            Your answer
+            <input
+              id="chart-answer"
+              type="number"
+              inputMode="numeric"
+              value={state.numericAnswer}
+              onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
+            />
+          </label>
+        </div>
+      </div>
+    );
+  }
+
+  if (state.labId === "geometry") {
+    return (
+      <div className="template-lab">
+        <StrategyFromParams params={p} />
+        <ShapeVisual shape={String(p.shape)} parts={typeof p.parts === "number" ? p.parts : undefined} />
+        <p className="story-card">{String(p.prompt)}</p>
+        <div className="answer-field">
+          <label htmlFor="geometry-answer">
+            {typeof p.parts === "number" ? "Name the equal parts" : "Number of sides"}
+            <input
+              id="geometry-answer"
+              value={state.textResponse || state.numericAnswer}
+              onChange={(e) => {
+                applyAction({ action: "set_text", text: e.target.value });
+                applyAction({ action: "set_numeric", value: e.target.value });
+              }}
+            />
+          </label>
+        </div>
+      </div>
+    );
+  }
+
+  if (state.labId === "time-money") {
+    const mode = String(p.mode ?? (p.time ? "clock" : "money"));
+    return (
+      <div className="template-lab">
+        <StrategyFromParams params={p} />
+        <p className="story-card">{String(p.prompt)}</p>
+        {mode === "clock" && typeof p.time === "string" && <ClockVisual time={p.time} />}
+        {mode === "money" && typeof p.coins === "string" && <CoinVisual coins={p.coins} />}
+        <div className="answer-field">
+          <label htmlFor="time-money-answer">
+            {mode === "clock" ? "Write the time" : "Total cents"}
+            <input
+              id="time-money-answer"
+              value={state.textResponse || state.numericAnswer}
+              onChange={(e) => {
+                applyAction({ action: "set_text", text: e.target.value });
+                applyAction({ action: "set_numeric", value: e.target.value });
+              }}
+            />
+          </label>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback for any remaining template types
   return (
     <div className="template-lab form-grid">
       <StrategyFromParams params={p} />

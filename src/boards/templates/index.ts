@@ -108,18 +108,39 @@ export function checkTemplate(state: TemplateBoardState): CheckResult {
         };
       }
       if (p.mode === "expanded") {
-        const ok = norm(state.textResponse).includes("300") && norm(state.textResponse).includes("50");
+        const expected = norm(String(p.answer ?? ""));
+        const got = norm(state.textResponse);
+        const ok =
+          Boolean(expected) &&
+          (got === expected || got.replace(/\s/g, "") === expected.replace(/\s/g, ""));
         return {
           ok,
           score: ok ? 100 : 40,
-          feedback: ok ? "Great expanded form!" : "Write the number in expanded form (e.g. 300+50+2).",
+          feedback: ok ? "Great expanded form!" : `Write the number in expanded form (e.g. ${p.answer}).`,
         };
+      }
+      if (p.mode === "mental-add") {
+        return checkNumeric(state, p.answer);
       }
       return checkNumeric(state, p.answer ?? p.start);
     }
 
-    case "measurement":
-      return checkNumeric(state, p.length);
+    case "measurement": {
+      if (p.mode === "estimate") {
+        const got = Number(state.numericAnswer);
+        const want = Number(p.answer ?? p.length);
+        const ok = !Number.isNaN(got) && Math.abs(got - want) <= 1;
+        return {
+          ok,
+          score: ok ? 100 : Math.max(0, 60 - Math.abs(got - want) * 10),
+          feedback: ok
+            ? "Good estimate!"
+            : `Estimate again. About how many ${p.unit ?? "units"}?`,
+          expectedHint: String(want),
+        };
+      }
+      return checkNumeric(state, p.answer ?? p.length);
+    }
 
     case "time-money": {
       const got = norm(state.textResponse || state.numericAnswer);
@@ -136,15 +157,17 @@ export function checkTemplate(state: TemplateBoardState): CheckResult {
       return checkNumeric(state, p.answer);
 
     case "geometry": {
-      const got = norm(state.textResponse || state.selectedOption);
+      const got = norm(state.textResponse || state.numericAnswer);
+      const wantSides = String(p.sides ?? p.answer ?? "");
+      const wantParts = norm(String(p.answer ?? ""));
       const ok =
-        got.includes(String(p.sides)) ||
-        got.includes(String(p.shape)) ||
-        got.includes(String(p.answer));
+        (wantParts && got.includes(wantParts)) ||
+        (wantSides && got === wantSides) ||
+        got.includes(String(p.shape));
       return {
         ok,
         score: ok ? 100 : 40,
-        feedback: ok ? "Nice geometry work!" : "Name the shape or equal parts.",
+        feedback: ok ? "Nice geometry work!" : String(p.prompt ?? "Check the shape question."),
       };
     }
 
@@ -282,8 +305,11 @@ export function revealTemplateAnswer(state: TemplateBoardState): {
     case "number-sense":
       if (p.mode === "compare") {
         actions.push({ action: "set_option", value: expected });
-      } else if (p.mode === "expanded") {
-        actions.push({ action: "set_text", text: expected });
+      } else if (p.mode === "expanded" || p.mode === "mental-add") {
+        actions.push({ action: "set_numeric", value: expected });
+        if (p.mode === "expanded") {
+          actions.push({ action: "set_text", text: expected });
+        }
       } else {
         actions.push({ action: "set_numeric", value: expected });
       }

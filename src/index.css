@@ -1198,6 +1198,226 @@ tbody tr:last-child td {
   font-variant-numeric: normal;
 }
 
+/* Lab visuals */
+.lab-visual {
+  padding: var(--space-2);
+  border: var(--border-width) solid var(--color-ink);
+  border-radius: var(--radius-tablet);
+  background: var(--color-bone);
+}
+
+.lab-visual-caption,
+.lab-object-label {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  color: var(--color-ink-muted);
+}
+
+.ruler-bar {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  height: 3rem;
+  border: 2px solid var(--color-ink);
+  border-radius: 8px;
+  background: var(--color-paper);
+  overflow: hidden;
+}
+
+.ruler-tick {
+  flex: 1;
+  border-left: 1px solid var(--color-ink);
+  font-size: 0.65rem;
+  text-align: center;
+  padding-top: 0.15rem;
+  min-height: 1rem;
+}
+
+.ruler-tick.major {
+  border-left-width: 2px;
+  font-weight: 700;
+}
+
+.ruler-fill {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 0.65rem;
+  background: var(--color-teal);
+  opacity: 0.75;
+}
+
+.bar-chart-grid {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: 0.75rem;
+  min-height: 10rem;
+}
+
+.bar-chart-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.bar-chart-bar {
+  display: block;
+  width: 100%;
+  min-height: 0.5rem;
+  max-height: 7rem;
+  background: var(--color-teal);
+  border: 2px solid var(--color-ink);
+  border-radius: 8px 8px 0 0;
+}
+
+.bar-chart-value {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+}
+
+.bar-chart-label {
+  font-family: var(--font-chrome);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.shape-icon {
+  display: grid;
+  place-items: center;
+  min-height: 6rem;
+  border: 2px dashed var(--color-ink);
+  border-radius: 16px;
+  background: var(--color-paper);
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  text-transform: capitalize;
+}
+
+.shape-icon--triangle {
+  clip-path: polygon(50% 8%, 8% 92%, 92% 92%);
+  background: var(--color-mustard);
+}
+
+.shape-icon--square,
+.shape-icon--rectangle {
+  background: var(--color-teal);
+}
+
+.shape-icon--circle {
+  border-radius: 999px;
+  background: var(--color-orange);
+}
+
+.shape-icon--hexagon,
+.shape-icon--pentagon,
+.shape-icon--octagon {
+  background: var(--color-magenta);
+}
+
+.number-line-track {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  min-height: 3rem;
+  border-bottom: 3px solid var(--color-ink);
+  padding: 0 0.25rem 0.35rem;
+}
+
+.number-line-tick {
+  flex: 1;
+  text-align: center;
+  font-size: 0.7rem;
+  border-left: 1px solid var(--color-ink);
+}
+
+.number-line-tick.marked {
+  font-weight: 700;
+}
+
+.number-line-marker {
+  position: absolute;
+  bottom: 0;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-left: -0.375rem;
+  border-radius: 999px;
+  border: 2px solid var(--color-ink);
+}
+
+.number-line-marker.start {
+  background: var(--color-teal);
+}
+
+.number-line-marker.end {
+  background: var(--color-mustard);
+}
+
+.clock-face {
+  position: relative;
+  width: 8rem;
+  height: 8rem;
+  margin: 0 auto;
+  border: 3px solid var(--color-ink);
+  border-radius: 999px;
+  background: var(--color-paper);
+}
+
+.clock-hand {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  transform-origin: bottom center;
+  background: var(--color-ink);
+  border-radius: 999px;
+}
+
+.clock-hand.hour {
+  width: 0.35rem;
+  height: 2rem;
+  margin-left: -0.175rem;
+}
+
+.clock-hand.minute {
+  width: 0.2rem;
+  height: 2.75rem;
+  margin-left: -0.1rem;
+}
+
+.coin-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.coin-chip {
+  padding: 0.45rem 0.75rem;
+  border: 2px solid var(--color-ink);
+  border-radius: 999px;
+  background: var(--color-mustard);
+  font-family: var(--font-chrome);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.measurement-pair {
+  display: grid;
+  gap: 0.35rem;
+  padding: var(--space-2);
+  border: 2px solid var(--color-ink);
+  border-radius: var(--radius-tablet);
+  background: var(--color-paper);
+}
+
+.measurement-pair p {
+  margin: 0;
+}
+
 .template-lab > label input:focus-visible,
 .template-lab > label textarea:focus-visible,
 .answer-field input:focus-visible,

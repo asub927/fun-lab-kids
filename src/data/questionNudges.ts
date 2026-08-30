@@ -210,6 +210,49 @@ function numberSenseNudge(params: ActivityParams): QuestionNudge | null {
 }
 
 function measurementNudge(params: ActivityParams): QuestionNudge | null {
+  const mode = String(params.mode ?? "measure");
+  if (mode === "number-line") {
+    return {
+      strategy: "Hop on the number line",
+      strategySteps: [
+        `Start at ${params.start}.`,
+        `Move ${params.delta} ${params.op === "+" ? "forward" : "back"}.`,
+        "The landing number is your answer.",
+      ],
+    };
+  }
+  if (mode === "compare-length") {
+    return {
+      strategy: "Compare lengths",
+      strategySteps: [
+        `${params.objectA}: ${params.lengthA} inches.`,
+        `${params.objectB}: ${params.lengthB} inches.`,
+        "Subtract the smaller length from the larger length.",
+      ],
+    };
+  }
+  if (mode === "measure-twice") {
+    const m1 = params.measure1 as { value?: number; unit?: string } | undefined;
+    const m2 = params.measure2 as { value?: number; unit?: string } | undefined;
+    return {
+      strategy: "Two measurements",
+      strategySteps: [
+        `First: ${m1?.value ?? "?"} ${m1?.unit ?? "units"}.`,
+        `Second: ${m2?.value ?? "?"} ${m2?.unit ?? "units"}.`,
+        "Use the inch measurement for the answer.",
+      ],
+    };
+  }
+  if (mode === "estimate") {
+    return {
+      strategy: "Make a smart guess",
+      strategySteps: [
+        `Think about a ${params.object} in real life.`,
+        `Would it be closer to 3 ${params.unit} or 10 ${params.unit}?`,
+        "Type your best estimate.",
+      ],
+    };
+  }
   const length = params.length;
   const object = String(params.object ?? "object");
   const tool = String(params.tool ?? "ruler");

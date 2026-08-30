@@ -52,6 +52,7 @@ function wordProblemStory(
   return {
     story,
     answer,
+    prompt: story,
     difficulty: tier,
     unit: code === "NC.2.MD.5" ? "inches" : undefined,
   };
@@ -69,7 +70,13 @@ export function generateMathQuestion(standard: Standard, seed: number): Activity
     if (code === "NC.2.NBT.6") {
       const base = 10 + seed * 3 + tier * 5;
       const values = [base, base + 7 + tier, base + 3];
-      return { mode: "triple-add", values, answer: values.reduce((s, v) => s + v, 0), difficulty: tier };
+      return {
+        mode: "triple-add",
+        values,
+        answer: values.reduce((s, v) => s + v, 0),
+        prompt: `Add: ${values.join(" + ")}`,
+        difficulty: tier,
+      };
     }
     const pairs: [number, number, string][] =
       tier === 1
@@ -94,7 +101,7 @@ export function generateMathQuestion(standard: Standard, seed: number): Activity
             ];
     const [a, b, op] = pairs[(seed + code.length) % pairs.length];
     const answer = op === "+" ? a + b : a - b;
-    return { a, b, op, answer, difficulty: tier };
+    return { a, b, op, answer, prompt: `${a} ${op} ${b} = ?`, difficulty: tier };
   }
 
   if (activityType === "equal-groups") {
@@ -116,37 +123,145 @@ export function generateMathQuestion(standard: Standard, seed: number): Activity
   if (activityType === "number-sense") {
     if (code === "NC.2.NBT.2") {
       const start = tier === 1 ? 100 + seed * 10 : tier === 2 ? 200 + seed * 10 : 500 + seed * 10;
-      return { mode: "skip-count", start, step: 10, answer: start + 10, difficulty: tier };
+      return {
+        mode: "skip-count",
+        start,
+        step: 10,
+        answer: start + 10,
+        prompt: `Skip-count by 10 starting at ${start}. What comes next?`,
+        difficulty: tier,
+      };
     }
     if (code === "NC.2.NBT.3") {
       const h = tier === 1 ? 1 + (seed % 4) : tier === 2 ? 2 + (seed % 5) : 3 + (seed % 4);
       const t = (seed * 3 + tier) % 10;
       const o = (seed * 7) % 10;
       const number = h * 100 + t * 10 + o;
-      return { mode: "expanded", number, answer: `${h * 100}+${t * 10}+${o}`, difficulty: tier };
+      return {
+        mode: "expanded",
+        number,
+        answer: `${h * 100}+${t * 10}+${o}`,
+        prompt: `Write ${number} in expanded form (e.g. 300+50+2).`,
+        difficulty: tier,
+      };
     }
     if (code === "NC.2.NBT.8") {
       const base = tier === 1 ? 120 + seed * 10 : tier === 2 ? 350 + seed * 10 : 680 + seed * 5;
       const delta = tier === 1 ? 10 : 100;
       const op = seed % 2 === 0 ? "+" : "-";
-      return { base, delta, op, answer: op === "+" ? base + delta : base - delta, difficulty: tier };
+      const answer = op === "+" ? base + delta : base - delta;
+      return {
+        mode: "mental-add",
+        base,
+        delta,
+        op,
+        answer,
+        prompt: `${base} ${op} ${delta} = ?`,
+        difficulty: tier,
+      };
     }
     const a = tier === 1 ? 200 + seed * 11 : tier === 2 ? 400 + seed * 13 : 600 + seed * 17;
     const b = a - (tier === 1 ? 15 + seed : tier === 2 ? 35 + seed * 2 : 50 + seed * 3);
     const answer = a > b ? ">" : a < b ? "<" : "=";
-    return { mode: "compare", a, b, answer, difficulty: tier };
+    return {
+      mode: "compare",
+      a,
+      b,
+      answer,
+      prompt: `Compare ${a} and ${b}. Which symbol is correct: >, <, or =?`,
+      difficulty: tier,
+    };
   }
 
   if (activityType === "measurement") {
     const objects = ["pencil", "eraser", "crayon", "marker", "book", "notebook", "folder", "desk", "table", "door"];
     const object = objects[seed];
+
+    if (code === "NC.2.MD.2") {
+      const inches = 3 + seed + tier;
+      const centimeters = inches + 2 + (seed % 3);
+      return {
+        mode: "measure-twice",
+        object,
+        measure1: { value: inches, unit: "inches" },
+        measure2: { value: centimeters, unit: "centimeters" },
+        prompt: `The ${object} was measured twice. How many inches long is it?`,
+        answer: inches,
+        length: inches,
+        unit: "inches",
+        difficulty: tier,
+      };
+    }
+
+    if (code === "NC.2.MD.3") {
+      const unit = seed % 2 === 0 ? "inches" : "centimeters";
+      const length = unit === "inches" ? 4 + seed + tier : 8 + seed * 2 + tier;
+      return {
+        mode: "estimate",
+        object,
+        unit,
+        length,
+        prompt: `About how many ${unit} long is a ${object}? Type your best estimate.`,
+        answer: length,
+        difficulty: tier,
+      };
+    }
+
+    if (code === "NC.2.MD.4") {
+      const objectsPair = [
+        ["pencil", "marker"],
+        ["book", "folder"],
+        ["crayon", "eraser"],
+        ["notebook", "desk"],
+        ["table", "door"],
+      ][seed % 5];
+      const lengthA = 5 + seed + tier;
+      const lengthB = 2 + seed;
+      const longer = lengthA >= lengthB ? objectsPair[0] : objectsPair[1];
+      const shorter = longer === objectsPair[0] ? objectsPair[1] : objectsPair[0];
+      const diff = Math.abs(lengthA - lengthB);
+      return {
+        mode: "compare-length",
+        objectA: objectsPair[0],
+        lengthA,
+        objectB: objectsPair[1],
+        lengthB,
+        prompt: `How much longer is the ${longer} than the ${shorter}?`,
+        answer: diff,
+        length: diff,
+        unit: "inches",
+        difficulty: tier,
+      };
+    }
+
+    if (code === "NC.2.MD.6") {
+      const start = tier === 1 ? 2 + (seed % 6) : tier === 2 ? 5 + (seed % 8) : 8 + (seed % 7);
+      const delta = tier === 1 ? 3 + (seed % 4) : tier === 2 ? 5 + (seed % 5) : 7 + (seed % 4);
+      const forward = seed % 2 === 0;
+      const answer = forward ? start + delta : start - delta;
+      return {
+        mode: "number-line",
+        start,
+        delta,
+        op: forward ? "+" : "-",
+        answer,
+        end: answer,
+        prompt: `Start at ${start} on the number line. Move ${delta} ${forward ? "forward" : "back"}. What number do you land on?`,
+        difficulty: tier,
+      };
+    }
+
     const useMetric = seed >= 7 || tier === 3;
     const length = useMetric ? 1 + (seed % 3) : 3 + seed + tier;
+    const unit = useMetric ? (length === 1 ? "meter" : "meters") : "inches";
+    const tool = useMetric ? "meter stick" : "ruler";
     return {
+      mode: "measure",
       object,
-      tool: useMetric ? "meter stick" : "ruler",
+      tool,
       length,
-      unit: useMetric ? (length === 1 ? "meter" : "meters") : "inches",
+      unit,
+      prompt: `Use a ${tool}. How many ${unit} long is the ${object}?`,
       difficulty: tier,
     };
   }
@@ -157,7 +272,13 @@ export function generateMathQuestion(standard: Standard, seed: number): Activity
       const minuteOptions = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45];
       const minute = minuteOptions[seed];
       const time = `${hour}:${minute.toString().padStart(2, "0")}`;
-      return { time, answer: time, difficulty: tier };
+      return {
+        mode: "clock",
+        time,
+        answer: time,
+        prompt: "What time does the clock show? Write it like 3:15.",
+        difficulty: tier,
+      };
     }
     const quarterCount = 1 + (seed % 3);
     const dimeCount = seed % 4;
@@ -170,24 +291,47 @@ export function generateMathQuestion(standard: Standard, seed: number): Activity
       nickelCount ? `${nickelCount} nickel${nickelCount > 1 ? "s" : ""}` : "",
       pennyCount ? `${pennyCount} penn${pennyCount === 1 ? "y" : "ies"}` : "",
     ].filter(Boolean);
-    return { coins: coinParts.join(", "), cents, difficulty: tier };
+    const coins = coinParts.join(", ");
+    return {
+      mode: "money",
+      coins,
+      cents,
+      answer: cents,
+      prompt: `Count the coins: ${coins}. How many cents in all?`,
+      difficulty: tier,
+    };
   }
 
   if (activityType === "data-chart") {
     const sets = [
-      { categories: ["Red", "Blue", "Green"], counts: [4 + seed % 3, 7 + seed % 4, 3 + seed % 2], question: "How many more Blue than Red?", answer: 0 },
-      { categories: ["Cat", "Dog", "Fish"], counts: [5 + seed % 2, 8 + seed % 3, 2 + seed % 2], question: "How many pets in all?", answer: 0 },
-      { categories: ["Mon", "Tue", "Wed"], counts: [6 + seed % 2, 6 + seed % 3, 9 + seed % 2], question: "How many more on Wed than Mon?", answer: 0 },
+      { categories: ["Red", "Blue", "Green"], counts: [4 + (seed % 3), 7 + (seed % 4), 3 + (seed % 2)] },
+      { categories: ["Cat", "Dog", "Fish"], counts: [5 + (seed % 2), 8 + (seed % 3), 2 + (seed % 2)] },
+      { categories: ["Mon", "Tue", "Wed"], counts: [6 + (seed % 2), 6 + (seed % 3), 9 + (seed % 2)] },
+    ];
+    const templates = [
+      (cats: string[], counts: number[]) => ({
+        question: `How many more ${cats[1]} than ${cats[0]}?`,
+        answer: counts[1] - counts[0],
+      }),
+      (cats: string[], counts: number[]) => ({
+        question: `How many ${cats.join(", ")} in all?`,
+        answer: counts.reduce((sum, value) => sum + value, 0),
+      }),
+      (cats: string[], counts: number[]) => ({
+        question: `How many more on ${cats[2]} than ${cats[0]}?`,
+        answer: counts[2] - counts[0],
+      }),
     ];
     const set = sets[seed % sets.length];
-    const [a, b, c] = set.counts;
-    const answer =
-      set.question.includes("more")
-        ? Math.max(b, a) - Math.min(b, a)
-        : set.question.includes("all")
-          ? a + b + c
-          : c - a;
-    return { ...set, answer, difficulty: tier };
+    const template = templates[seed % templates.length];
+    const { question, answer } = template(set.categories, set.counts);
+    return {
+      ...set,
+      question,
+      answer,
+      prompt: question,
+      difficulty: tier,
+    };
   }
 
   if (activityType === "geometry") {
@@ -195,12 +339,13 @@ export function generateMathQuestion(standard: Standard, seed: number): Activity
       const shapes = ["rectangle", "circle", "square", "triangle", "hexagon", "rectangle", "circle", "square", "triangle", "hexagon"];
       const partCount = 2 + (seed % 3);
       const names = ["halves", "thirds", "fourths"];
+      const answer = names[partCount === 2 ? 0 : partCount === 3 ? 1 : 2];
       return {
         shape: shapes[seed],
         parts: partCount,
-        answer: names[partCount === 2 ? 0 : partCount === 3 ? 1 : 2],
+        answer,
+        prompt: `Split the ${shapes[seed]} into ${partCount} equal parts. What are the parts called?`,
         difficulty: tier,
-        prompt: `Split the ${shapes[seed]} into ${partCount} equal parts.`,
       };
     }
     const shapes = [
@@ -215,8 +360,13 @@ export function generateMathQuestion(standard: Standard, seed: number): Activity
       { shape: "nonagon", sides: 9 },
       { shape: "trapezoid", sides: 4 },
     ];
-    const pick = shapes[seed];
-    return { ...pick, difficulty: tier };
+    const pickShape = shapes[seed];
+    return {
+      ...pickShape,
+      answer: pickShape.sides,
+      prompt: `How many sides does a ${pickShape.shape} have?`,
+      difficulty: tier,
+    };
   }
 
   return { prompt: standard.text, difficulty: tier };
