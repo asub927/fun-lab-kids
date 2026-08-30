@@ -38,6 +38,8 @@ export type CheckResult = {
   score: number;
   feedback: string;
   expectedHint?: string;
+  /** Set when the learner used Show Answer — enables Next without a passing check */
+  revealed?: boolean;
 };
 
 export type ToolCallLogEntry = {

@@ -12,10 +12,21 @@ type Accent = "green" | "pink" | "orange" | "yellow";
 
 function accentForPath(pathname: string): Accent {
   if (pathname === "/") return "green";
-  if (pathname.startsWith("/grade-2/ela") || pathname.startsWith("/lab/W.")) return "pink";
-  if (pathname.startsWith("/grade-2/science") || pathname.startsWith("/lab/2.")) return "orange";
+  if (pathname === "/grade-2") return "yellow";
   if (pathname.startsWith("/catalog")) return "yellow";
-  if (pathname.startsWith("/grade-2") || pathname.startsWith("/lab/NC.")) return "green";
+  if (
+    pathname.startsWith("/grade-2/ela") ||
+    pathname.startsWith("/lab/W.") ||
+    pathname.startsWith("/lab/RL.") ||
+    pathname.startsWith("/lab/RI.") ||
+    pathname.startsWith("/lab/RF.") ||
+    pathname.startsWith("/lab/SL.") ||
+    pathname.startsWith("/lab/L.")
+  ) {
+    return "pink";
+  }
+  if (pathname.startsWith("/grade-2/science") || pathname.startsWith("/lab/2.")) return "orange";
+  if (pathname.startsWith("/grade-2/math") || pathname.startsWith("/lab/NC.")) return "green";
   return "green";
 }
 

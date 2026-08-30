@@ -18,17 +18,17 @@ export function Grade2HubPage() {
       </p>
 
       <div className="lab-cards" role="list">
-        <Link to="/grade-2/math" className="lab-card" role="listitem">
+        <Link to="/grade-2/math" className="lab-card accent-green" role="listitem">
           <span className="subject-tag">Math</span>
           <h2>Math Island</h2>
           <p>{listGrade2Standards("math").length} standards</p>
         </Link>
-        <Link to="/grade-2/ela" className="lab-card" role="listitem">
+        <Link to="/grade-2/ela" className="lab-card accent-pink" role="listitem">
           <span className="subject-tag">ELA</span>
           <h2>Word Cove</h2>
           <p>{listGrade2Standards("ela").length} standards</p>
         </Link>
-        <Link to="/grade-2/science" className="lab-card" role="listitem">
+        <Link to="/grade-2/science" className="lab-card accent-orange" role="listitem">
           <span className="subject-tag">Science</span>
           <h2>Discovery Bay</h2>
           <p>{listGrade2Standards("science").length} standards</p>

@@ -20,6 +20,7 @@ import {
   applyTemplateAction,
   checkTemplate,
   createTemplateState,
+  revealTemplateAnswer,
   templateHint,
 } from "./templates";
 import type { ActivityParams } from "../data/activities";
@@ -69,6 +70,51 @@ export function runBoardCheck(state: BoardState): CheckResult {
   if (state.labId === "opinion-builder") return checkOpinion(state);
   if (state.labId === "matter-lab") return checkMatter(state);
   return checkTemplate(state);
+}
+
+export function revealBoardAnswer(state: BoardState): {
+  result: CheckResult;
+  actions: Record<string, unknown>[];
+} {
+  if (state.labId === "place-value") {
+    return {
+      result: {
+        ok: false,
+        score: 0,
+        revealed: true,
+        expectedHint: String(state.targetNumber),
+        feedback: `Build ${state.targetNumber} using hundreds, tens, and ones blocks.`,
+      },
+      actions: [{ action: "compose_number", value: state.targetNumber }],
+    };
+  }
+
+  if (state.labId === "opinion-builder") {
+    return {
+      result: {
+        ok: false,
+        score: 0,
+        revealed: true,
+        feedback:
+          "Sample: Topic recess · Opinion: Recess should be longer. · Reasons: exercise, focus. · Linking word: because.",
+      },
+      actions: [],
+    };
+  }
+
+  if (state.labId === "matter-lab") {
+    return {
+      result: {
+        ok: false,
+        score: 0,
+        revealed: true,
+        feedback: "Classify each object, warm above 0°C, predict ice becomes liquid, then run the change.",
+      },
+      actions: [],
+    };
+  }
+
+  return revealTemplateAnswer(state);
 }
 
 export function labHint(state: BoardState | null): string {

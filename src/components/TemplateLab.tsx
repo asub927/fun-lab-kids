@@ -1,5 +1,6 @@
 import type { TemplateBoardState } from "../types";
 import { useApp } from "../context/AppContext";
+import { StrategyFromParams } from "./StrategyPanel";
 
 type TemplateLabProps = {
   state: TemplateBoardState;
@@ -13,6 +14,7 @@ export function TemplateLab({ state }: TemplateLabProps) {
     const items = (p.items as string[]) ?? ["I completed the activity."];
     return (
       <div className="template-lab checklist-lab">
+        <StrategyFromParams params={p} />
         <p className="lead">{String(p.prompt ?? "Complete each step:")}</p>
         <ul className="checklist-items">
           {items.map((item, i) => (
@@ -33,9 +35,19 @@ export function TemplateLab({ state }: TemplateLabProps) {
   }
 
   if (state.labId === "word-problem" || state.labId === "numeric-flash" || state.labId === "computation") {
+    const triple = p.mode === "triple-add" && Array.isArray(p.values);
     return (
       <div className="template-lab">
+        <StrategyFromParams params={p} />
+        {triple && (
+          <p className="story-card tabular">Add: {(p.values as number[]).join(" + ")}</p>
+        )}
         {typeof p.story === "string" && <p className="story-card">{p.story}</p>}
+        {!triple && typeof p.a === "number" && (
+          <p className="target-number tabular">
+            {String(p.a)} {String(p.op)} {String(p.b)}
+          </p>
+        )}
         <label htmlFor="numeric-answer">
           Your answer
           <input
@@ -50,9 +62,31 @@ export function TemplateLab({ state }: TemplateLabProps) {
     );
   }
 
+  if (state.labId === "equal-groups" && typeof p.rows === "number") {
+    return (
+      <div className="template-lab">
+        <StrategyFromParams params={p} />
+        <p className="story-card">
+          {String(p.rows)} rows × {String(p.cols)} columns
+        </p>
+        <label htmlFor="groups-answer">
+          Total objects
+          <input
+            id="groups-answer"
+            type="number"
+            inputMode="numeric"
+            value={state.numericAnswer}
+            onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
+          />
+        </label>
+      </div>
+    );
+  }
+
   if (state.labId === "equal-groups" && p.mode === "odd-even") {
     return (
       <div className="template-lab">
+        <StrategyFromParams params={p} />
         <p className="story-card">Is {String(p.count)} odd or even?</p>
         <div className="classify-btns">
           {["odd", "even"].map((opt) => (
@@ -71,9 +105,48 @@ export function TemplateLab({ state }: TemplateLabProps) {
     );
   }
 
+  if (state.labId === "number-sense" && p.mode === "expanded") {
+    return (
+      <div className="template-lab">
+        <StrategyFromParams params={p} />
+        <p className="target-number tabular">{String(p.number)}</p>
+        <label htmlFor="expanded-form">
+          Write in expanded form (e.g. 300+50+2)
+          <input
+            id="expanded-form"
+            value={state.textResponse}
+            onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
+          />
+        </label>
+      </div>
+    );
+  }
+
+  if (state.labId === "number-sense" && p.mode === "skip-count") {
+    return (
+      <div className="template-lab">
+        <StrategyFromParams params={p} />
+        <p className="story-card">
+          Skip-count by {String(p.step)} starting at {String(p.start)}. What comes next?
+        </p>
+        <label htmlFor="skip-answer">
+          Next number
+          <input
+            id="skip-answer"
+            type="number"
+            inputMode="numeric"
+            value={state.numericAnswer}
+            onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
+          />
+        </label>
+      </div>
+    );
+  }
+
   if (state.labId === "number-sense" && p.mode === "compare") {
     return (
       <div className="template-lab">
+        <StrategyFromParams params={p} />
         <p className="target-number tabular">
           {String(p.a)} ? {String(p.b)}
         </p>
@@ -98,6 +171,7 @@ export function TemplateLab({ state }: TemplateLabProps) {
     const parts = (p.requiredParts as string[]) ?? ["topic", "detail"];
     return (
       <div className="template-lab form-grid">
+        <StrategyFromParams params={p} />
         <p className="lead">{String(p.prompt)}</p>
         {parts.map((part) => (
           <label key={part} htmlFor={`frame-${part}`}>
@@ -118,6 +192,7 @@ export function TemplateLab({ state }: TemplateLabProps) {
   if (state.labId === "reading-response") {
     return (
       <div className="template-lab">
+        <StrategyFromParams params={p} />
         {typeof p.passage === "string" && (
           <section className="paragraph-preview">
             <h2>Passage</h2>
@@ -140,6 +215,7 @@ export function TemplateLab({ state }: TemplateLabProps) {
   if (state.labId === "language-edit") {
     return (
       <div className="template-lab">
+        <StrategyFromParams params={p} />
         <p className="revision-card">Fix this sentence: &ldquo;{String(p.sentence)}&rdquo;</p>
         <label htmlFor="fixed-sentence">
           Corrected sentence
@@ -156,6 +232,7 @@ export function TemplateLab({ state }: TemplateLabProps) {
   if (state.labId === "science-inquiry") {
     return (
       <div className="template-lab">
+        <StrategyFromParams params={p} />
         <p className="lead">{String(p.prompt ?? p.scenario)}</p>
         {Array.isArray(p.stages) && (
           <ol>
@@ -180,6 +257,7 @@ export function TemplateLab({ state }: TemplateLabProps) {
   // measurement, time-money, data-chart, geometry, equal-groups default
   return (
     <div className="template-lab form-grid">
+      <StrategyFromParams params={p} />
       <p className="lead">{String(p.prompt ?? "Solve the challenge:")}</p>
       {typeof p.object === "string" && (
         <p>

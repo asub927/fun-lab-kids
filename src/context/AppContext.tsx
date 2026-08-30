@@ -3,12 +3,24 @@ import type { BoardState, LabId, Standard, ToolCallLogEntry } from "../types";
 import {
   applyBoardAction,
   createBoardState,
+  isShowcaseLab,
+  revealBoardAnswer,
   runBoardCheck,
   proposeRevision,
 } from "../boards";
 import { findStandard } from "../data/standards";
-import { resolveLabForStandard } from "../data/activities";
+import { getQuestionSet, resolveLabForStandard } from "../data/activities";
+import {
+  QUESTIONS_TO_MASTER,
+  SMART_SCORE_TARGET,
+} from "../data/questionSets";
 import { recordCheckResult } from "../services/progress";
+
+function bumpSmartScore(current: number, ok: boolean, revealed: boolean): number {
+  if (ok) return Math.min(100, current + 10);
+  if (revealed) return Math.min(100, current + 5);
+  return Math.max(0, current - 5);
+}
 
 type AppContextValue = {
   activeStandard: Standard | null;
@@ -16,11 +28,20 @@ type AppContextValue = {
   labId: LabId | null;
   toolLog: ToolCallLogEntry[];
   lastCheck: ReturnType<typeof runBoardCheck> | null;
+  questionIndex: number;
+  questionTotal: number;
+  sessionScores: number[];
+  smartScore: number;
+  correctCount: number;
+  questionLevel: number;
   setActiveLab: (labId: LabId, standardCode: string) => void;
   setActiveStandard: (standardCode: string) => boolean;
   applyAction: (action: Record<string, unknown>) => BoardState | null;
   undo: () => void;
   runCheck: () => ReturnType<typeof runBoardCheck> | null;
+  revealAnswer: () => ReturnType<typeof runBoardCheck> | null;
+  advanceQuestion: () => void;
+  canAdvanceQuestion: boolean;
   resetBoard: () => void;
   proposeRevision: (revision: string) => void;
   acceptRevision: () => void;
@@ -35,20 +56,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [activeStandard, setActiveStandardState] = useState<Standard | null>(null);
   const [labId, setLabId] = useState<LabId | null>(null);
   const [boardState, setBoardState] = useState<BoardState | null>(null);
-  const [activityParams, setActivityParams] = useState<Record<string, unknown>>({});
+  const [questionSet, setQuestionSet] = useState<Record<string, unknown>[]>([]);
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [sessionScores, setSessionScores] = useState<number[]>([]);
+  const [smartScore, setSmartScore] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
   const [, setHistory] = useState<BoardState[]>([]);
   const [toolLog, setToolLog] = useState<ToolCallLogEntry[]>([]);
   const [lastCheck, setLastCheck] = useState<ReturnType<typeof runBoardCheck> | null>(null);
 
-  const bootLab = useCallback((nextLabId: LabId, standardCode: string, params: Record<string, unknown>) => {
-    const standard = findStandard(standardCode);
-    setActiveStandardState(standard ?? null);
-    setLabId(nextLabId);
-    setActivityParams(params);
-    setBoardState(createBoardState(nextLabId, { standardCode, params }));
-    setHistory([]);
-    setLastCheck(null);
-  }, []);
+  const bootLab = useCallback(
+    (nextLabId: LabId, standardCode: string, params: Record<string, unknown>) => {
+      const standard = findStandard(standardCode);
+      const set = isShowcaseLab(nextLabId) ? [] : getQuestionSet(standardCode);
+      const initialParams = set.length > 0 ? set[0] : params;
+
+      setActiveStandardState(standard ?? null);
+      setLabId(nextLabId);
+      setQuestionSet(set);
+      setQuestionIndex(0);
+      setSessionScores([]);
+      setSmartScore(0);
+      setCorrectCount(0);
+      setBoardState(createBoardState(nextLabId, { standardCode, params: initialParams }));
+      setHistory([]);
+      setLastCheck(null);
+    },
+    [],
+  );
 
   const setActiveLab = useCallback(
     (nextLabId: LabId, standardCode: string) => {
@@ -70,6 +105,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const applyAction = useCallback(
     (action: Record<string, unknown>) => {
       if (!boardState) return null;
+      setLastCheck(null);
       setHistory((h) => [...h, boardState]);
       const next = applyBoardAction(boardState, action);
       setBoardState(next);
@@ -87,22 +123,114 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const loadQuestion = useCallback(
+    (index: number, clearCheck = false) => {
+      if (!labId || !activeStandard || questionSet.length === 0) return;
+      const params = questionSet[index];
+      setBoardState(createBoardState(labId, { standardCode: activeStandard.code, params }));
+      setHistory([]);
+      if (clearCheck) setLastCheck(null);
+    },
+    [labId, activeStandard, questionSet],
+  );
+
   const runCheck = useCallback(() => {
     if (!boardState || !activeStandard) return null;
     const result = runBoardCheck(boardState);
     setLastCheck(result);
-    recordCheckResult(activeStandard.code, result.ok, result.score);
+
+    if (!result.ok) {
+      setSmartScore((s) => bumpSmartScore(s, false, false));
+      return result;
+    }
+
+    const hasQuestionSet = questionSet.length > 0;
+    const nextScores = [...sessionScores, result.score];
+    const nextCorrect = correctCount + 1;
+    const nextSmart = bumpSmartScore(smartScore, true, false);
+
+    setSessionScores(nextScores);
+    setCorrectCount(nextCorrect);
+    setSmartScore(nextSmart);
+
+    const mastered =
+      hasQuestionSet &&
+      (nextCorrect >= QUESTIONS_TO_MASTER || nextSmart >= SMART_SCORE_TARGET) &&
+      questionIndex >= questionSet.length - 1;
+
+    if (hasQuestionSet && questionIndex < questionSet.length - 1) {
+      return {
+        ...result,
+        feedback: `${result.feedback} Smart Score: ${nextSmart}. Tap Next Question when you are ready.`,
+      };
+    }
+
+    const avgScore = Math.round(
+      nextScores.reduce((a, b) => a + b, 0) / Math.max(nextScores.length, 1),
+    );
+
+    if (hasQuestionSet) {
+      recordCheckResult(activeStandard.code, mastered, avgScore, {
+        completed: mastered,
+        questionsCorrect: nextCorrect,
+        smartScore: nextSmart,
+      });
+      return {
+        ...result,
+        feedback: mastered
+          ? `You mastered this skill! Smart Score: ${nextSmart}. Great job!`
+          : `Session complete. Smart Score: ${nextSmart}. Keep practicing to reach ${SMART_SCORE_TARGET}!`,
+      };
+    }
+
+    recordCheckResult(activeStandard.code, true, result.score, { completed: true });
     return result;
-  }, [boardState, activeStandard]);
+  }, [
+    boardState,
+    activeStandard,
+    questionSet,
+    questionIndex,
+    sessionScores,
+    smartScore,
+    correctCount,
+  ]);
+
+  const revealAnswer = useCallback(() => {
+    if (!boardState) return null;
+    const { result, actions } = revealBoardAnswer(boardState);
+    let next = boardState;
+    for (const action of actions) {
+      next = applyBoardAction(next, action);
+    }
+    setBoardState(next);
+    setSmartScore((s) => bumpSmartScore(s, false, true));
+    setLastCheck(result);
+    return result;
+  }, [boardState]);
+
+  const advanceQuestion = useCallback(() => {
+    if (questionSet.length === 0 || questionIndex >= questionSet.length - 1) return;
+    if (!lastCheck?.ok && !lastCheck?.revealed) return;
+    const nextIndex = questionIndex + 1;
+    setQuestionIndex(nextIndex);
+    loadQuestion(nextIndex, true);
+  }, [questionSet.length, questionIndex, lastCheck, loadQuestion]);
+
+  const canAdvanceQuestion =
+    questionSet.length > 1 &&
+    questionIndex < questionSet.length - 1 &&
+    Boolean(lastCheck?.ok || lastCheck?.revealed);
 
   const resetBoard = useCallback(() => {
     if (!labId || !activeStandard) return;
-    setBoardState(
-      createBoardState(labId, { standardCode: activeStandard.code, params: activityParams }),
-    );
+    const params =
+      questionSet.length > 0
+        ? questionSet[questionIndex]
+        : resolveLabForStandard(activeStandard.code)?.params ?? {};
+    setBoardState(createBoardState(labId, { standardCode: activeStandard.code, params }));
     setHistory([]);
     setLastCheck(null);
-  }, [labId, activeStandard, activityParams]);
+  }, [labId, activeStandard, questionSet, questionIndex]);
 
   const proposeRevisionText = useCallback(
     (revision: string) => {
@@ -138,6 +266,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return { ...boardState };
   }, [boardState]);
 
+  const questionTotal = questionSet.length;
+  const currentParams = questionSet[questionIndex] as { difficulty?: number } | undefined;
+  const questionLevel = currentParams?.difficulty ?? Math.min(3, Math.floor(questionIndex / 3) + 1);
+
   const value = useMemo(
     () => ({
       activeStandard,
@@ -145,11 +277,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       labId,
       toolLog,
       lastCheck,
+      questionIndex,
+      questionTotal,
+      sessionScores,
+      smartScore,
+      correctCount,
+      questionLevel,
       setActiveLab,
       setActiveStandard,
       applyAction,
       undo,
       runCheck,
+      revealAnswer,
+      advanceQuestion,
+      canAdvanceQuestion,
       resetBoard,
       proposeRevision: proposeRevisionText,
       acceptRevision,
@@ -163,11 +304,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       labId,
       toolLog,
       lastCheck,
+      questionIndex,
+      questionTotal,
+      sessionScores,
+      smartScore,
+      correctCount,
+      questionLevel,
       setActiveLab,
       setActiveStandard,
       applyAction,
       undo,
       runCheck,
+      revealAnswer,
+      advanceQuestion,
+      canAdvanceQuestion,
       resetBoard,
       proposeRevisionText,
       acceptRevision,

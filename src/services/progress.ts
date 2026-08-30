@@ -2,6 +2,8 @@ export type StandardProgress = {
   completed: boolean;
   bestScore: number;
   lastAt: number;
+  questionsCorrect?: number;
+  smartScore?: number;
 };
 
 export type ProgressStore = {
@@ -38,13 +40,17 @@ export function recordCheckResult(
   standardCode: string,
   ok: boolean,
   score: number,
+  options?: { completed?: boolean; questionsCorrect?: number; smartScore?: number },
 ): ProgressStore {
   const store = loadProgress();
   const prev = store.progress[standardCode];
+  const completed = options?.completed ?? (prev?.completed || ok);
   store.progress[standardCode] = {
-    completed: prev?.completed || ok,
+    completed,
     bestScore: Math.max(prev?.bestScore ?? 0, score),
     lastAt: Date.now(),
+    questionsCorrect: options?.questionsCorrect ?? prev?.questionsCorrect,
+    smartScore: Math.max(prev?.smartScore ?? 0, options?.smartScore ?? 0),
   };
   saveProgress(store);
   return store;

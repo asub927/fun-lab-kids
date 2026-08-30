@@ -221,3 +221,116 @@ export function templateHint(state: TemplateBoardState): string {
       return "Try your best, then tap Check Answer.";
   }
 }
+
+function expectedAnswerText(state: TemplateBoardState): string {
+  const p = state.params;
+
+  switch (state.labId) {
+    case "word-problem":
+    case "numeric-flash":
+    case "computation":
+    case "data-chart":
+    case "measurement":
+      return String(p.answer ?? p.length ?? "");
+    case "equal-groups":
+      if (p.mode === "odd-even") return String(p.answer);
+      return String(p.answer);
+    case "number-sense":
+      if (p.mode === "compare") return String(p.answer);
+      if (p.mode === "expanded") return String(p.answer);
+      return String(p.answer ?? p.start ?? "");
+    case "time-money":
+      return String(p.answer ?? p.time ?? p.cents ?? "");
+    case "geometry":
+      return String(p.answer ?? p.shape ?? p.sides ?? "");
+    case "language-edit":
+      return String(p.fixed);
+    case "reading-response":
+      return String(p.answer ?? "Use details from the passage.");
+    case "science-inquiry":
+      return String(p.answer ?? "Record what you observed.");
+    case "writing-frame":
+      return `Include: ${((p.requiredParts as string[]) ?? ["topic"]).join(", ")}`;
+    case "checklist":
+      return checklistItems(p).join("; ");
+    default:
+      return String(p.prompt ?? "See the activity instructions.");
+  }
+}
+
+export function revealTemplateAnswer(state: TemplateBoardState): {
+  result: CheckResult;
+  actions: Record<string, unknown>[];
+} {
+  const expected = expectedAnswerText(state);
+  const p = state.params;
+  const actions: Record<string, unknown>[] = [];
+
+  switch (state.labId) {
+    case "word-problem":
+    case "numeric-flash":
+    case "computation":
+    case "data-chart":
+    case "measurement":
+    case "equal-groups":
+      if (p.mode === "odd-even") {
+        actions.push({ action: "set_option", value: String(p.answer) });
+      } else {
+        actions.push({ action: "set_numeric", value: expected });
+      }
+      break;
+    case "number-sense":
+      if (p.mode === "compare") {
+        actions.push({ action: "set_option", value: expected });
+      } else if (p.mode === "expanded") {
+        actions.push({ action: "set_text", text: expected });
+      } else {
+        actions.push({ action: "set_numeric", value: expected });
+      }
+      break;
+    case "language-edit":
+    case "reading-response":
+    case "science-inquiry":
+      actions.push({ action: "set_text", text: expected });
+      break;
+    case "time-money":
+      if (p.cents !== undefined) {
+        actions.push({ action: "set_numeric", value: String(p.cents) });
+      } else {
+        actions.push({ action: "set_text", text: expected });
+      }
+      break;
+    case "geometry":
+      actions.push({ action: "set_text", text: expected });
+      break;
+    case "writing-frame": {
+      const parts = (p.requiredParts as string[]) ?? ["topic"];
+      for (const part of parts) {
+        actions.push({
+          action: "set_frame_field",
+          field: part,
+          text: `Sample ${part}`,
+        });
+      }
+      break;
+    }
+    case "checklist": {
+      const items = checklistItems(p);
+      items.forEach((_, index) => actions.push({ action: "toggle_check", index }));
+      break;
+    }
+    default:
+      break;
+  }
+
+  return {
+    result: {
+      ok: false,
+      score: 0,
+      revealed: true,
+      expectedHint: expected,
+      feedback: `Answer: ${expected}`,
+    },
+    actions,
+  };
+}

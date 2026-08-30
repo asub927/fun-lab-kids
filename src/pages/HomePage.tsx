@@ -10,7 +10,7 @@ export function HomePage() {
         science sims together — through WebMCP tools, not UI scraping.
       </p>
       <div className="hero-actions">
-        <Link to="/grade-2" className="btn primary large">
+        <Link to="/grade-2" className="btn primary large featured-block">
           Start Grade 2
         </Link>
         <Link to="/catalog" className="btn secondary large">

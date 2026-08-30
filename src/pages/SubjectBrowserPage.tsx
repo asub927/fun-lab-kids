@@ -4,10 +4,12 @@ import type { Standard } from "../types";
 import { loadProgress } from "../services/progress";
 
 const SUBJECTS = {
-  math: { title: "Math Standards", accent: "Math" },
-  ela: { title: "ELA Standards", accent: "ELA" },
-  science: { title: "Science Standards", accent: "Science" },
+  math: { title: "Math Standards" },
+  ela: { title: "ELA Standards" },
+  science: { title: "Science Standards" },
 } as const;
+
+const STRAND_ACCENTS = ["green", "pink", "orange", "yellow"] as const;
 
 export function SubjectBrowserPage() {
   const { subject = "math" } = useParams();
@@ -22,16 +24,18 @@ export function SubjectBrowserPage() {
   }, {});
 
   return (
-    <div className="page subject-browser">
+    <div className={`page subject-browser subject-browser--${key}`}>
       <Link to="/grade-2" className="back-link">
         ← Grade 2 Hub
       </Link>
       <h1 className="hero-title">{meta.title}</h1>
       <p className="lead">{standards.length} NCSCOS standards — tap any row to play.</p>
 
-      {Object.entries(byStrand).map(([strand, items]) => (
+      {Object.entries(byStrand).map(([strand, items], strandIndex) => (
         <section key={strand} className="strand-section">
-          <h2 className="section-label">{strand}</h2>
+          <h2 className={`section-label accent-${STRAND_ACCENTS[strandIndex % STRAND_ACCENTS.length]}`}>
+            {strand}
+          </h2>
           <ul className="standard-list">
             {items.map((s) => {
               const prog = progress[s.code];

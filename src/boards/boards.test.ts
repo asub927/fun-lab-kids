@@ -15,10 +15,12 @@ import {
   applyTemplateAction,
   checkTemplate,
   createTemplateState,
+  revealTemplateAnswer,
 } from "./templates";
 import { labIdFromStandardActivity, createBoardState, runBoardCheck } from "./index";
 import { listGrade2Standards } from "../data/standards";
 import { resolveLabForStandard } from "../data/activities";
+import { validateQuestionSets, getQuestionSet } from "../data/questionSets";
 
 describe("place value board", () => {
   it("builds target 243 from blocks", () => {
@@ -76,6 +78,46 @@ describe("grade 2 curriculum coverage", () => {
   });
 });
 
+describe("question set coverage", () => {
+  it("has ten unique progressive questions per non-showcase standard", () => {
+    const errors = validateQuestionSets();
+    expect(errors).toEqual([]);
+  });
+
+  it("attaches official curriculum strategies to reading questions", () => {
+    const set = getQuestionSet("RL.2.1");
+    expect(set).toHaveLength(10);
+    expect(set[0].strategy).toContain("Questioning");
+    expect((set[0].strategySteps as string[]).length).toBeGreaterThan(0);
+    expect(set[0].strategySource).toBeTruthy();
+    expect(set[0].videoUrl).toContain("storylineonline.net");
+  });
+
+  it("uses per-question nudges and NC math strategies for word problems", () => {
+    const set = getQuestionSet("NC.2.OA.1");
+    expect(set).toHaveLength(10);
+    const stories = set.map((q) => q.story);
+    expect(new Set(stories).size).toBeGreaterThan(3);
+    const steps0 = set[0].strategySteps as string[];
+    const steps1 = set[1].strategySteps as string[];
+    expect(steps0[0]).not.toEqual(steps1[0]);
+    expect((set[0].strategySource as { label: string }).label).toContain("NC");
+    expect(set[0].videoUrl).toBeUndefined();
+  });
+
+  it("uses NC science engineering practices per standard", () => {
+    const set = getQuestionSet("2.P.1.1");
+    expect(set[0].strategy).toContain("SEP");
+    expect((set[0].strategySource as { label: string }).label).toContain("Scientific");
+  });
+
+  it("ramps difficulty across the question set", () => {
+    const set = getQuestionSet("NC.2.OA.1");
+    expect(set[0].difficulty).toBe(1);
+    expect(set[9].difficulty).toBe(3);
+  });
+});
+
 describe("template labs", () => {
   it("passes word-problem with correct numeric answer", () => {
     let state = createTemplateState("word-problem", "NC.2.OA.1", { answer: 63 });
@@ -104,5 +146,19 @@ describe("template labs", () => {
       const checked = runBoardCheck({ ...board, numericAnswer: "10" });
       expect(checked.ok).toBe(true);
     }
+  });
+
+  it("reveals science-inquiry answer and prefills response", () => {
+    let state = createTemplateState("science-inquiry", "2.P.1.1", {
+      prompt: "What vibrates?",
+      answer: "the guitar string vibrates",
+    });
+    const { result, actions } = revealTemplateAnswer(state);
+    expect(result.revealed).toBe(true);
+    expect(result.feedback).toContain("the guitar string vibrates");
+    for (const action of actions) {
+      state = applyTemplateAction(state, action);
+    }
+    expect(state.textResponse).toBe("the guitar string vibrates");
   });
 });
