@@ -9,7 +9,6 @@ import {
   pickMasteryLine,
   pickStreakLine,
 } from "../services/characterDialogue";
-import { hasWebMCP } from "../webmcp/register";
 
 type LabShellProps = {
   title: string;
@@ -132,11 +131,6 @@ export function LabShell({ title, children }: LabShellProps) {
         </div>
       </header>
 
-      {hasWebMCP() && (
-        <p className="agent-ready" role="status">
-          WebMCP tools are active. Your agent can use this board.
-        </p>
-      )}
 
       {showCelebration && lastCelebration && (
         <div className="mastery-panel" role="status" aria-live="polite">

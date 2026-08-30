@@ -15,9 +15,9 @@ const FEATURES = [
     accent: "green",
   },
   {
-    icon: "🤖",
-    title: "AI teammate",
-    text: "A helper joins you on the same board. It sees what you see and never spoils the answer.",
+    icon: "🦜",
+    title: "Island companion",
+    text: "Ripple, Digits, and Spark travel with you. They give hints, cheer you on, and suggest what to try next.",
     accent: "pink",
   },
   {

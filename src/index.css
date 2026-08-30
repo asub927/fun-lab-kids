@@ -278,39 +278,14 @@ main:focus {
   font-variant-numeric: tabular-nums;
 }
 
-.webmcp-banner {
-  background: var(--color-yellow);
-  border-bottom: var(--border-width) solid var(--color-ink);
-  padding: 0.75rem var(--space-3);
-  font-size: 0.95rem;
-  font-family: var(--font-body);
-}
-
-.webmcp-banner strong {
-  font-family: var(--font-chrome);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-size: 0.8125rem;
-}
-
-.webmcp-banner a {
-  color: var(--color-ink);
-}
-
-.webmcp-banner code {
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  background: var(--color-cream);
-  padding: 0.15rem 0.35rem;
-  border: 2px solid var(--color-ink);
-}
-
 .btn,
 .block-btn,
 .chip-btn,
 .lab-card,
 .nav-links a,
-.island-stamp {
+.island-stamp,
+.island-companion-toggle,
+.island-companion-action {
   transition:
     background-color 0.15s ease,
     color 0.15s ease,
@@ -766,15 +741,6 @@ main[data-accent="pink"] .strategy-panel {
   letter-spacing: 0.02em;
   margin-top: 0.1rem;
   color: var(--color-cream);
-}
-
-.agent-ready {
-  font-family: var(--font-chrome);
-  color: var(--color-green);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 .target-number {
@@ -2882,4 +2848,177 @@ main:has(.home-page) {
 
 .hub-progress-link:hover {
   transform: translateX(4px);
+}
+
+/* Island companion */
+.island-companion {
+  position: fixed;
+  right: var(--space-3);
+  bottom: var(--space-3);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+  max-width: min(22rem, calc(100vw - 2rem));
+}
+
+.island-companion-panel {
+  width: min(22rem, calc(100vw - 2rem));
+  background: var(--color-paper);
+  border: var(--border-width) solid var(--color-ink);
+  border-radius: var(--radius-tablet);
+  box-shadow: var(--shadow-tablet);
+  padding: var(--space-2);
+  animation: motion-pop-in 0.35s var(--ease-spring) both;
+}
+
+.island-companion-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.island-companion-name {
+  font-family: var(--font-chrome);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0;
+  color: var(--color-ink);
+}
+
+.island-companion-role {
+  font-size: 0.8125rem;
+  margin: 0.1rem 0 0;
+  color: var(--color-ink-muted);
+}
+
+.island-companion-close {
+  margin-left: auto;
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid var(--color-ink);
+  border-radius: 999px;
+  background: var(--color-bone);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--color-ink);
+}
+
+.island-companion-close:hover {
+  background: var(--color-cream);
+}
+
+.island-companion-speech {
+  background: var(--color-bone);
+  border: 2px solid var(--color-ink);
+  border-radius: 16px;
+  padding: var(--space-2);
+  margin-bottom: var(--space-2);
+  color: var(--color-ink);
+}
+
+.island-companion-speech p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  animation: motion-speech-pop 0.35s var(--ease-spring) both;
+}
+
+.island-companion-link {
+  display: inline-block;
+  margin-top: var(--space-1);
+  font-family: var(--font-chrome);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.island-companion-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.island-companion-action {
+  flex: 1 1 calc(50% - 0.25rem);
+  min-width: 7rem;
+  padding: 0.55rem 0.65rem;
+  border: 2px solid var(--color-ink);
+  border-radius: 999px;
+  background: var(--color-cream);
+  font-family: var(--font-chrome);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  color: var(--color-ink);
+}
+
+.island-companion-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 0 var(--color-ink);
+}
+
+.island-companion-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.45rem 0.85rem 0.45rem 0.45rem;
+  border: var(--border-width) solid var(--color-ink);
+  border-radius: 999px;
+  background: var(--color-paper);
+  box-shadow: var(--shadow-tablet);
+  cursor: pointer;
+  color: var(--color-ink);
+}
+
+.island-companion-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--color-ink);
+}
+
+.island-companion-toggle-label {
+  font-family: var(--font-chrome);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.island-companion .character-avatar--compact {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+@media (max-width: 640px) {
+  .island-companion {
+    right: var(--space-2);
+    bottom: var(--space-2);
+  }
+
+  .island-companion-toggle-label {
+    display: none;
+  }
+
+  .island-companion-toggle {
+    padding: 0.35rem;
+    border-radius: 999px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .island-companion-panel,
+  .island-companion-speech p {
+    animation: none !important;
+  }
 }
