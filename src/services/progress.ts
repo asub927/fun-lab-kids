@@ -1,3 +1,7 @@
+import { applyGamificationEvent, backfillXpFromProgress, emptyGamificationState } from "./gamification";
+import type { Achievement } from "../data/achievements";
+import type { GamificationResult } from "./gamification";
+
 export type StandardProgress = {
   completed: boolean;
   bestScore: number;
@@ -6,16 +10,87 @@ export type StandardProgress = {
   smartScore?: number;
 };
 
-export type ProgressStore = {
+export type GamificationState = {
+  totalXp: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastPracticeDate: string | null;
+  unlockedAchievements: Record<string, { unlockedAt: number }>;
+  lifetimeChecks: number;
+  lifetimeCorrect: number;
+};
+
+type ProgressStoreV1 = {
   version: 1;
   profile: { name?: string };
   progress: Record<string, StandardProgress>;
 };
 
+export type ProgressStore = {
+  version: 2;
+  profile: { name?: string };
+  gamification: GamificationState;
+  progress: Record<string, StandardProgress>;
+};
+
+export type RecordCheckResult = {
+  store: ProgressStore;
+  xpEarned: number;
+  newAchievements: Achievement[];
+  streakDays: number;
+  isNewMastery: boolean;
+};
+
 const STORAGE_KEY = "inquiry-island-progress";
 
 function emptyStore(): ProgressStore {
-  return { version: 1, profile: {}, progress: {} };
+  return {
+    version: 2,
+    profile: {},
+    gamification: emptyGamificationState(),
+    progress: {},
+  };
+}
+
+function migrateV1(parsed: ProgressStoreV1): ProgressStore {
+  const gamification = emptyGamificationState();
+  gamification.totalXp = backfillXpFromProgress({
+    version: 2,
+    profile: parsed.profile ?? {},
+    gamification,
+    progress: parsed.progress ?? {},
+  });
+  return {
+    version: 2,
+    profile: parsed.profile ?? {},
+    gamification,
+    progress: parsed.progress ?? {},
+  };
+}
+
+function normalizeStore(parsed: unknown): ProgressStore {
+  if (!parsed || typeof parsed !== "object") return emptyStore();
+  const raw = parsed as Partial<ProgressStoreV1 | ProgressStore>;
+  if (!raw.progress || typeof raw.progress !== "object") return emptyStore();
+
+  if (raw.version === 1) {
+    return migrateV1(raw as ProgressStoreV1);
+  }
+
+  if (raw.version === 2 && raw.gamification) {
+    return {
+      version: 2,
+      profile: raw.profile ?? {},
+      gamification: {
+        ...emptyGamificationState(),
+        ...raw.gamification,
+        unlockedAchievements: raw.gamification.unlockedAchievements ?? {},
+      },
+      progress: raw.progress,
+    };
+  }
+
+  return emptyStore();
 }
 
 export function loadProgress(): ProgressStore {
@@ -23,9 +98,12 @@ export function loadProgress(): ProgressStore {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return emptyStore();
-    const parsed = JSON.parse(raw) as ProgressStore;
-    if (parsed.version !== 1 || !parsed.progress) return emptyStore();
-    return parsed;
+    const parsed = JSON.parse(raw) as unknown;
+    const store = normalizeStore(parsed);
+    if (parsed && typeof parsed === "object" && (parsed as { version?: number }).version === 1) {
+      saveProgress(store);
+    }
+    return store;
   } catch {
     return emptyStore();
   }
@@ -36,15 +114,25 @@ export function saveProgress(store: ProgressStore): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
 }
 
+export function updateProfileName(name: string): ProgressStore {
+  const store = loadProgress();
+  store.profile.name = name.trim() || undefined;
+  saveProgress(store);
+  return store;
+}
+
 export function recordCheckResult(
   standardCode: string,
   ok: boolean,
   score: number,
   options?: { completed?: boolean; questionsCorrect?: number; smartScore?: number },
-): ProgressStore {
-  const store = loadProgress();
+): RecordCheckResult {
+  let store = loadProgress();
   const prev = store.progress[standardCode];
-  const completed = options?.completed ?? (prev?.completed || ok);
+  const wasCompleted = prev?.completed ?? false;
+  const completed = options?.completed ?? wasCompleted;
+  const isNewMastery = completed && !wasCompleted;
+
   store.progress[standardCode] = {
     completed,
     bestScore: Math.max(prev?.bestScore ?? 0, score),
@@ -52,8 +140,22 @@ export function recordCheckResult(
     questionsCorrect: options?.questionsCorrect ?? prev?.questionsCorrect,
     smartScore: Math.max(prev?.smartScore ?? 0, options?.smartScore ?? 0),
   };
-  saveProgress(store);
-  return store;
+
+  const gamification: GamificationResult = applyGamificationEvent(store, {
+    ok,
+    isNewMastery,
+    smartScore: options?.smartScore,
+  });
+
+  saveProgress(gamification.store);
+
+  return {
+    store: gamification.store,
+    xpEarned: gamification.xpEarned,
+    newAchievements: gamification.newAchievements,
+    streakDays: gamification.streakDays,
+    isNewMastery,
+  };
 }
 
 export function countCompleted(codes: string[]): { done: number; total: number } {

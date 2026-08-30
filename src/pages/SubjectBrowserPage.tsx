@@ -46,7 +46,13 @@ export function SubjectBrowserPage() {
                       {s.code}
                     </span>
                     <span className="standard-text">{s.text}</span>
-                    {prog?.completed && <span className="done-badge">✓</span>}
+                    <span className="standard-progress-badge">
+                      {prog?.completed ? (
+                        <span className="done-badge">✓</span>
+                      ) : prog?.smartScore ? (
+                        <span className="smart-score-pill">SS {prog.smartScore}</span>
+                      ) : null}
+                    </span>
                   </Link>
                 </li>
               );

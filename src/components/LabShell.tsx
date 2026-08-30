@@ -11,6 +11,8 @@ export function LabShell({ title, children }: LabShellProps) {
   const {
     activeStandard,
     lastCheck,
+    lastCelebration,
+    clearCelebration,
     questionIndex,
     questionTotal,
     smartScore,
@@ -44,6 +46,8 @@ export function LabShell({ title, children }: LabShellProps) {
         ? "reveal"
         : "warn"
     : "";
+
+  const showCelebration = lastCelebration && (lastCelebration.isNewMastery || lastCelebration.newAchievements.length > 0);
 
   return (
     <article className="lab-shell">
@@ -96,13 +100,47 @@ export function LabShell({ title, children }: LabShellProps) {
         </p>
       )}
 
+      {showCelebration && lastCelebration && (
+        <div className="mastery-panel" role="status" aria-live="polite">
+          <div className="island-stamp" aria-hidden="true">
+            <div className="island-stamp-inner">
+              <span className="island-stamp-emoji">🏝</span>
+              <span className="island-stamp-label">
+                {lastCelebration.isNewMastery ? "Standard mastered!" : "Achievement unlocked!"}
+              </span>
+            </div>
+          </div>
+          <div className="mastery-panel-body">
+            {lastCelebration.isNewMastery && <p>You mastered this skill. Great job!</p>}
+            {lastCelebration.xpEarned > 0 && (
+              <p className="mastery-xp">+{lastCelebration.xpEarned} Island Points</p>
+            )}
+            {lastCelebration.newAchievements.length > 0 && (
+              <ul className="mastery-achievements">
+                {lastCelebration.newAchievements.map((achievement) => (
+                  <li key={achievement.id}>
+                    {achievement.icon} {achievement.title}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {lastCelebration.streakDays > 1 && (
+              <p className="mastery-streak">🔥 {lastCelebration.streakDays}-day streak</p>
+            )}
+          </div>
+          <button type="button" className="btn secondary mastery-dismiss" onClick={clearCelebration}>
+            Keep going
+          </button>
+        </div>
+      )}
+
       {lastCheck && (
         <div
           className={`check-result ${resultClass}`}
           role="status"
           aria-live="polite"
         >
-          {lastCheck.ok && (
+          {lastCheck.ok && !showCelebration && (
             <div className="island-stamp" aria-hidden="true">
               <div className="island-stamp-inner">
                 <span className="island-stamp-emoji">🏝</span>
@@ -111,6 +149,9 @@ export function LabShell({ title, children }: LabShellProps) {
             </div>
           )}
           <span>{lastCheck.feedback}</span>
+          {lastCelebration && lastCelebration.xpEarned > 0 && !showCelebration && (
+            <span className="inline-xp">+{lastCelebration.xpEarned} Island Points</span>
+          )}
         </div>
       )}
 

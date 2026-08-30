@@ -14,7 +14,27 @@ import {
   QUESTIONS_TO_MASTER,
   SMART_SCORE_TARGET,
 } from "../data/questionSets";
-import { recordCheckResult } from "../services/progress";
+import { recordCheckResult, type RecordCheckResult } from "../services/progress";
+import type { Achievement } from "../data/achievements";
+
+export type CelebrationPayload = {
+  xpEarned: number;
+  newAchievements: Achievement[];
+  streakDays: number;
+  isNewMastery: boolean;
+};
+
+function toCelebration(result: RecordCheckResult): CelebrationPayload | null {
+  if (result.xpEarned <= 0 && !result.isNewMastery && result.newAchievements.length === 0) {
+    return null;
+  }
+  return {
+    xpEarned: result.xpEarned,
+    newAchievements: result.newAchievements,
+    streakDays: result.streakDays,
+    isNewMastery: result.isNewMastery,
+  };
+}
 
 function bumpSmartScore(current: number, ok: boolean, revealed: boolean): number {
   if (ok) return Math.min(100, current + 10);
@@ -28,6 +48,8 @@ type AppContextValue = {
   labId: LabId | null;
   toolLog: ToolCallLogEntry[];
   lastCheck: ReturnType<typeof runBoardCheck> | null;
+  lastCelebration: CelebrationPayload | null;
+  clearCelebration: () => void;
   questionIndex: number;
   questionTotal: number;
   sessionScores: number[];
@@ -64,6 +86,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [, setHistory] = useState<BoardState[]>([]);
   const [toolLog, setToolLog] = useState<ToolCallLogEntry[]>([]);
   const [lastCheck, setLastCheck] = useState<ReturnType<typeof runBoardCheck> | null>(null);
+  const [lastCelebration, setLastCelebration] = useState<CelebrationPayload | null>(null);
+
+  const clearCelebration = useCallback(() => setLastCelebration(null), []);
 
   const bootLab = useCallback(
     (nextLabId: LabId, standardCode: string, params: Record<string, unknown>) => {
@@ -81,6 +106,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setBoardState(createBoardState(nextLabId, { standardCode, params: initialParams }));
       setHistory([]);
       setLastCheck(null);
+      setLastCelebration(null);
     },
     [],
   );
@@ -141,6 +167,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     if (!result.ok) {
       setSmartScore((s) => bumpSmartScore(s, false, false));
+      const gamification = recordCheckResult(activeStandard.code, false, 0);
+      setLastCelebration(toCelebration(gamification));
       return result;
     }
 
@@ -159,6 +187,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       questionIndex >= questionSet.length - 1;
 
     if (hasQuestionSet && questionIndex < questionSet.length - 1) {
+      const gamification = recordCheckResult(activeStandard.code, true, result.score, {
+        completed: false,
+        questionsCorrect: nextCorrect,
+        smartScore: nextSmart,
+      });
+      setLastCelebration(toCelebration(gamification));
       return {
         ...result,
         feedback: `${result.feedback} Smart Score: ${nextSmart}. Tap Next Question when you are ready.`,
@@ -170,11 +204,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
 
     if (hasQuestionSet) {
-      recordCheckResult(activeStandard.code, mastered, avgScore, {
+      const gamification = recordCheckResult(activeStandard.code, mastered, avgScore, {
         completed: mastered,
         questionsCorrect: nextCorrect,
         smartScore: nextSmart,
       });
+      setLastCelebration(toCelebration(gamification));
       return {
         ...result,
         feedback: mastered
@@ -183,7 +218,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
-    recordCheckResult(activeStandard.code, true, result.score, { completed: true });
+    const gamification = recordCheckResult(activeStandard.code, true, result.score, { completed: true });
+    setLastCelebration(toCelebration(gamification));
     return result;
   }, [
     boardState,
@@ -196,7 +232,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   ]);
 
   const revealAnswer = useCallback(() => {
-    if (!boardState) return null;
+    if (!boardState || !activeStandard) return null;
     const { result, actions } = revealBoardAnswer(boardState);
     let next = boardState;
     for (const action of actions) {
@@ -205,8 +241,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setBoardState(next);
     setSmartScore((s) => bumpSmartScore(s, false, true));
     setLastCheck(result);
+    const gamification = recordCheckResult(activeStandard.code, false, 0);
+    setLastCelebration(toCelebration(gamification));
     return result;
-  }, [boardState]);
+  }, [boardState, activeStandard]);
 
   const advanceQuestion = useCallback(() => {
     if (questionSet.length === 0 || questionIndex >= questionSet.length - 1) return;
@@ -277,6 +315,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       labId,
       toolLog,
       lastCheck,
+      lastCelebration,
+      clearCelebration,
       questionIndex,
       questionTotal,
       sessionScores,
@@ -304,6 +344,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       labId,
       toolLog,
       lastCheck,
+      lastCelebration,
+      clearCelebration,
       questionIndex,
       questionTotal,
       sessionScores,

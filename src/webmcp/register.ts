@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import { listStandards, findStandard, listGrade2Standards } from "../data/standards";
-import { getProgressSnapshot } from "../services/progress";
+import { getProgressSnapshot, loadProgress } from "../services/progress";
+import { getScoreboardSummary } from "../services/progressStats";
 import { labHint } from "../boards";
 import type { LabId } from "../types";
 
@@ -199,6 +200,43 @@ export function useWebMCPCurriculum() {
           labId: appRef.current.labId,
           lastCheck: appRef.current.lastCheck,
         }),
+        true,
+      );
+
+      await register(
+        gen,
+        "get_scoreboard",
+        "Gamification scoreboard: Island Points, streak, subject stats, achievements",
+        jsonSchema({}),
+        () => {
+          const summary = getScoreboardSummary(loadProgress());
+          return {
+            displayName: summary.displayName,
+            totalXp: summary.totalXp,
+            currentStreak: summary.currentStreak,
+            longestStreak: summary.longestStreak,
+            mastered: summary.mastered,
+            totalStandards: summary.totalStandards,
+            averageSmartScore: summary.averageSmartScore,
+            lifetimeChecks: summary.lifetimeChecks,
+            lifetimeCorrect: summary.lifetimeCorrect,
+            subjectStats: summary.subjectStats,
+            unlockedAchievements: summary.unlockedAchievements.map((a) => ({
+              id: a.id,
+              title: a.title,
+              description: a.description,
+              icon: a.icon,
+            })),
+            nextAchievement: summary.nextAchievement
+              ? {
+                  id: summary.nextAchievement.id,
+                  title: summary.nextAchievement.title,
+                  description: summary.nextAchievement.description,
+                }
+              : null,
+            recentActivity: summary.recentActivity,
+          };
+        },
         true,
       );
     })();

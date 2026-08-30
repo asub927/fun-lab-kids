@@ -20,33 +20,39 @@ export function StrategyPanel({
   if (!title || steps.length === 0) return null;
 
   return (
-    <aside className="strategy-panel" aria-label={`Strategy: ${title}`}>
-      <p className="strategy-kicker">How to solve this</p>
-      <h2 className="strategy-title">{title}</h2>
-      {sourceLabel && sourceUrl && (
-        <p className="strategy-source">
-          Source:{" "}
-          <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
-            {sourceLabel}
+    <details className="strategy-panel" aria-label={`Strategy: ${title}`}>
+      <summary className="strategy-summary">
+        <span className="strategy-summary-text">How to solve this</span>
+        <span className="strategy-summary-chevron" aria-hidden="true" />
+      </summary>
+      <div className="strategy-panel-body">
+        <h2 className="strategy-title">{title}</h2>
+        {sourceLabel && sourceUrl && (
+          <p className="strategy-source">
+            Source:{" "}
+            <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
+              {sourceLabel}
+            </a>
+          </p>
+        )}
+        <ol className="strategy-steps">
+          {steps.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
+        </ol>
+        {videoUrl && videoTitle && (
+          <a
+            className="btn secondary strategy-video"
+            href={videoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ▶ {videoProvider?.includes("Storyline") ? "Listen to a story" : "Watch lesson"}:{" "}
+            {videoTitle}
           </a>
-        </p>
-      )}
-      <ol className="strategy-steps">
-        {steps.map((step) => (
-          <li key={step}>{step}</li>
-        ))}
-      </ol>
-      {videoUrl && videoTitle && (
-        <a
-          className="btn secondary strategy-video"
-          href={videoUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          ▶ {videoProvider?.includes("Storyline") ? "Listen to a story" : "Watch lesson"}: {videoTitle}
-        </a>
-      )}
-    </aside>
+        )}
+      </div>
+    </details>
   );
 }
 
@@ -61,8 +67,11 @@ export function StrategyFromParams({ params }: { params: Record<string, unknown>
   const videoTitle = typeof params.videoTitle === "string" ? params.videoTitle : undefined;
   const videoProvider = typeof params.videoProvider === "string" ? params.videoProvider : undefined;
 
+  const panelKey = `${title}::${steps[0] ?? ""}`;
+
   return (
     <StrategyPanel
+      key={panelKey}
       title={title}
       steps={steps}
       sourceLabel={source?.label}

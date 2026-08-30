@@ -7,12 +7,14 @@ import { Grade2HubPage } from "./pages/Grade2HubPage";
 import { SubjectBrowserPage } from "./pages/SubjectBrowserPage";
 import { StandardLabPage } from "./pages/StandardLabPage";
 import { CatalogPage } from "./pages/CatalogPage";
+import { ProgressScoreboardPage } from "./pages/ProgressScoreboardPage";
 
 type Accent = "green" | "pink" | "orange" | "yellow";
 
 function accentForPath(pathname: string): Accent {
   if (pathname === "/") return "green";
   if (pathname === "/grade-2") return "yellow";
+  if (pathname.startsWith("/grade-2/progress")) return "yellow";
   if (pathname.startsWith("/catalog")) return "yellow";
   if (
     pathname.startsWith("/grade-2/ela") ||
@@ -67,6 +69,9 @@ function AppChrome() {
             <Link to="/grade-2" className={pathname.startsWith("/grade-2") || pathname.startsWith("/lab") ? "active" : undefined}>
               Grade 2
             </Link>
+            <Link to="/grade-2/progress" className={pathname.startsWith("/grade-2/progress") ? "active" : undefined}>
+              Progress
+            </Link>
             <Link to="/catalog" className={pathname === "/catalog" ? "active" : undefined}>
               Catalog
             </Link>
@@ -75,6 +80,7 @@ function AppChrome() {
         <main id="main-content" tabIndex={-1} data-accent={accent}>
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/grade-2/progress" element={<ProgressScoreboardPage />} />
             <Route path="/grade-2" element={<Grade2HubPage />} />
             <Route path="/grade-2/:subject" element={<SubjectBrowserPage />} />
             <Route path="/lab/:standardCode" element={<StandardLabPage />} />
