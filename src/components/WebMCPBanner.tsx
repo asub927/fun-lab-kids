@@ -14,7 +14,7 @@ export function WebMCPBanner() {
         WebMCP in Chrome
       </a>{" "}
       (<code translate="no">chrome://flags/#enable-webmcp-testing</code>). You can still play
-      without an agent.
+      without a helper.
     </div>
   );
 }

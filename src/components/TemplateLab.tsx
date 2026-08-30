@@ -48,16 +48,18 @@ export function TemplateLab({ state }: TemplateLabProps) {
             {String(p.a)} {String(p.op)} {String(p.b)}
           </p>
         )}
-        <label htmlFor="numeric-answer">
-          Your answer
-          <input
-            id="numeric-answer"
-            type="number"
-            inputMode="numeric"
-            value={state.numericAnswer}
-            onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
-          />
-        </label>
+        <div className="answer-field">
+          <label htmlFor="numeric-answer">
+            Your answer
+            <input
+              id="numeric-answer"
+              type="number"
+              inputMode="numeric"
+              value={state.numericAnswer}
+              onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
+            />
+          </label>
+        </div>
       </div>
     );
   }
@@ -69,16 +71,18 @@ export function TemplateLab({ state }: TemplateLabProps) {
         <p className="story-card">
           {String(p.rows)} rows × {String(p.cols)} columns
         </p>
-        <label htmlFor="groups-answer">
-          Total objects
-          <input
-            id="groups-answer"
-            type="number"
-            inputMode="numeric"
-            value={state.numericAnswer}
-            onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
-          />
-        </label>
+        <div className="answer-field">
+          <label htmlFor="groups-answer">
+            Total objects
+            <input
+              id="groups-answer"
+              type="number"
+              inputMode="numeric"
+              value={state.numericAnswer}
+              onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
+            />
+          </label>
+        </div>
       </div>
     );
   }
@@ -110,14 +114,16 @@ export function TemplateLab({ state }: TemplateLabProps) {
       <div className="template-lab">
         <StrategyFromParams params={p} />
         <p className="target-number tabular">{String(p.number)}</p>
-        <label htmlFor="expanded-form">
-          Write in expanded form (e.g. 300+50+2)
-          <input
-            id="expanded-form"
-            value={state.textResponse}
-            onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
-          />
-        </label>
+        <div className="answer-field">
+          <label htmlFor="expanded-form">
+            Write in expanded form (e.g. 300+50+2)
+            <input
+              id="expanded-form"
+              value={state.textResponse}
+              onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
+            />
+          </label>
+        </div>
       </div>
     );
   }
@@ -129,16 +135,18 @@ export function TemplateLab({ state }: TemplateLabProps) {
         <p className="story-card">
           Skip-count by {String(p.step)} starting at {String(p.start)}. What comes next?
         </p>
-        <label htmlFor="skip-answer">
-          Next number
-          <input
-            id="skip-answer"
-            type="number"
-            inputMode="numeric"
-            value={state.numericAnswer}
-            onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
-          />
-        </label>
+        <div className="answer-field">
+          <label htmlFor="skip-answer">
+            Next number
+            <input
+              id="skip-answer"
+              type="number"
+              inputMode="numeric"
+              value={state.numericAnswer}
+              onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
+            />
+          </label>
+        </div>
       </div>
     );
   }
@@ -199,15 +207,17 @@ export function TemplateLab({ state }: TemplateLabProps) {
             <p>{p.passage}</p>
           </section>
         )}
-        <label htmlFor="reading-answer">
-          {String(p.question ?? "Your answer")}
-          <textarea
-            id="reading-answer"
-            rows={3}
-            value={state.textResponse}
-            onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
-          />
-        </label>
+        <div className="answer-field">
+          <label htmlFor="reading-answer">
+            {String(p.question ?? "Your answer")}
+            <textarea
+              id="reading-answer"
+              rows={3}
+              value={state.textResponse}
+              onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
+            />
+          </label>
+        </div>
       </div>
     );
   }
@@ -217,14 +227,16 @@ export function TemplateLab({ state }: TemplateLabProps) {
       <div className="template-lab">
         <StrategyFromParams params={p} />
         <p className="revision-card">Fix this sentence: &ldquo;{String(p.sentence)}&rdquo;</p>
-        <label htmlFor="fixed-sentence">
-          Corrected sentence
-          <input
-            id="fixed-sentence"
-            value={state.textResponse}
-            onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
-          />
-        </label>
+        <div className="answer-field">
+          <label htmlFor="fixed-sentence">
+            Corrected sentence
+            <input
+              id="fixed-sentence"
+              value={state.textResponse}
+              onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
+            />
+          </label>
+        </div>
       </div>
     );
   }
@@ -241,15 +253,17 @@ export function TemplateLab({ state }: TemplateLabProps) {
             ))}
           </ol>
         )}
-        <label htmlFor="science-answer">
-          Your observation or answer
-          <textarea
-            id="science-answer"
-            rows={2}
-            value={state.textResponse}
-            onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
-          />
-        </label>
+        <div className="answer-field">
+          <label htmlFor="science-answer">
+            Your observation or answer
+            <textarea
+              id="science-answer"
+              rows={2}
+              value={state.textResponse}
+              onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
+            />
+          </label>
+        </div>
       </div>
     );
   }
@@ -266,17 +280,19 @@ export function TemplateLab({ state }: TemplateLabProps) {
       )}
       {typeof p.time === "string" && <p>Time: {p.time}</p>}
       {typeof p.shape === "string" && <p>Shape: {p.shape}</p>}
-      <label htmlFor="template-answer">
-        Answer
-        <input
-          id="template-answer"
-          value={state.numericAnswer || state.textResponse}
-          onChange={(e) => {
-            applyAction({ action: "set_numeric", value: e.target.value });
-            applyAction({ action: "set_text", text: e.target.value });
-          }}
-        />
-      </label>
+      <div className="answer-field">
+        <label htmlFor="template-answer">
+          Answer
+          <input
+            id="template-answer"
+            value={state.numericAnswer || state.textResponse}
+            onChange={(e) => {
+              applyAction({ action: "set_numeric", value: e.target.value });
+              applyAction({ action: "set_text", text: e.target.value });
+            }}
+          />
+        </label>
+      </div>
     </div>
   );
 }

@@ -61,7 +61,7 @@ export const SCIENCE_STRATEGIES: Record<string, CurriculumStrategy> = {
     strategy: "SEP · Weather patterns",
     strategySteps: [
       "Compare weather at different times of day or year.",
-      "Look for a pattern — what repeats?",
+      "Look for a pattern. What repeats?",
       "Explain when it is usually warmest or when storms happen.",
     ],
     strategySource: NC_SCIENCE_SEP,

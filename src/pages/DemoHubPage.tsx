@@ -23,7 +23,7 @@ export function DemoHubPage() {
     <div className="page demo-hub">
       <h1 className="hero-title">Jordan&apos;s Grade 2 Demo</h1>
       <p className="lead">
-        Pick a lab to explore with your AI teammate. No login — session progress stays on this
+        Pick a lab to explore with your AI teammate. No login needed. Your progress stays on this
         device.
       </p>
 

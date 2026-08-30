@@ -1,7 +1,11 @@
+import type { CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
+import { CharacterGuide } from "../components/CharacterGuide";
+import { Reveal } from "../components/Reveal";
 import { listGrade2Standards } from "../data/standards";
 import type { Standard } from "../types";
 import { loadProgress } from "../services/progress";
+import { pickSubjectWelcomeLine } from "../services/characterDialogue";
 
 const SUBJECTS = {
   math: { title: "Math Standards" },
@@ -16,7 +20,11 @@ export function SubjectBrowserPage() {
   const key = subject as keyof typeof SUBJECTS;
   const meta = SUBJECTS[key] ?? SUBJECTS.math;
   const standards = listGrade2Standards(key as Standard["subject"]);
-  const progress = loadProgress().progress;
+  const store = loadProgress();
+  const progress = store.progress;
+  const done = standards.filter((s) => progress[s.code]?.completed).length;
+  const total = standards.length;
+  const welcomeLine = pickSubjectWelcomeLine(key as Standard["subject"], store, done, total, done);
 
   const byStrand = standards.reduce<Record<string, typeof standards>>((acc, s) => {
     (acc[s.strand] ??= []).push(s);
@@ -29,36 +37,49 @@ export function SubjectBrowserPage() {
         ← Grade 2 Hub
       </Link>
       <h1 className="hero-title">{meta.title}</h1>
-      <p className="lead">{standards.length} NCSCOS standards — tap any row to play.</p>
+      <p className="lead">Tap any skill to play. You have {standards.length} to choose from.</p>
+
+      <Reveal>
+        <CharacterGuide
+          subject={key as Standard["subject"]}
+          line={welcomeLine}
+          mood={done > 0 ? "happy" : "idle"}
+        />
+      </Reveal>
 
       {Object.entries(byStrand).map(([strand, items], strandIndex) => (
-        <section key={strand} className="strand-section">
-          <h2 className={`section-label accent-${STRAND_ACCENTS[strandIndex % STRAND_ACCENTS.length]}`}>
-            {strand}
-          </h2>
-          <ul className="standard-list">
-            {items.map((s) => {
-              const prog = progress[s.code];
-              return (
-                <li key={s.code}>
-                  <Link to={`/lab/${encodeURIComponent(s.code)}`} className="standard-row">
-                    <span className="standard-code" translate="no">
-                      {s.code}
-                    </span>
-                    <span className="standard-text">{s.text}</span>
-                    <span className="standard-progress-badge">
-                      {prog?.completed ? (
-                        <span className="done-badge">✓</span>
-                      ) : prog?.smartScore ? (
-                        <span className="smart-score-pill">SS {prog.smartScore}</span>
-                      ) : null}
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+        <Reveal key={strand} delay={strandIndex * 60}>
+          <section className="strand-section">
+            <h2 className={`section-label accent-${STRAND_ACCENTS[strandIndex % STRAND_ACCENTS.length]}`}>
+              {strand}
+            </h2>
+            <ul className="standard-list">
+              {items.map((s, itemIndex) => {
+                const prog = progress[s.code];
+                return (
+                  <li
+                    key={s.code}
+                    style={{ "--row-delay": `${itemIndex * 40}ms` } as CSSProperties}
+                  >
+                    <Link to={`/lab/${encodeURIComponent(s.code)}`} className="standard-row">
+                      <span className="standard-code" translate="no">
+                        {s.code}
+                      </span>
+                      <span className="standard-text">{s.text}</span>
+                      <span className="standard-progress-badge">
+                        {prog?.completed ? (
+                          <span className="done-badge">✓</span>
+                        ) : prog?.smartScore ? (
+                          <span className="smart-score-pill">SS {prog.smartScore}</span>
+                        ) : null}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        </Reveal>
       ))}
     </div>
   );

@@ -78,7 +78,7 @@ export const elaQuestionSets: Record<string, Triple> = {
     [
       "The rain went pitter-patter on the roof all night long.",
       "Zoom! The rocket raced across the dark sky.",
-      "Whisper, whisper—the secret traveled from friend to friend.",
+      "Whisper, whisper. The secret traveled from friend to friend.",
     ],
     ["What sound words describe the rain?", "What word shows the rocket's speed?", "How does whisper show volume?"],
     ["pitter-patter", "zoom", "quiet"],
@@ -211,8 +211,8 @@ export const elaQuestionSets: Record<string, Triple> = {
     ["I used a text feature like a heading or caption to find a fact."],
   ]),
   "RF.2.2": checklist([
-    ["I wrote all uppercase letters A–Z neatly."],
-    ["I wrote all lowercase letters a–z with correct size."],
+    ["I wrote all uppercase letters A to Z neatly."],
+    ["I wrote all lowercase letters a to z with correct size."],
     ["I copied a short sentence using legible spacing between words."],
   ]),
   "RF.2.3": checklist([
@@ -226,7 +226,7 @@ export const elaQuestionSets: Record<string, Triple> = {
     ["I read with expression that matched the punctuation."],
   ]),
   "RF.2.5": checklist([
-    ["I read aloud at a steady pace—not too fast."],
+    ["I read aloud at a steady pace, not too fast."],
     ["I paused at periods and question marks."],
     ["I read a poem with rhythm and expression."],
   ]),

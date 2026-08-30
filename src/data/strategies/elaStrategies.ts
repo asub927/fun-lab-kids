@@ -39,7 +39,7 @@ export const ELA_STRATEGIES: Record<string, CurriculumStrategy> = {
     strategy: "Visualizing · Words that add meaning",
     strategySteps: [
       "Look for sound words, rhymes, or repeated phrases.",
-      "Picture the scene in your mind — what do you see or hear?",
+      "Picture the scene in your mind. What do you see or hear?",
       "Explain how those words create feeling or rhythm.",
     ],
     strategySource: IES_COMPREHENSION_K3,
@@ -75,7 +75,7 @@ export const ELA_STRATEGIES: Record<string, CurriculumStrategy> = {
     strategy: "Compare versions of a story",
     strategySteps: [
       "Notice what stays the same in both versions.",
-      "Notice what is different — setting, details, or ending.",
+      "Notice what is different: the setting, details, or ending.",
       "Tell how they are alike and different.",
     ],
     strategySource: NC_ELA_G2,
@@ -84,7 +84,7 @@ export const ELA_STRATEGIES: Record<string, CurriculumStrategy> = {
     strategy: "Independent reading · Monitor meaning",
     strategySteps: [
       "Pick a just-right book you can read smoothly.",
-      "Stop when it doesn't make sense — reread or fix it up.",
+      "Stop when it does not make sense. Reread or fix it up.",
       "Retell or answer a question about what you read.",
     ],
     strategySource: NC_LIS_K2,
@@ -103,7 +103,7 @@ export const ELA_STRATEGIES: Record<string, CurriculumStrategy> = {
     strategySteps: [
       "Read the title and first sentence.",
       "Ask: What is this mostly about?",
-      "Check each paragraph — does it support that topic?",
+      "Check each paragraph. Does it support that topic?",
     ],
     strategySource: IES_COMPREHENSION_K3,
   },
@@ -228,7 +228,7 @@ export const ELA_STRATEGIES: Record<string, CurriculumStrategy> = {
     strategy: "Narrative writing · B-M-E",
     strategySteps: [
       "Beginning: What happened first?",
-      "Middle: Add details — who, where, when.",
+      "Middle: Add details about who, where, and when.",
       "End: Share how you felt or how it ended.",
     ],
     strategySource: NC_ELA_G2,
@@ -317,7 +317,7 @@ export const ELA_STRATEGIES: Record<string, CurriculumStrategy> = {
   "L.2.1": {
     strategy: "Grammar check",
     strategySteps: [
-      "Find the subject — who or what?",
+      "Find the subject. Who or what is it about?",
       "Check the verb matches.",
       "Fix pronoun use (I, me, we, they).",
     ],

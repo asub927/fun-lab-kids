@@ -21,7 +21,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "first-explorer",
     title: "First Explorer",
-    description: "Master your first standard",
+    description: "Master your first skill",
     icon: "🌱",
     evaluate: (store) =>
       listGrade2Standards().filter((s) => store.progress[s.code]?.completed).length >= 1,
@@ -29,21 +29,21 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "math-captain",
     title: "Math Captain",
-    description: "Master 5 math standards",
+    description: "Master 5 math skills",
     icon: "🔢",
     evaluate: (store) => countMasteredBySubject(store, "math") >= 5,
   },
   {
     id: "word-captain",
     title: "Word Captain",
-    description: "Master 5 ELA standards",
+    description: "Master 5 reading and writing skills",
     icon: "📖",
     evaluate: (store) => countMasteredBySubject(store, "ela") >= 5,
   },
   {
     id: "science-captain",
     title: "Science Captain",
-    description: "Master 3 science standards",
+    description: "Master 3 science skills",
     icon: "🔬",
     evaluate: (store) => countMasteredBySubject(store, "science") >= 3,
   },
@@ -64,14 +64,14 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "smart-score-star",
     title: "Smart Score Star",
-    description: "Reach Smart Score 100 on any standard",
+    description: "Reach Smart Score 100 on any skill",
     icon: "⭐",
     evaluate: hasSmartScore100,
   },
   {
     id: "island-champion",
     title: "Island Champion",
-    description: "Master all Grade 2 standards",
+    description: "Master every Grade 2 skill",
     icon: "🏆",
     evaluate: (store) => {
       const all = listGrade2Standards();

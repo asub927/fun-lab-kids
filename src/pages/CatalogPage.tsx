@@ -8,11 +8,12 @@ export function CatalogPage() {
     <div className="page catalog">
       <h1 className="hero-title">Standards Catalog</h1>
       <p className="lead">
-        Full NCSCOS-aligned catalog. Grade 2 standards are playable; other grades arrive in Phase 2.
+        The full skills catalog for North Carolina schools. Grade 2 skills are ready to play. More
+        grades arrive soon.
       </p>
       <div className="table-wrap">
         <table>
-          <caption className="sr-only">North Carolina K–5 standards in Inquiry Island</caption>
+          <caption className="sr-only">North Carolina K-5 skills in Inquiry Island</caption>
           <thead>
             <tr>
               <th scope="col">Code</th>

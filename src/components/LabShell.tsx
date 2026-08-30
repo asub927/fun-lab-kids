@@ -1,5 +1,14 @@
 import { Link } from "react-router-dom";
+import { CelebrationBurst } from "./CelebrationBurst";
+import { CharacterGuide } from "./CharacterGuide";
 import { useApp } from "../context/AppContext";
+import { loadProgress } from "../services/progress";
+import {
+  pickAchievementLine,
+  pickLabLine,
+  pickMasteryLine,
+  pickStreakLine,
+} from "../services/characterDialogue";
 import { hasWebMCP } from "../webmcp/register";
 
 type LabShellProps = {
@@ -26,6 +35,10 @@ export function LabShell({ title, children }: LabShellProps) {
     resetBoard,
   } = useApp();
 
+  const store = loadProgress();
+  const subject = activeStandard?.subject ?? "math";
+  const checkCount = store.gamification.lifetimeChecks;
+
   const backTo =
     activeStandard?.subject === "math"
       ? "/grade-2/math"
@@ -48,6 +61,31 @@ export function LabShell({ title, children }: LabShellProps) {
     : "";
 
   const showCelebration = lastCelebration && (lastCelebration.isNewMastery || lastCelebration.newAchievements.length > 0);
+
+  const celebrationLine = (() => {
+    if (!lastCelebration) return "";
+    if (lastCelebration.isNewMastery) {
+      return pickMasteryLine(subject, store, checkCount);
+    }
+    const first = lastCelebration.newAchievements[0];
+    if (first) {
+      return pickAchievementLine(subject, store, first, checkCount);
+    }
+    return pickMasteryLine(subject, store, checkCount);
+  })();
+
+  const streakLine =
+    lastCelebration && lastCelebration.streakDays > 1
+      ? pickStreakLine(subject, store, lastCelebration.streakDays)
+      : null;
+
+  const inlineLine = lastCheck
+    ? lastCheck.ok
+      ? pickLabLine(subject, "labCorrect", store, checkCount)
+      : pickLabLine(subject, "labEncourage", store, checkCount)
+    : "";
+
+  const inlineMood = lastCheck?.ok ? "happy" : "thinking";
 
   return (
     <article className="lab-shell">
@@ -96,22 +134,23 @@ export function LabShell({ title, children }: LabShellProps) {
 
       {hasWebMCP() && (
         <p className="agent-ready" role="status">
-          WebMCP tools are active — your agent can use this board.
+          WebMCP tools are active. Your agent can use this board.
         </p>
       )}
 
       {showCelebration && lastCelebration && (
         <div className="mastery-panel" role="status" aria-live="polite">
-          <div className="island-stamp" aria-hidden="true">
-            <div className="island-stamp-inner">
-              <span className="island-stamp-emoji">🏝</span>
-              <span className="island-stamp-label">
-                {lastCelebration.isNewMastery ? "Standard mastered!" : "Achievement unlocked!"}
-              </span>
-            </div>
-          </div>
+          <CelebrationBurst />
+          <CharacterGuide
+            subject={subject}
+            line={celebrationLine}
+            mood="cheering"
+            live
+          />
           <div className="mastery-panel-body">
-            {lastCelebration.isNewMastery && <p>You mastered this skill. Great job!</p>}
+            <p className="mastery-panel-heading">
+              {lastCelebration.isNewMastery ? "Skill mastered!" : "Badge unlocked!"}
+            </p>
             {lastCelebration.xpEarned > 0 && (
               <p className="mastery-xp">+{lastCelebration.xpEarned} Island Points</p>
             )}
@@ -124,9 +163,7 @@ export function LabShell({ title, children }: LabShellProps) {
                 ))}
               </ul>
             )}
-            {lastCelebration.streakDays > 1 && (
-              <p className="mastery-streak">🔥 {lastCelebration.streakDays}-day streak</p>
-            )}
+            {streakLine && <p className="mastery-streak">{streakLine}</p>}
           </div>
           <button type="button" className="btn secondary mastery-dismiss" onClick={clearCelebration}>
             Keep going
@@ -136,21 +173,24 @@ export function LabShell({ title, children }: LabShellProps) {
 
       {lastCheck && (
         <div
-          className={`check-result ${resultClass}`}
+          className={`check-result ${resultClass} ${lastCheck.ok ? "check-result--ok" : ""}`}
           role="status"
           aria-live="polite"
         >
-          {lastCheck.ok && !showCelebration && (
-            <div className="island-stamp" aria-hidden="true">
-              <div className="island-stamp-inner">
-                <span className="island-stamp-emoji">🏝</span>
-                <span className="island-stamp-label">Nice work!</span>
-              </div>
-            </div>
-          )}
           <span>{lastCheck.feedback}</span>
           {lastCelebration && lastCelebration.xpEarned > 0 && !showCelebration && (
             <span className="inline-xp">+{lastCelebration.xpEarned} Island Points</span>
+          )}
+          {!showCelebration && (
+            <div className="character-lab-reaction">
+              <CharacterGuide
+                subject={subject}
+                line={inlineLine}
+                mood={inlineMood}
+                compact
+                live
+              />
+            </div>
           )}
         </div>
       )}

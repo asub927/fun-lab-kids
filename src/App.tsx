@@ -1,4 +1,5 @@
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { AnimatedLayout } from "./components/AnimatedLayout";
 import { AppProvider } from "./context/AppContext";
 import { WebMCPBanner } from "./components/WebMCPBanner";
 import { useWebMCPCurriculum } from "./webmcp/register";
@@ -79,16 +80,18 @@ function AppChrome() {
         </nav>
         <main id="main-content" tabIndex={-1} data-accent={accent}>
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/grade-2/progress" element={<ProgressScoreboardPage />} />
-            <Route path="/grade-2" element={<Grade2HubPage />} />
-            <Route path="/grade-2/:subject" element={<SubjectBrowserPage />} />
-            <Route path="/lab/:standardCode" element={<StandardLabPage />} />
-            <Route path="/catalog" element={<CatalogPage />} />
-            <Route path="/demo" element={<Navigate to="/grade-2" replace />} />
-            <Route path="/demo/math" element={<Navigate to="/lab/NC.2.NBT.1" replace />} />
-            <Route path="/demo/ela" element={<Navigate to="/lab/W.2.1" replace />} />
-            <Route path="/demo/science" element={<Navigate to="/lab/2.P.2.1" replace />} />
+            <Route element={<AnimatedLayout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/grade-2/progress" element={<ProgressScoreboardPage />} />
+              <Route path="/grade-2" element={<Grade2HubPage />} />
+              <Route path="/grade-2/:subject" element={<SubjectBrowserPage />} />
+              <Route path="/lab/:standardCode" element={<StandardLabPage />} />
+              <Route path="/catalog" element={<CatalogPage />} />
+              <Route path="/demo" element={<Navigate to="/grade-2" replace />} />
+              <Route path="/demo/math" element={<Navigate to="/lab/NC.2.NBT.1" replace />} />
+              <Route path="/demo/ela" element={<Navigate to="/lab/W.2.1" replace />} />
+              <Route path="/demo/science" element={<Navigate to="/lab/2.P.2.1" replace />} />
+            </Route>
           </Routes>
         </main>
       </div>

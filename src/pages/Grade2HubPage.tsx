@@ -1,12 +1,20 @@
 import { Link } from "react-router-dom";
+import { AnimatedNumber } from "../components/AnimatedNumber";
+import { CharacterGuide } from "../components/CharacterGuide";
+import { RevealGroup } from "../components/Reveal";
 import { listGrade2Standards } from "../data/standards";
 import { countCompleted, loadProgress } from "../services/progress";
+import { pickHubGreetingLine } from "../services/characterDialogue";
 import { getScoreboardSummary } from "../services/progressStats";
+import type { Subject } from "../types";
+
+const CREW_SUBJECTS: Subject[] = ["ela", "math", "science"];
 
 export function Grade2HubPage() {
   const all = listGrade2Standards();
+  const store = loadProgress();
   const { done, total } = countCompleted(all.map((s) => s.code));
-  const summary = getScoreboardSummary(loadProgress());
+  const summary = getScoreboardSummary(store);
   const subjects = [
     { key: "math" as const, title: "Math Island", accent: "accent-green" },
     { key: "ela" as const, title: "Word Cove", accent: "accent-pink" },
@@ -18,17 +26,26 @@ export function Grade2HubPage() {
       <p className="eyebrow">Grade 2</p>
       <h1 className="hero-title">{summary.displayName}&apos;s Learning Hub</h1>
       <p className="lead">
-        Pick a subject to explore NC standards with your AI teammate. Progress saves on this device.
+        Pick a subject and explore with your AI teammate. Your progress saves on this device.
       </p>
 
       <div className="hub-stats-strip" role="status">
-        <span className="hub-stat">
-          <strong>{summary.totalXp}</strong> Island Points
+        <span className="hub-stat hub-stat--xp">
+          <strong>
+            <AnimatedNumber value={summary.totalXp} />
+          </strong>{" "}
+          Island Points
         </span>
-        <span className="hub-stat">
+        <span className={`hub-stat ${summary.currentStreak > 0 ? "hub-stat--streak" : ""}`}>
           {summary.currentStreak > 0 ? (
             <>
-              <strong>🔥 {summary.currentStreak}</strong> day streak
+              <strong>
+                <span className="streak-flame" aria-hidden="true">
+                  🔥
+                </span>{" "}
+                <AnimatedNumber value={summary.currentStreak} />
+              </strong>{" "}
+              day streak
             </>
           ) : (
             <>
@@ -38,7 +55,7 @@ export function Grade2HubPage() {
         </span>
         <span className="hub-stat">
           <strong>
-            {done}/{total}
+            <AnimatedNumber value={done} />/{total}
           </strong>{" "}
           mastered
         </span>
@@ -47,11 +64,26 @@ export function Grade2HubPage() {
         </Link>
       </div>
 
+      <RevealGroup className="character-crew" aria-labelledby="crew-heading">
+        <p id="crew-heading" className="character-crew-label">
+          Meet your crew
+        </p>
+        {CREW_SUBJECTS.map((subject, index) => (
+          <CharacterGuide
+            key={subject}
+            subject={subject}
+            line={pickHubGreetingLine(subject, store, summary.currentStreak + index)}
+            mood={summary.currentStreak > 0 ? "happy" : "idle"}
+            featured={subject === "ela"}
+          />
+        ))}
+      </RevealGroup>
+
       <p className="progress-summary" role="status">
-        {done} of {total} standards completed
+        {done} of {total} skills completed
       </p>
 
-      <div className="lab-cards" role="list">
+      <RevealGroup className="lab-cards" role="list">
         {subjects.map(({ key, title, accent }) => {
           const subjectStandards = listGrade2Standards(key);
           const subjectStat = summary.subjectStats.find((s) => s.subject === key);
@@ -64,7 +96,7 @@ export function Grade2HubPage() {
             >
               <span className="subject-tag">{key.toUpperCase()}</span>
               <h2>{title}</h2>
-              <p>{subjectStandards.length} standards</p>
+              <p>{subjectStandards.length} skills</p>
               {subjectStat && (
                 <div className="lab-card-progress">
                   <div
@@ -85,7 +117,7 @@ export function Grade2HubPage() {
             </Link>
           );
         })}
-      </div>
+      </RevealGroup>
     </div>
   );
 }

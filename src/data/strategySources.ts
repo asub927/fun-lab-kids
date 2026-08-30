@@ -5,7 +5,7 @@ export type StrategySource = {
 };
 
 export const NC_LIS_K2: StrategySource = {
-  label: "NC Literacy Instruction Standards (K–2)",
+  label: "NC Literacy Instruction Standards (K-2)",
   url: "https://www.dpi.nc.gov/documents/publications/catalog/literacy-instruction-standards-grades-k-2/open",
 };
 
@@ -15,7 +15,7 @@ export const NC_ELA_G2: StrategySource = {
 };
 
 export const IES_COMPREHENSION_K3: StrategySource = {
-  label: "IES WWC — Improving Reading Comprehension (K–3)",
+  label: "IES WWC: Improving Reading Comprehension (K-3)",
   url: "https://ies.ed.gov/ncee/WWC/PracticeGuide/14",
 };
 

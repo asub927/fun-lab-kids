@@ -64,7 +64,7 @@ function wordProblemNudge(params: ActivityParams): QuestionNudge | null {
         `Circle the two numbers in the story: ${n1} and ${n2}.`,
         `Words like "${story.match(/\b(more|adds?|gives?)\b/i)?.[0] ?? "more"}" mean addition.`,
         `Set up: ${n1} + ${n2}. Add the ones, then the tens.`,
-        `Estimate first — your answer should be near ${Math.round((n1 + n2) / 10) * 10}.`,
+        `Estimate first. Your answer should be near ${Math.round((n1 + n2) / 10) * 10}.`,
       ],
     };
   }
@@ -239,8 +239,8 @@ function timeMoneyNudge(params: ActivityParams): QuestionNudge | null {
     return {
       strategy: "Read the clock",
       strategySteps: [
-        `Find the hour hand — it points near ${String(params.time).split(":")[0]}.`,
-        "Find the minute hand — each number is 5 minutes.",
+        `Find the hour hand. It points near ${String(params.time).split(":")[0]}.`,
+        "Find the minute hand. Each number is 5 minutes.",
         `Write the time as hour:minutes (e.g. ${params.time}).`,
       ],
     };
@@ -257,7 +257,7 @@ function dataChartNudge(params: ActivityParams): QuestionNudge | null {
     return {
       strategy: "Use the chart data",
       strategySteps: [
-        `Data — ${pairs}.`,
+        `Data: ${pairs}.`,
         `Question: ${question}`,
         "Subtract to find 'how many more' or add for 'in all'.",
       ],
@@ -301,27 +301,27 @@ function readingNudge(params: ActivityParams): QuestionNudge | null {
   const steps: string[] = [`Slow read: "${snippet}."`];
 
   if (q.startsWith("who")) {
-    strategy = "Questioning · WHO — find the name";
+    strategy = "Questioning · WHO: find the name";
     steps.push("Look for a person or animal that does the action.");
     steps.push("The who is usually the subject of the sentence.");
   } else if (q.startsWith("where")) {
-    strategy = "WHERE — find the place";
+    strategy = "WHERE: find the place";
     steps.push("Hunt for place words: park, lake, under, near…");
   } else if (q.startsWith("when")) {
-    strategy = "WHEN — find the time";
+    strategy = "WHEN: find the time";
     steps.push("Look for time words: noon, morning, first, then…");
   } else if (q.startsWith("what") && q.includes("lesson")) {
-    strategy = "WHAT — the lesson or moral";
+    strategy = "WHAT: the lesson or moral";
     steps.push("Ask: What did the character learn?");
     steps.push("Say the lesson in one short sentence.");
   } else if (q.startsWith("what")) {
-    strategy = "WHAT — the key detail";
+    strategy = "WHAT: the key detail";
     steps.push("Find the sentence that answers the question.");
   } else if (q.startsWith("how")) {
-    strategy = "HOW — the way it happened";
+    strategy = "HOW: the way it happened";
     steps.push("Look for action words that show how someone responded.");
   } else if (q.startsWith("why")) {
-    strategy = "WHY — the reason";
+    strategy = "WHY: the reason";
     steps.push("Find because, so, or the reason in the text.");
   } else {
     steps.push(`Question focus: ${question}`);
@@ -357,7 +357,7 @@ function writingFrameNudge(params: ActivityParams): QuestionNudge | null {
     strategy: frame === "narrative" ? "Tell the story" : "Inform the reader",
     strategySteps: [
       String(params.prompt),
-      ...parts.map((p) => `Fill in "${p}" — one clear sentence.`),
+      ...parts.map((p) => `Fill in "${p}" with one clear sentence.`),
     ],
   };
 }
@@ -369,7 +369,7 @@ function checklistNudge(params: ActivityParams): QuestionNudge | null {
     strategy: "Do the step, then check",
     strategySteps: [
       `Today's step: ${items[0]}`,
-      "Try it for real — talk, read, write, or practice.",
+      "Try it for real. Talk, read, write, or practice.",
       "Check the box when you truly finished.",
     ],
   };

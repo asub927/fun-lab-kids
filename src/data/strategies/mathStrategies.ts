@@ -25,7 +25,7 @@ export const MATH_STRATEGIES: Record<string, CurriculumStrategy> = {
     strategy: "SMP 7 · Place value & structure",
     strategySteps: [
       "Line up hundreds, tens, and ones.",
-      "Add or subtract by place value — ones first, then tens, then hundreds.",
+      "Add or subtract by place value. Start with ones, then tens, then hundreds.",
       "Regroup when needed. Estimate first to check your answer.",
     ],
     strategySource: NC_MATH_G2,
@@ -111,7 +111,7 @@ export const MATH_STANDARD_OVERRIDES: Record<string, CurriculumStrategy> = {
     strategySteps: [
       "Find the hundreds, tens, and ones in the starting number.",
       "Adding 10 changes the tens digit; adding 100 changes the hundreds.",
-      "Subtracting works the same way — watch for regrouping.",
+      "Subtracting works the same way. Watch for regrouping.",
     ],
     strategySource: NC_MATH_G2,
   },
