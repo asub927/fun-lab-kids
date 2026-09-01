@@ -1282,10 +1282,65 @@ tbody tr:last-child td {
 }
 
 .chart-bar {
-  /* Per-bar fill comes from ChartVisual (matches category color words). */
-  fill: var(--accent);
+  /* Fill is set via the SVG fill attribute / chart-bar--* class — do not force accent. */
   stroke: var(--color-ink);
   stroke-width: 2;
+}
+
+.chart-bar--red {
+  fill: #e53935;
+}
+.chart-bar--blue {
+  fill: #1e88e5;
+}
+.chart-bar--green {
+  fill: #43a047;
+}
+.chart-bar--yellow {
+  fill: #fdd835;
+}
+.chart-bar--orange {
+  fill: #fb8c00;
+}
+.chart-bar--pink {
+  fill: #d81b60;
+}
+.chart-bar--purple {
+  fill: #8e24aa;
+}
+.chart-bar--brown {
+  fill: #6d4c41;
+}
+.chart-bar--black {
+  fill: #212121;
+}
+.chart-bar--white {
+  fill: #fafafa;
+}
+.chart-bar--gray,
+.chart-bar--grey {
+  fill: #757575;
+}
+.chart-bar--tone-0 {
+  fill: #e53935;
+}
+.chart-bar--tone-1 {
+  fill: #1e88e5;
+}
+.chart-bar--tone-2 {
+  fill: #43a047;
+}
+.chart-bar--tone-3 {
+  fill: #fb8c00;
+}
+.chart-bar--tone-4 {
+  fill: #fdd835;
+}
+.chart-bar--tone-5 {
+  fill: #d81b60;
+}
+.chart-bar--tone-6 {
+  fill: #8e24aa;
 }
 
 .chart-count,
