@@ -88,43 +88,57 @@ export function ProgressScoreboardPage() {
               Save
             </button>
           </div>
-          <label className="pet-pref-toggle" htmlFor="pet-visible">
-            <input
-              id="pet-visible"
-              type="checkbox"
-              checked={petVisible}
-              onChange={togglePet}
-            />
-            <span>Show island friend (corner buddy)</span>
-          </label>
-          <p className="pet-pref-hint">They hang out in the corner while you practice.</p>
-          <fieldset className="pet-species-picker" aria-labelledby="pet-species-heading">
-            <legend id="pet-species-heading">Pick your island friend</legend>
-            <div className="pet-species-picker-grid">
-              {PET_SPECIES.map((species) => (
-                <button
-                  key={species.id}
-                  type="button"
-                  className={[
-                    "pet-species-option",
-                    speciesId === species.id ? "is-selected" : "",
-                    !petVisible ? "is-dimmed" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  aria-pressed={speciesId === species.id}
-                  onClick={() => pickSpecies(species.id)}
-                >
-                  <span className="pet-species-preview" aria-hidden="true">
-                    <PetSprite speciesId={species.id} mood="idle" />
-                  </span>
-                  <span className="pet-species-label">{species.name}</span>
-                </button>
-              ))}
-            </div>
-          </fieldset>
         </div>
       </Reveal>
+
+      <section
+        id="island-friend"
+        className="scoreboard-section pet-settings-section"
+        aria-labelledby="island-friend-heading"
+      >
+        <h2 id="island-friend-heading" className="section-label accent-pink">
+          Island Friend
+        </h2>
+        <p className="pet-settings-lead">
+          Choose a dog, cat, or rabbit. They hang out in the bottom-left corner while you practice.
+        </p>
+        <label className="pet-pref-toggle" htmlFor="pet-visible">
+          <input
+            id="pet-visible"
+            type="checkbox"
+            checked={petVisible}
+            onChange={togglePet}
+          />
+          <span>Show island friend (corner buddy)</span>
+        </label>
+        <div className="pet-species-picker" role="group" aria-labelledby="pet-species-heading">
+          <p id="pet-species-heading" className="pet-species-picker-label">
+            Pick your island friend
+          </p>
+          <div className="pet-species-picker-grid">
+            {PET_SPECIES.map((species) => (
+              <button
+                key={species.id}
+                type="button"
+                className={[
+                  "pet-species-option",
+                  speciesId === species.id ? "is-selected" : "",
+                  !petVisible ? "is-dimmed" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                aria-pressed={speciesId === species.id}
+                onClick={() => pickSpecies(species.id)}
+              >
+                <span className="pet-species-preview" aria-hidden="true">
+                  <PetSprite speciesId={species.id} mood="idle" />
+                </span>
+                <span className="pet-species-label">{species.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <RevealGroup className="scoreboard-hero" role="region" aria-label="Progress summary">
         <div className="scoreboard-stat accent-yellow scoreboard-stat--xp">

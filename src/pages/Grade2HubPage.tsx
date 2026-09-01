@@ -62,6 +62,9 @@ export function Grade2HubPage() {
         <Link to="/grade-2/progress" className="hub-progress-link">
           My Progress →
         </Link>
+        <Link to="/grade-2/progress#island-friend" className="hub-pet-link">
+          Pick corner buddy →
+        </Link>
       </div>
 
       <RevealGroup className="character-crew" aria-labelledby="crew-heading">

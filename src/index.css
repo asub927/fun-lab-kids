@@ -1599,6 +1599,16 @@ tbody tr:last-child td {
   color: var(--color-ink);
 }
 
+.hub-pet-link {
+  font-family: var(--font-chrome);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-ink);
+  opacity: 0.9;
+}
+
 .lab-card-progress {
   margin-top: 0.75rem;
 }
@@ -3184,8 +3194,13 @@ main:has(.home-page) {
   transition: transform var(--duration-fast) var(--ease-out-expo);
 }
 
-.hub-progress-link:hover {
+.hub-progress-link:hover,
+.hub-pet-link:hover {
   transform: translateX(4px);
+}
+
+.hub-pet-link {
+  transition: transform var(--duration-fast) var(--ease-out-expo);
 }
 
 /* Island companion */
@@ -3726,19 +3741,27 @@ main:has(.home-page) {
   color: var(--color-ink-muted, rgba(10, 10, 10, 0.65));
 }
 
-.pet-species-picker {
-  margin: var(--space-3) 0 0;
-  padding: 0;
-  border: none;
+.pet-settings-section {
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
-.pet-species-picker legend {
+.pet-settings-lead {
+  margin: 0 0 var(--space-2);
+  max-width: 36rem;
+}
+
+.pet-species-picker {
+  margin: var(--space-2) 0 0;
+}
+
+.pet-species-picker-label {
+  margin: 0 0 var(--space-2);
   font-family: var(--font-chrome);
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-bottom: var(--space-2);
 }
 
 .pet-species-picker-grid {
