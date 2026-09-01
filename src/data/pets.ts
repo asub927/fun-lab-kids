@@ -29,10 +29,10 @@ export const PET_SPECIES: PetSpecies[] = [
   },
   {
     id: "rabbit",
-    name: "Chispa",
-    tagline: "A tiny rusty robot who rolls along for every win",
+    name: "Hopper",
+    tagline: "A bouncy pink bunny who hops for every win",
     accentClass: "accent-orange",
-    codexPackageId: "chispa--giiilberto-nm",
+    codexPackageId: "serge-le-lapin--legeling",
   },
 ];
 

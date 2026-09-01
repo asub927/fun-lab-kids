@@ -78,6 +78,16 @@ export const CODEX_PET_PACKAGES: Record<string, CodexPetPackage> = {
     author: "giiilberto_nm",
     license: "Community upload; see submission.json for source attribution",
   },
+  "serge-le-lapin--legeling": {
+    id: "serge-le-lapin--legeling",
+    displayName: "Hopper",
+    description:
+      "A lively chibi pink rabbit with long ears, a white muzzle, yellow shirt, and blue trousers.",
+    spriteVersionNumber: 2,
+    spritesheetPath: "/pets/serge-le-lapin--legeling/spritesheet.webp",
+    author: "Legeling",
+    license: "CC BY-NC 4.0; unofficial AI community interpretation",
+  },
 };
 
 export function getCodexPetPackage(id: string): CodexPetPackage | undefined {

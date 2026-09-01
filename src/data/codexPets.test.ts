@@ -28,6 +28,13 @@ describe("codexPets", () => {
     expect(pkg?.spritesheetPath).toContain("chispa--giiilberto-nm");
   });
 
+  it("loads the serge-le-lapin package", () => {
+    const pkg = getCodexPetPackage("serge-le-lapin--legeling");
+    expect(pkg?.displayName).toBe("Hopper");
+    expect(pkg?.spriteVersionNumber).toBe(2);
+    expect(pkg?.spritesheetPath).toContain("serge-le-lapin--legeling");
+  });
+
   it("maps moods to Codex animation rows", () => {
     expect(moodToCodexAction("idle", "right")).toBe("idle");
     expect(moodToCodexAction("working", "right")).toBe("running-right");
