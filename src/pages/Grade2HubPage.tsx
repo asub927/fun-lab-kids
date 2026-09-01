@@ -26,7 +26,7 @@ export function Grade2HubPage() {
       <p className="eyebrow">Grade 2</p>
       <h1 className="hero-title">{summary.displayName}&apos;s Learning Hub</h1>
       <p className="lead">
-        Pick a subject and explore with your island companion. Your progress saves on this device.
+        Pick a subject and explore with Ripple, Digits, and Spark. Your progress saves on this device.
       </p>
 
       <div className="hub-stats-strip" role="status">
