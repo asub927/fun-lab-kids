@@ -1,205 +1,198 @@
-import { useEffect, useMemo, useState } from "react";
-import {
-  PET_SPECIES,
-  checksToNextStage,
-  stageLabel,
-  type PetSpeciesId,
-} from "../data/pets";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { getPetSpecies, speciesForSubject } from "../data/pets";
 import { useApp } from "../context/AppContext";
+import { isPetVisible, setPetVisible } from "../services/pet";
 import {
-  careForPet,
-  derivePetMood,
-  getPetLine,
-  getPetSnapshot,
-  hatchPet,
-  loadPet,
-  renamePet,
-  type PetSave,
-} from "../services/pet";
+  deriveAmbientMood,
+  PET_REACTION_MS,
+  reactionFromAppEvent,
+} from "../services/petActivity";
+import { subjectFromPath } from "../services/companion";
 import { PetSprite } from "./pets/PetSprite";
+
+type Point = { x: number; y: number };
+
+const PET_SIZE = 72;
+const PAD = 16;
+
+function prefersReducedMotion(): boolean {
+  if (typeof window === "undefined" || !window.matchMedia) return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function randomPoint(width: number, height: number): Point {
+  const maxX = Math.max(PAD, width - PET_SIZE - PAD);
+  const maxY = Math.max(PAD, height - PET_SIZE - PAD - 72);
+  // Bias away from bottom-right companion and top nav.
+  const x = PAD + Math.random() * Math.max(1, maxX - PAD - 120);
+  const y = 72 + Math.random() * Math.max(1, maxY - 72);
+  return {
+    x: clamp(x, PAD, maxX),
+    y: clamp(y, 72, maxY),
+  };
+}
+
+function boardLooksEmpty(boardState: unknown): boolean {
+  if (!boardState || typeof boardState !== "object") return true;
+  const state = boardState as Record<string, unknown>;
+  if (typeof state.answer === "string") return state.answer.trim().length === 0;
+  if (typeof state.value === "string") return state.value.trim().length === 0;
+  if (typeof state.text === "string") return state.text.trim().length === 0;
+  if (Array.isArray(state.blocks)) return state.blocks.length === 0;
+  if (Array.isArray(state.tokens)) return state.tokens.length === 0;
+  return false;
+}
 
 export function IslandPet() {
   const app = useApp();
-  const [save, setSave] = useState<PetSave>(() => loadPet());
-  const [open, setOpen] = useState(false);
-  const [draftName, setDraftName] = useState("");
-  const [pulse, setPulse] = useState(0);
-  const [reaction, setReaction] = useState<"celebrating" | "working" | null>(null);
+  const { pathname } = useLocation();
+  const [visible, setVisible] = useState(() => isPetVisible());
+  const [reaction, setReaction] = useState<"celebrating" | "working" | "waiting" | "waving" | null>(
+    null,
+  );
+  const [pos, setPos] = useState<Point>({ x: 24, y: 120 });
+  const [facing, setFacing] = useState<"left" | "right">("right");
+  const [reducedMotion, setReducedMotion] = useState(prefersReducedMotion);
+  const [hint, setHint] = useState<string | null>(null);
+  const hideTimer = useRef<number | null>(null);
+  const pressTimer = useRef<number | null>(null);
 
-  const snapshot = useMemo(
-    () => getPetSnapshot(save),
-    [save, app.lastCheck, app.lastCelebration, pulse],
+  const subject = app.activeStandard?.subject ?? subjectFromPath(pathname);
+  const speciesId = speciesForSubject(subject);
+  const species = getPetSpecies(speciesId);
+  const inLab = Boolean(app.activeStandard);
+  const needsAnswer = inLab && boardLooksEmpty(app.boardState);
+
+  const mood = useMemo(
+    () => deriveAmbientMood({ reaction, inLab, needsAnswer }),
+    [reaction, inLab, needsAnswer],
   );
 
-  const mood = derivePetMood({
-    lastCheckOk: reaction === "celebrating" ? true : reaction === "working" ? false : null,
-    isCelebrating: reaction === "celebrating",
-    lastCaredAt: save.lastCaredAt,
-  });
-
-  const line = getPetLine(mood, snapshot.displayName, pulse + snapshot.careCount);
-  const growth = checksToNextStage(snapshot.lifetimeChecks);
-  const spriteStage =
-    snapshot.hatched && snapshot.stage === "egg" ? "hatchling" : snapshot.stage;
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onChange = () => setReducedMotion(media.matches);
+    onChange();
+    media.addEventListener?.("change", onChange);
+    return () => media.removeEventListener?.("change", onChange);
+  }, []);
 
   useEffect(() => {
-    setPulse((value) => value + 1);
-  }, [app.lastCheck, app.lastCelebration, app.questionIndex]);
+    const onPrefs = (event: Event) => {
+      const detail = (event as CustomEvent<{ visible?: boolean }>).detail;
+      if (typeof detail?.visible === "boolean") setVisible(detail.visible);
+      else setVisible(isPetVisible());
+    };
+    window.addEventListener("inquiry-island-pet-prefs", onPrefs);
+    return () => window.removeEventListener("inquiry-island-pet-prefs", onPrefs);
+  }, []);
 
   useEffect(() => {
-    if (!app.lastCheck && !app.lastCelebration) return;
-    const won =
-      app.lastCheck?.ok === true ||
+    const celebrating =
       Boolean(app.lastCelebration?.isNewMastery) ||
       Boolean(app.lastCelebration && app.lastCelebration.newAchievements.length > 0);
-    setReaction(won ? "celebrating" : app.lastCheck?.ok === false ? "working" : "celebrating");
-    const timer = window.setTimeout(() => setReaction(null), 4500);
+    const next = reactionFromAppEvent({
+      lastCheckOk: app.lastCheck ? app.lastCheck.ok : null,
+      isCelebrating: celebrating,
+    });
+    if (!next && !app.lastCheck && !app.lastCelebration) return;
+    if (!next) return;
+    setReaction(next);
+    const timer = window.setTimeout(() => setReaction(null), PET_REACTION_MS);
     return () => window.clearTimeout(timer);
   }, [app.lastCheck, app.lastCelebration]);
 
   useEffect(() => {
-    if (!open) return;
-    setDraftName(snapshot.nickname);
-  }, [open, snapshot.nickname]);
+    if (!visible || reducedMotion) return;
 
-  const handleHatch = (speciesId: PetSpeciesId) => {
-    setSave(hatchPet(speciesId, draftName));
-    setPulse((value) => value + 1);
+    const move = () => {
+      setPos((current) => {
+        const next = randomPoint(window.innerWidth, window.innerHeight);
+        setFacing(next.x >= current.x ? "right" : "left");
+        return next;
+      });
+    };
+
+    move();
+    const id = window.setInterval(move, 5200 + Math.random() * 2400);
+    return () => window.clearInterval(id);
+  }, [visible, reducedMotion, pathname]);
+
+  useEffect(() => {
+    if (!reducedMotion || !visible) return;
+    setPos({
+      x: PAD,
+      y: Math.max(88, window.innerHeight - PET_SIZE - 96),
+    });
+    setFacing("right");
+  }, [reducedMotion, visible]);
+
+  useEffect(() => {
+    return () => {
+      if (hideTimer.current) window.clearTimeout(hideTimer.current);
+      if (pressTimer.current) window.clearTimeout(pressTimer.current);
+    };
+  }, []);
+
+  if (!visible) return null;
+
+  const onPointerDown = () => {
+    if (pressTimer.current) window.clearTimeout(pressTimer.current);
+    pressTimer.current = window.setTimeout(() => {
+      setHint("Hide island friend?");
+      if (hideTimer.current) window.clearTimeout(hideTimer.current);
+      hideTimer.current = window.setTimeout(() => setHint(null), 4000);
+    }, 650);
   };
 
-  const handleCare = () => {
-    setSave(careForPet());
-    setPulse((value) => value + 1);
+  const onPointerUp = () => {
+    if (pressTimer.current) {
+      window.clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
   };
 
-  const handleRename = () => {
-    setSave(renamePet(draftName));
+  const onWaveClick = () => {
+    if (hint) return;
+    setReaction("waving");
+    window.setTimeout(() => setReaction(null), 1800);
+  };
+
+  const confirmHide = () => {
+    setPetVisible(false);
+    setVisible(false);
+    setHint(null);
   };
 
   return (
-    <div className={`island-pet ${open ? "is-open" : ""}`}>
-      {open && (
-        <section id="island-pet-panel" className="island-pet-panel" aria-label="Island pet">
-          {!snapshot.hatched ? (
-            <div className="island-pet-hatch">
-              <header className="island-pet-care-header">
-                <PetSprite speciesId="pebble" stage="egg" mood="idle" />
-                <div>
-                  <h2 className="island-pet-title">Hatch your Island Pet</h2>
-                  <p className="island-pet-copy">
-                    Pick a buddy. They grow when you practice and cheer when you win.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="island-pet-close"
-                  onClick={() => setOpen(false)}
-                  aria-label="Close pet panel"
-                >
-                  ×
-                </button>
-              </header>
-              <label className="island-pet-name-field" htmlFor="pet-nickname">
-                Nickname (optional)
-                <input
-                  id="pet-nickname"
-                  name="pet-nickname"
-                  maxLength={16}
-                  value={draftName}
-                  onChange={(event) => setDraftName(event.target.value)}
-                  placeholder="Pebble…"
-                  autoComplete="off"
-                  spellCheck={false}
-                />
-              </label>
-              <div className="island-pet-species-grid" role="list">
-                {PET_SPECIES.map((species) => (
-                  <button
-                    key={species.id}
-                    type="button"
-                    className={`island-pet-species ${species.accentClass}`}
-                    role="listitem"
-                    onClick={() => handleHatch(species.id)}
-                  >
-                    <PetSprite speciesId={species.id} stage="buddy" mood="idle" />
-                    <span className="island-pet-species-name">{species.name}</span>
-                    <span className="island-pet-species-tag">{species.tagline}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="island-pet-care">
-              <header className="island-pet-care-header">
-                <PetSprite speciesId={snapshot.speciesId!} stage={spriteStage} mood={mood} />
-                <div>
-                  <h2 className="island-pet-title">{snapshot.displayName}</h2>
-                  <p className="island-pet-stage">
-                    {stageLabel(snapshot.stage)}
-                    {growth.next
-                      ? ` · ${growth.remaining} checks to ${stageLabel(growth.next)}`
-                      : " · Max level"}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="island-pet-close"
-                  onClick={() => setOpen(false)}
-                  aria-label="Close pet panel"
-                >
-                  ×
-                </button>
-              </header>
-
-              <p className="island-pet-speech" role="status" aria-live="polite">
-                {line}
-              </p>
-
-              <div className="island-pet-stats" aria-label="Pet stats">
-                <span>{snapshot.totalXp} Island Points</span>
-                <span>{snapshot.currentStreak} day streak</span>
-                <span>{snapshot.careCount} cares</span>
-              </div>
-
-              <div className="island-pet-actions">
-                <button type="button" className="btn primary" onClick={handleCare}>
-                  High Five
-                </button>
-                <label className="island-pet-name-field island-pet-name-field--inline" htmlFor="pet-rename">
-                  Rename
-                  <input
-                    id="pet-rename"
-                    name="pet-rename"
-                    maxLength={16}
-                    value={draftName}
-                    onChange={(event) => setDraftName(event.target.value)}
-                    onBlur={handleRename}
-                    autoComplete="off"
-                    spellCheck={false}
-                  />
-                </label>
-              </div>
-            </div>
-          )}
-        </section>
-      )}
-
-      <button
-        type="button"
-        className={`island-pet-toggle pet-mood-${mood}`}
-        aria-expanded={open}
-        aria-controls="island-pet-panel"
-        onClick={() => setOpen((value) => !value)}
+    <div
+      className={`island-pet-ambient pet-mood-${mood}${reducedMotion ? " is-reduced-motion" : ""}`}
+      style={{ transform: `translate3d(${pos.x}px, ${pos.y}px, 0)` }}
+      aria-hidden={hint ? undefined : true}
+    >
+      <div
+        className="island-pet-ambient-hit"
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
+        onPointerLeave={onPointerUp}
+        onClick={onWaveClick}
+        role="img"
+        aria-label={`${species.name}, your floating island friend`}
       >
-        {snapshot.hatched && snapshot.speciesId ? (
-          <PetSprite speciesId={snapshot.speciesId} stage={spriteStage} mood={mood} />
-        ) : (
-          <PetSprite speciesId="pebble" stage="egg" mood="idle" />
-        )}
-        <span className="island-pet-toggle-label">
-          {snapshot.hatched ? snapshot.displayName : "Hatch Pet"}
-        </span>
-      </button>
+        <PetSprite speciesId={speciesId} mood={mood} facing={facing} />
+      </div>
+      {hint && (
+        <div className="island-pet-ambient-hint" role="dialog" aria-label="Hide pet">
+          <span>{hint}</span>
+          <button type="button" className="island-pet-ambient-hide" onClick={confirmHide}>
+            Hide
+          </button>
+        </div>
+      )}
     </div>
   );
 }

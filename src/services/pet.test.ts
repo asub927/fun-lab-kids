@@ -1,13 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { checksToNextStage, stageFromChecks } from "../data/pets";
-import {
-  careForPet,
-  derivePetMood,
-  getPetLine,
-  getPetSnapshot,
-  hatchPet,
-  loadPet,
-} from "./pet";
+import { speciesForSubject } from "../data/pets";
+import { deriveAmbientMood, reactionFromAppEvent } from "./petActivity";
+import { isPetVisible, loadPetPrefs, setPetVisible } from "./pet";
 
 const store = new Map<string, string>();
 
@@ -28,52 +22,41 @@ beforeEach(() => {
   });
 });
 
-describe("island pet", () => {
-  it("starts unhatched", () => {
-    const save = loadPet();
-    expect(save.speciesId).toBeNull();
-    expect(getPetSnapshot(save).hatched).toBe(false);
+describe("ambient pet activity", () => {
+  it("maps subject to a default creature", () => {
+    expect(speciesForSubject("math")).toBe("pebble");
+    expect(speciesForSubject("ela")).toBe("coral");
+    expect(speciesForSubject("science")).toBe("sprout");
+    expect(speciesForSubject(null)).toBe("pebble");
   });
 
-  it("hatches a species and accepts care", () => {
-    const hatched = hatchPet("coral", "Finny");
-    expect(hatched.speciesId).toBe("coral");
-    expect(hatched.nickname).toBe("Finny");
-
-    const cared = careForPet();
-    expect(cared.careCount).toBe(2);
-
-    const snapshot = getPetSnapshot(cared);
-    expect(snapshot.displayName).toBe("Finny");
-    expect(snapshot.hatched).toBe(true);
-  });
-
-  it("maps checks to growth stages", () => {
-    expect(stageFromChecks(0)).toBe("egg");
-    expect(stageFromChecks(5)).toBe("hatchling");
-    expect(stageFromChecks(25)).toBe("buddy");
-    expect(stageFromChecks(50)).toBe("champion");
-    expect(checksToNextStage(18)).toEqual({ next: "buddy", remaining: 2 });
-  });
-
-  it("derives moods from recent activity", () => {
+  it("derives celebrating and working from timed reactions", () => {
     expect(
-      derivePetMood({ lastCheckOk: true, isCelebrating: false, lastCaredAt: Date.now() }),
+      deriveAmbientMood({ reaction: "celebrating", inLab: true, needsAnswer: true }),
     ).toBe("celebrating");
-    expect(
-      derivePetMood({ lastCheckOk: false, isCelebrating: false, lastCaredAt: Date.now() }),
-    ).toBe("working");
-    expect(
-      derivePetMood({
-        lastCheckOk: null,
-        isCelebrating: false,
-        lastCaredAt: Date.now() - 1000 * 60 * 60 * 13,
-      }),
-    ).toBe("hungry");
+    expect(deriveAmbientMood({ reaction: "working", inLab: false })).toBe("working");
+    expect(deriveAmbientMood({ reaction: "waving", inLab: false })).toBe("waving");
   });
 
-  it("returns kid-friendly lines with the pet name", () => {
-    const line = getPetLine("celebrating", "Pebble", 0);
-    expect(line).toContain("Pebble");
+  it("uses waiting/working while in a lab, otherwise idle", () => {
+    expect(deriveAmbientMood({ reaction: null, inLab: true, needsAnswer: true })).toBe("waiting");
+    expect(deriveAmbientMood({ reaction: null, inLab: true, needsAnswer: false })).toBe("working");
+    expect(deriveAmbientMood({ reaction: null, inLab: false })).toBe("idle");
+  });
+
+  it("builds reactions from check events", () => {
+    expect(reactionFromAppEvent({ lastCheckOk: true, isCelebrating: false })).toBe("celebrating");
+    expect(reactionFromAppEvent({ lastCheckOk: false, isCelebrating: false })).toBe("working");
+    expect(reactionFromAppEvent({ lastCheckOk: null, isCelebrating: true })).toBe("celebrating");
+    expect(reactionFromAppEvent({ lastCheckOk: null, isCelebrating: false })).toBeNull();
+  });
+});
+
+describe("ambient pet prefs", () => {
+  it("defaults to visible and can hide", () => {
+    expect(loadPetPrefs().visible).toBe(true);
+    expect(isPetVisible()).toBe(true);
+    setPetVisible(false);
+    expect(isPetVisible()).toBe(false);
   });
 });

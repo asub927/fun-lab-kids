@@ -6,6 +6,7 @@ import { Reveal, RevealGroup } from "../components/Reveal";
 import { loadProgress, updateProfileName } from "../services/progress";
 import { pickScoreboardHintLine } from "../services/characterDialogue";
 import { getScoreboardSummary } from "../services/progressStats";
+import { isPetVisible, setPetVisible } from "../services/pet";
 
 const SUBJECT_LABELS = {
   math: "Math Island",
@@ -30,10 +31,16 @@ export function ProgressScoreboardPage() {
   const [store, setStore] = useState(loadProgress);
   const summary = getScoreboardSummary(store);
   const [nameDraft, setNameDraft] = useState(summary.displayName);
+  const [petVisible, setPetVisibleState] = useState(() => isPetVisible());
 
   const saveName = () => {
     const next = updateProfileName(nameDraft);
     setStore(next);
+  };
+
+  const togglePet = () => {
+    const next = setPetVisible(!petVisible);
+    setPetVisibleState(next.visible);
   };
 
   return (
@@ -61,6 +68,15 @@ export function ProgressScoreboardPage() {
               Save
             </button>
           </div>
+          <label className="pet-pref-toggle" htmlFor="pet-visible">
+            <input
+              id="pet-visible"
+              type="checkbox"
+              checked={petVisible}
+              onChange={togglePet}
+            />
+            <span>Show floating island friend</span>
+          </label>
         </div>
       </Reveal>
 

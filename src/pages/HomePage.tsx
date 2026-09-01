@@ -16,8 +16,8 @@ const FEATURES = [
   },
   {
     icon: "🐣",
-    title: "Island pet",
-    text: "Hatch Pebble, Coral, or Sprout. Your pet grows with practice and cheers when you win.",
+    title: "Island friend",
+    text: "A tiny island friend floats with you while you practice — no buttons, just company.",
     accent: "pink",
   },
   {

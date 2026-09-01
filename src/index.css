@@ -3361,216 +3361,87 @@ main:has(.home-page) {
   }
 }
 
-/* Island Pet — Codex-style companion */
-.island-pet {
+/* Island Pet — ambient Codex-style floater (no action chrome) */
+.island-pet-ambient {
   position: fixed;
-  left: var(--space-3);
-  bottom: var(--space-3);
-  z-index: 40;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-2);
-  max-width: min(22rem, calc(100vw - 2rem));
+  top: 0;
+  left: 0;
+  z-index: 35;
+  width: 4.5rem;
+  height: 4.5rem;
+  pointer-events: none;
+  transition: transform 4.8s var(--ease-out-expo);
+  will-change: transform;
 }
 
-.island-pet-panel {
-  width: min(22rem, calc(100vw - 2rem));
+.island-pet-ambient.is-reduced-motion {
+  transition: none;
+}
+
+.island-pet-ambient-hit {
+  pointer-events: auto;
+  width: 4.5rem;
+  height: 4.5rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.island-pet-ambient-hit .pet-sprite {
+  width: 4.25rem;
+  height: 4.25rem;
+  filter: drop-shadow(2px 3px 0 rgba(10, 10, 10, 0.18));
+}
+
+.island-pet-ambient-hint {
+  pointer-events: auto;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.4rem);
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.5rem;
+  border: 2px solid var(--color-ink);
+  border-radius: 999px;
   background: var(--color-paper);
-  border: var(--border-width) solid var(--color-ink);
-  border-radius: var(--radius-tablet);
-  box-shadow: var(--shadow-hard);
-  padding: var(--space-2);
-  animation: motion-pop-in 0.35s var(--ease-spring) both;
-}
-
-.island-pet-title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  line-height: 1.1;
-  text-transform: uppercase;
-}
-
-.island-pet-copy,
-.island-pet-stage {
-  margin: 0.35rem 0 0;
-  font-size: 0.95rem;
-  color: var(--color-ink-muted);
-}
-
-.island-pet-name-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  margin-top: var(--space-2);
-  font-family: var(--font-chrome);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.island-pet-name-field input {
-  min-height: 44px;
-  padding: 0.55rem 0.75rem;
-  border: 2px solid var(--color-ink);
-  border-radius: var(--radius-button);
-  background: var(--color-bone);
-  font: inherit;
-  text-transform: none;
-  letter-spacing: normal;
-  font-family: var(--font-body);
-  font-size: 1rem;
-  font-weight: 500;
-}
-
-.island-pet-name-field--inline {
-  flex: 1;
-}
-
-.island-pet-species-grid {
-  display: grid;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
-}
-
-.island-pet-species {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: auto auto;
-  column-gap: var(--space-2);
-  align-items: center;
-  text-align: left;
-  padding: 0.65rem 0.75rem;
-  border: 2px solid var(--color-ink);
-  border-radius: var(--radius-tablet);
-  background: var(--color-bone);
-  cursor: pointer;
-  color: var(--color-ink);
-  transition:
-    transform var(--duration-fast) var(--ease-spring),
-    box-shadow var(--duration-fast) var(--ease-out-expo);
-}
-
-.island-pet-species:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 0 var(--color-ink);
-}
-
-.island-pet-species .pet-sprite {
-  grid-row: 1 / span 2;
-  width: 3rem;
-  height: 3rem;
-}
-
-.island-pet-species-name {
-  font-family: var(--font-chrome);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.island-pet-species-tag {
-  font-size: 0.85rem;
-  color: var(--color-ink-muted);
-}
-
-.island-pet-care-header {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: var(--space-2);
-  align-items: center;
-}
-
-.island-pet-care-header .pet-sprite {
-  width: 4rem;
-  height: 4rem;
-}
-
-.island-pet-close {
-  width: 2rem;
-  height: 2rem;
-  border: 2px solid var(--color-ink);
-  border-radius: 999px;
-  background: var(--color-bone);
-  font-size: 1.25rem;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.island-pet-speech {
-  margin: var(--space-2) 0;
-  padding: var(--space-2);
-  border: 2px solid var(--color-ink);
-  border-radius: 16px;
-  background: var(--color-bone);
-  animation: motion-speech-pop 0.35s var(--ease-spring) both;
-}
-
-.island-pet-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: var(--space-2);
-}
-
-.island-pet-stats span {
-  padding: 0.35rem 0.6rem;
-  border: 2px solid var(--color-ink);
-  border-radius: 999px;
-  background: var(--color-cream);
+  box-shadow: var(--shadow-hard-sm);
+  white-space: nowrap;
   font-family: var(--font-chrome);
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
+  color: var(--color-ink);
+  animation: motion-pop-in 0.3s var(--ease-spring) both;
 }
 
-.island-pet-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  align-items: end;
-}
-
-.island-pet-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.4rem 0.85rem 0.4rem 0.4rem;
-  border: var(--border-width) solid var(--color-ink);
+.island-pet-ambient-hide {
+  border: 2px solid var(--color-ink);
   border-radius: 999px;
-  background: var(--color-paper);
-  box-shadow: var(--shadow-hard);
+  background: var(--color-bone);
+  padding: 0.2rem 0.55rem;
+  font: inherit;
   cursor: pointer;
   color: var(--color-ink);
-  transition:
-    transform var(--duration-fast) var(--ease-spring),
-    box-shadow var(--duration-fast) var(--ease-out-expo);
 }
 
-.island-pet-toggle:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 0 var(--color-ink);
-}
-
-.island-pet-toggle .pet-sprite {
-  width: 2.75rem;
-  height: 2.75rem;
-}
-
-.island-pet-toggle-label {
-  font-family: var(--font-chrome);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.island-pet-ambient-hide:hover {
+  background: var(--color-cream);
 }
 
 .pet-sprite {
   display: block;
   overflow: visible;
+}
+
+.pet-sprite--flip {
+  transform: scaleX(-1);
 }
 
 .pet-sprite--idle {
@@ -3581,39 +3452,60 @@ main:has(.home-page) {
   animation: motion-wiggle 0.55s var(--ease-spring) infinite;
 }
 
+.pet-sprite--waiting {
+  animation: motion-float 5.5s ease-in-out infinite;
+  opacity: 0.94;
+}
+
 .pet-sprite--celebrating {
   animation: motion-cheer-bounce 0.65s var(--ease-spring) infinite;
 }
 
-.pet-sprite--hungry,
-.pet-sprite--sleepy {
-  animation: motion-float 5.5s ease-in-out infinite;
-  opacity: 0.92;
+.pet-sprite--waving {
+  animation: motion-wiggle 0.45s var(--ease-spring) infinite;
+}
+
+.pet-pref-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: var(--space-2);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+.pet-pref-toggle input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--accent);
 }
 
 @media (max-width: 640px) {
-  .island-pet {
-    left: var(--space-2);
-    bottom: var(--space-2);
+  .island-pet-ambient,
+  .island-pet-ambient-hit {
+    width: 3.75rem;
+    height: 3.75rem;
   }
 
-  .island-pet-toggle-label {
-    display: none;
-  }
-
-  .island-pet-toggle {
-    padding: 0.35rem;
+  .island-pet-ambient-hit .pet-sprite {
+    width: 3.5rem;
+    height: 3.5rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .island-pet-panel,
-  .island-pet-speech,
+  .island-pet-ambient,
+  .island-pet-ambient-hint,
   .pet-sprite--idle,
   .pet-sprite--working,
+  .pet-sprite--waiting,
   .pet-sprite--celebrating,
-  .pet-sprite--hungry,
-  .pet-sprite--sleepy {
+  .pet-sprite--waving {
     animation: none !important;
+    transition: none !important;
   }
 }
