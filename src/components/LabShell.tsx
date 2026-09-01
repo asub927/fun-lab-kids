@@ -159,71 +159,71 @@ export function LabShell({ title, children }: LabShellProps) {
   }, [boardState]);
 
   return (
-    <article className="lab-shell">
-      <header className="lab-header">
-        <div className="lab-header-meta">
-          <Link to={backTo} className="back-link">
-            ← Grade 2 Hub
-          </Link>
-          <h1 className="lab-title">{title}</h1>
-          {activeStandard && (
-            <p className="standard-chip" title={activeStandard.text}>
-              <span translate="no">{activeStandard.code}</span>
-            </p>
-          )}
-          {hasQuestionPager && (
-            <p className="practice-stats" role="status">
-              Question {questionIndex + 1}/{questionTotal} · L{questionLevel} · Score{" "}
-              {smartScore} · Correct {correctCount}
-            </p>
-          )}
-        </div>
-        <div className="lab-actions" role="toolbar" aria-label="Board actions">
-          <button type="button" className="btn secondary" onClick={undo}>
-            Undo
-          </button>
-          <button type="button" className="btn primary" onClick={() => runCheck()}>
-            Check Answer
-          </button>
-          <button type="button" className="btn hint" onClick={() => revealAnswer()}>
-            Show Answer
-          </button>
-          <button type="button" className="btn danger" onClick={handleReset}>
-            Reset Board
-          </button>
-        </div>
-      </header>
-
-      {showCelebration && lastCelebration && (
-        <div className="mastery-panel" role="status" aria-live="polite">
-          <CelebrationBurst />
-          <CharacterGuide subject={subject} line={celebrationLine} mood="cheering" live />
-          <div className="mastery-panel-body">
-            <p className="mastery-panel-heading">
-              {lastCelebration.isNewMastery ? "Skill mastered!" : "Badge unlocked!"}
-            </p>
-            {lastCelebration.xpEarned > 0 && (
-              <p className="mastery-xp">+{lastCelebration.xpEarned} Island Points</p>
+    <div className={`lab-layout ${strategy ? "lab-layout--with-help" : ""}`}>
+      <article className="lab-shell lab-work-card">
+        <header className="lab-header">
+          <div className="lab-header-meta">
+            <Link to={backTo} className="back-link">
+              ← Grade 2 Hub
+            </Link>
+            <h1 className="lab-title">{title}</h1>
+            {activeStandard && (
+              <p className="standard-chip" title={activeStandard.text}>
+                <span translate="no">{activeStandard.code}</span>
+              </p>
             )}
-            {lastCelebration.newAchievements.length > 0 && (
-              <ul className="mastery-achievements">
-                {lastCelebration.newAchievements.map((achievement) => (
-                  <li key={achievement.id}>
-                    {achievement.icon} {achievement.title}
-                  </li>
-                ))}
-              </ul>
+            {hasQuestionPager && (
+              <p className="practice-stats" role="status">
+                Question {questionIndex + 1}/{questionTotal} · L{questionLevel} · Score{" "}
+                {smartScore} · Correct {correctCount}
+              </p>
             )}
-            {streakLine && <p className="mastery-streak">{streakLine}</p>}
           </div>
-          <button type="button" className="btn secondary mastery-dismiss" onClick={clearCelebration}>
-            Keep Going
-          </button>
-        </div>
-      )}
+          <div className="lab-actions" role="toolbar" aria-label="Board actions">
+            <button type="button" className="btn secondary" onClick={undo}>
+              Undo
+            </button>
+            <button type="button" className="btn primary" onClick={() => runCheck()}>
+              Check Answer
+            </button>
+            <button type="button" className="btn hint" onClick={() => revealAnswer()}>
+              Show Answer
+            </button>
+            <button type="button" className="btn danger" onClick={handleReset}>
+              Reset Board
+            </button>
+          </div>
+        </header>
 
-      <div className={`lab-body ${strategy ? "lab-body--with-strategy" : ""}`}>
-        <div className="lab-main">
+        {showCelebration && lastCelebration && (
+          <div className="mastery-panel" role="status" aria-live="polite">
+            <CelebrationBurst />
+            <CharacterGuide subject={subject} line={celebrationLine} mood="cheering" live />
+            <div className="mastery-panel-body">
+              <p className="mastery-panel-heading">
+                {lastCelebration.isNewMastery ? "Skill mastered!" : "Badge unlocked!"}
+              </p>
+              {lastCelebration.xpEarned > 0 && (
+                <p className="mastery-xp">+{lastCelebration.xpEarned} Island Points</p>
+              )}
+              {lastCelebration.newAchievements.length > 0 && (
+                <ul className="mastery-achievements">
+                  {lastCelebration.newAchievements.map((achievement) => (
+                    <li key={achievement.id}>
+                      {achievement.icon} {achievement.title}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {streakLine && <p className="mastery-streak">{streakLine}</p>}
+            </div>
+            <button type="button" className="btn secondary mastery-dismiss" onClick={clearCelebration}>
+              Keep Going
+            </button>
+          </div>
+        )}
+
+        <div className="lab-work-stage">
           <div className="lab-board">{children}</div>
 
           {lastCheck && (
@@ -279,23 +279,23 @@ export function LabShell({ title, children }: LabShellProps) {
             </nav>
           )}
         </div>
+      </article>
 
-        {strategy && (
-          <div className="lab-strategy-rail">
-            <StrategyPanel
-              key={strategy.panelKey}
-              title={strategy.title}
-              steps={strategy.steps}
-              sourceLabel={strategy.sourceLabel}
-              sourceUrl={strategy.sourceUrl}
-              videoUrl={strategy.videoUrl}
-              videoTitle={strategy.videoTitle}
-              videoProvider={strategy.videoProvider}
-              layout="rail"
-            />
-          </div>
-        )}
-      </div>
-    </article>
+      {strategy && (
+        <aside className="lab-help-card" aria-label="Strategy help">
+          <StrategyPanel
+            key={strategy.panelKey}
+            title={strategy.title}
+            steps={strategy.steps}
+            sourceLabel={strategy.sourceLabel}
+            sourceUrl={strategy.sourceUrl}
+            videoUrl={strategy.videoUrl}
+            videoTitle={strategy.videoTitle}
+            videoProvider={strategy.videoProvider}
+            layout="rail"
+          />
+        </aside>
+      )}
+    </div>
   );
 }

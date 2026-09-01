@@ -232,8 +232,13 @@ main {
   padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
 }
 
+main:has(.lab-page) {
+  max-width: min(1360px, calc(100vw - 1.25rem));
+  padding: 0.65rem 0.65rem max(0.65rem, env(safe-area-inset-bottom));
+}
+
 main:has(.lab-shell) {
-  max-width: 1180px;
+  max-width: min(1360px, calc(100vw - 1.25rem));
 }
 
 main:focus {
@@ -469,6 +474,26 @@ main:focus {
   opacity: 0.85;
 }
 
+.lab-page {
+  min-height: calc(100dvh - 4.75rem);
+}
+
+.lab-layout {
+  display: block;
+  min-height: calc(100dvh - 5.25rem);
+}
+
+.lab-layout--with-help {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.lab-layout--with-help:has(.lab-help-card .strategy-panel--rail[open]) {
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 21rem);
+}
+
 .lab-shell {
   background: var(--color-paper);
   border: var(--border-width) solid var(--color-ink);
@@ -477,37 +502,68 @@ main:focus {
   box-shadow: var(--shadow-soft);
 }
 
-.lab-body {
-  display: block;
-}
-
-.lab-body--with-strategy {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.85rem;
-  align-items: start;
-}
-
-.lab-body--with-strategy:has(.strategy-panel--rail[open]) {
-  grid-template-columns: minmax(0, 1fr) minmax(15rem, 19rem);
-}
-
-.lab-main {
+.lab-work-card {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 5.25rem);
   min-width: 0;
 }
 
-.lab-strategy-rail {
-  min-width: 0;
+.lab-work-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+.lab-help-card {
+  width: fit-content;
+  max-width: min(21rem, 100%);
+  background: var(--color-paper);
+  border: var(--border-width) solid var(--color-ink);
+  border-radius: var(--radius-tablet);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  align-self: start;
+  position: sticky;
+  top: 4.75rem;
+}
+
+.lab-help-card:has(.strategy-panel--rail[open]) {
+  width: min(21rem, 100%);
+}
+
+.lab-help-card .strategy-panel--rail {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
 }
 
 .lab-board {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   min-width: 0;
 }
 
 @media (max-width: 860px) {
-  .lab-body--with-strategy,
-  .lab-body--with-strategy:has(.strategy-panel--rail[open]) {
+  .lab-layout--with-help,
+  .lab-layout--with-help:has(.lab-help-card .strategy-panel--rail[open]) {
     grid-template-columns: 1fr;
+  }
+
+  .lab-work-card {
+    min-height: auto;
+  }
+
+  .lab-help-card,
+  .lab-help-card:has(.strategy-panel--rail[open]) {
+    position: static;
+    width: 100%;
+    max-width: none;
   }
 
   .strategy-panel--rail,
@@ -637,23 +693,19 @@ main:focus {
   box-shadow: var(--shadow-hard-sm);
 }
 
-.strategy-panel--rail {
-  align-self: start;
-  width: min(19rem, 100%);
-}
-
 .strategy-panel--rail:not([open]) {
   position: static;
   max-height: none;
   overflow: visible;
+  width: 100%;
 }
 
 .strategy-panel--rail[open] {
-  position: sticky;
-  top: 5.5rem;
-  max-height: calc(100vh - 6.5rem);
+  position: static;
+  max-height: calc(100dvh - 6.5rem);
   overflow: auto;
   overscroll-behavior: contain;
+  width: 100%;
 }
 
 .strategy-rail-summary {
@@ -808,13 +860,13 @@ main:focus {
 }
 
 .subject-browser--math .strategy-panel,
-main[data-accent="green"] .lab-strategy-rail .strategy-panel {
+main[data-accent="green"] .lab-help-card .strategy-panel,
   background: var(--color-teal);
   color: var(--color-paper);
 }
 
 main[data-accent="orange"] .strategy-panel,
-main[data-accent="orange"] .lab-strategy-rail .strategy-panel {
+main[data-accent="orange"] .lab-help-card .strategy-panel {
   background: var(--color-orange);
   color: var(--color-paper);
 }
@@ -825,7 +877,7 @@ main[data-accent="green"] .strategy-panel {
 }
 
 main[data-accent="pink"] .strategy-panel,
-main[data-accent="pink"] .lab-strategy-rail .strategy-panel {
+main[data-accent="pink"] .lab-help-card .strategy-panel {
   background: var(--color-magenta);
   color: var(--color-paper);
 }
@@ -1377,11 +1429,11 @@ tbody tr:last-child td {
 }
 
 .story-card {
-  padding: 0.85rem 1rem;
+  padding: clamp(0.85rem, 2vh, 1.15rem) clamp(1rem, 2.5vw, 1.35rem);
   border: var(--border-width) solid var(--color-ink);
   border-radius: var(--radius-tablet);
   background: var(--color-bone);
-  font-size: clamp(1.05rem, 2.2vw, 1.2rem);
+  font-size: clamp(1.1rem, 2.4vw, 1.35rem);
   line-height: 1.5;
   margin: 0;
 }
@@ -1390,6 +1442,8 @@ tbody tr:last-child td {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+  flex: 1;
+  min-height: 0;
 }
 
 .template-lab > label,
@@ -1399,6 +1453,20 @@ tbody tr:last-child td {
   border-radius: var(--radius-tablet);
   background: var(--color-paper);
   box-shadow: var(--shadow-hard-sm);
+}
+
+.template-lab .answer-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: clamp(7rem, 22vh, 12rem);
+}
+
+.template-lab .answer-field label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
 }
 
 .template-lab > label,
@@ -1430,12 +1498,12 @@ tbody tr:last-child td {
 .answer-field textarea {
   display: block;
   width: 100%;
-  min-height: 52px;
+  min-height: clamp(3.25rem, 10vh, 5rem);
   margin: 0;
-  padding: 0.65rem 0.95rem;
+  padding: 0.75rem 1rem;
   border: var(--border-width) solid var(--color-ink);
   border-radius: var(--radius-button);
-  font-size: clamp(1.125rem, 2.5vw, 1.35rem);
+  font-size: clamp(1.2rem, 2.8vw, 1.5rem);
   font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
   background: var(--color-bone);
