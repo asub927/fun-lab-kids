@@ -6,7 +6,9 @@ export type PetPrefs = {
   speciesId: PetSpeciesId;
 };
 
-const STORAGE_KEY = "inquiry-island-pet";
+const STORAGE_KEY = "funlab-pet";
+const LEGACY_STORAGE_KEY = "inquiry-island-pet";
+export const PET_PREFS_EVENT = "funlab-pet-prefs";
 
 const LEGACY_SPECIES: Record<string, PetSpeciesId> = {
   pebble: "dog",
@@ -42,16 +44,26 @@ function normalizePrefs(raw: unknown): PetPrefs {
 
 function emitPrefs(prefs: PetPrefs): void {
   if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent("inquiry-island-pet-prefs", { detail: prefs }));
+    window.dispatchEvent(new CustomEvent(PET_PREFS_EVENT, { detail: prefs }));
   }
 }
 
 export function loadPetPrefs(): PetPrefs {
   if (typeof localStorage === "undefined") return defaultPrefs();
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    let raw = localStorage.getItem(STORAGE_KEY);
+    let migratedFromLegacy = false;
+    if (!raw) {
+      const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (legacy) {
+        raw = legacy;
+        migratedFromLegacy = true;
+      }
+    }
     if (!raw) return defaultPrefs();
-    return normalizePrefs(JSON.parse(raw) as unknown);
+    const prefs = normalizePrefs(JSON.parse(raw) as unknown);
+    if (migratedFromLegacy) savePetPrefs(prefs);
+    return prefs;
   } catch {
     return defaultPrefs();
   }

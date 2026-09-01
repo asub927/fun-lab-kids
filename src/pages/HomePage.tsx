@@ -16,20 +16,20 @@ const FEATURES = [
   },
   {
     icon: "🐕",
-    title: "Island friend",
-    text: "Pick an island friend on Progress — they hang out in the corner while you practice.",
+    title: "Lab buddy",
+    text: "Pick a lab buddy on Progress — they hang out in the corner while you practice.",
     accent: "pink",
   },
   {
-    icon: "🗺",
-    title: "Island guides",
-    text: "Ripple, Digits, and Spark welcome you on each island. They cheer you on and celebrate every win.",
+    icon: "🦜",
+    title: "Lab guides",
+    text: "Ripple, Digits, and Spark welcome you in each lab. They cheer you on and celebrate every win.",
     accent: "green",
   },
   {
-    icon: "🏝",
+    icon: "⭐",
     title: "Earn your stripes",
-    text: "Collect Island Points, keep your streak alive, and unlock badges as you master each skill.",
+    text: "Collect Fun Points, keep your streak alive, and unlock badges as you master each skill.",
     accent: "orange",
   },
   {
@@ -44,7 +44,7 @@ const STEPS = [
   {
     step: "01",
     title: "Pick a subject",
-    text: "Choose Math Island, Word Cove, or Discovery Bay. Every skill is ready for Grade 2.",
+    text: "Choose Math Lab, Word Lab, or Science Lab. Every skill is ready for Grade 2.",
   },
   {
     step: "02",
@@ -75,8 +75,8 @@ export function HomePage() {
           <span className="home-headline-line">better together.</span>
         </h1>
         <p className="home-subhead">
-          Inquiry Island is a hands-on Grade 2 playground. Stack blocks, build sentences, and run
-          science labs across math, reading, and science.
+          Fun Lab is a hands-on Grade 2 playground. Stack blocks, build sentences, and run science
+          labs across math, reading, and science.
         </p>
         <div className="home-hero-actions">
           <Link to="/grade-2" className="btn primary large home-cta-primary">
@@ -110,7 +110,7 @@ export function HomePage() {
             Friends who cheer you on.
           </h2>
           <p className="home-section-lead">
-            Ripple, Digits, and Spark live on the islands. They cheer louder every time you practice.
+            Ripple, Digits, and Spark live in the labs. They cheer louder every time you practice.
           </p>
           <RevealGroup className="character-crew">
             {CHARACTERS.map((character, index) => (
@@ -128,7 +128,7 @@ export function HomePage() {
 
       <Reveal delay={50}>
         <section className="home-section" aria-labelledby="why-heading">
-          <p className="home-eyebrow">Why Inquiry Island?</p>
+          <p className="home-eyebrow">Why Fun Lab?</p>
           <h2 id="why-heading" className="home-section-title">
             Channel your inner explorer!
           </h2>

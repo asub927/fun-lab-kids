@@ -13,13 +13,13 @@ export type DialogueContext =
 export const DIALOGUE_POOLS: Record<CharacterId, Record<DialogueContext, string[]>> = {
   ripple: {
     hubGreeting: [
-      "{name}, stories are waiting in Word Cove. Pick a reading skill and dive in!",
+      "{name}, stories are waiting in Word Lab. Pick a reading skill and dive in!",
       "Hey {name}! Ready to read, retell, and write like a storyteller?",
       "{name}, every page you read makes you stronger. Let's go!",
-      "Adventure calls, {name}! Word Cove is open.",
+      "Adventure calls, {name}! Word Lab is open.",
     ],
     subjectWelcome: [
-      "Welcome to Word Cove! You mastered {done} of {total} reading skills. Keep turning pages!",
+      "Welcome to Word Lab! You mastered {done} of {total} reading skills. Keep turning pages!",
       "{name}, pick a skill and I will cheer for every sentence.",
       "Reading heroes start here. You finished {done} of {total}. Nice work!",
       "Let's explore characters, plots, and words. You mastered {done} of {total} so far!",
@@ -39,7 +39,7 @@ export const DIALOGUE_POOLS: Record<CharacterId, Record<DialogueContext, string[
     mastery: [
       "You read like a real storyteller! New treasure unlocked.",
       "Skill mastered! Your reading powers just leveled up.",
-      "Amazing, {name}! Word Cove is proud of you.",
+      "Amazing, {name}! Word Lab is proud of you.",
       "What a reader! This skill is yours now.",
     ],
     achievement: [
@@ -61,13 +61,13 @@ export const DIALOGUE_POOLS: Record<CharacterId, Record<DialogueContext, string[
   },
   digits: {
     hubGreeting: [
-      "{name}, Math Island is ready. Let's count up some Island Points!",
+      "{name}, Math Lab is ready. Let's count up some Fun Points!",
       "Hey {name}! Numbers are waiting. Pick a skill and let's solve!",
       "{name}, every problem you crack makes you sharper. Claws up!",
-      "Ready to crunch numbers, {name}? Math Island awaits!",
+      "Ready to crunch numbers, {name}? Math Lab awaits!",
     ],
     subjectWelcome: [
-      "Welcome to Math Island! You mastered {done} of {total} skills. Keep counting!",
+      "Welcome to Math Lab! You mastered {done} of {total} skills. Keep counting!",
       "{name}, choose a skill and I will cheer every correct answer.",
       "Math heroes grow here. You finished {done} of {total}!",
       "Let's build, count, and solve. You mastered {done} of {total} so far!",
@@ -109,13 +109,13 @@ export const DIALOGUE_POOLS: Record<CharacterId, Record<DialogueContext, string[
   },
   spark: {
     hubGreeting: [
-      "{name}, Discovery Bay is full of questions. Come explore!",
+      "{name}, Science Lab is full of questions. Come explore!",
       "Hey {name}! Science wonders are waiting. Let's investigate!",
       "{name}, every experiment makes you a sharper scientist.",
-      "Curiosity time, {name}! Discovery Bay is open.",
+      "Curiosity time, {name}! Science Lab is open.",
     ],
     subjectWelcome: [
-      "Welcome to Discovery Bay! You explored {done} of {total} skills. Keep wondering!",
+      "Welcome to Science Lab! You explored {done} of {total} skills. Keep wondering!",
       "{name}, pick a skill and let's observe, test, and discover!",
       "Young scientists start here. You finished {done} of {total}!",
       "Let's explore the world together. You mastered {done} of {total}!",

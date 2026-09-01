@@ -1,4 +1,4 @@
-# Inquiry Island — loop notes
+# Fun Lab — loop notes
 
 ## Product
 

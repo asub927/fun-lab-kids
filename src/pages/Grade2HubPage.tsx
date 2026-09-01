@@ -16,9 +16,9 @@ export function Grade2HubPage() {
   const { done, total } = countCompleted(all.map((s) => s.code));
   const summary = getScoreboardSummary(store);
   const subjects = [
-    { key: "math" as const, title: "Math Island", accent: "accent-green" },
-    { key: "ela" as const, title: "Word Cove", accent: "accent-pink" },
-    { key: "science" as const, title: "Discovery Bay", accent: "accent-orange" },
+    { key: "math" as const, title: "Math Lab", accent: "accent-green" },
+    { key: "ela" as const, title: "Word Lab", accent: "accent-pink" },
+    { key: "science" as const, title: "Science Lab", accent: "accent-orange" },
   ];
 
   return (
@@ -34,7 +34,7 @@ export function Grade2HubPage() {
           <strong>
             <AnimatedNumber value={summary.totalXp} />
           </strong>{" "}
-          Island Points
+          Fun Points
         </span>
         <span className={`hub-stat ${summary.currentStreak > 0 ? "hub-stat--streak" : ""}`}>
           {summary.currentStreak > 0 ? (
@@ -62,7 +62,7 @@ export function Grade2HubPage() {
         <Link to="/grade-2/progress" className="hub-progress-link">
           My Progress →
         </Link>
-        <Link to="/grade-2/progress#island-friend" className="hub-pet-link">
+        <Link to="/grade-2/progress#lab-buddy" className="hub-pet-link">
           Pick corner buddy →
         </Link>
       </div>

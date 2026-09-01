@@ -1,12 +1,12 @@
-# Inquiry Island
+# Fun Lab
 
 **NC K–5 Math, English & Science — hands-on Grade 2 learning labs with WebMCP**
 
-Inquiry Island is a kid-friendly learning app where students stack blocks, build sentences, and run science labs across North Carolina Grade 2 standards. An AI agent can share the same board — placing blocks, checking answers, and guiding practice through WebMCP tools. Progress saves locally on the device; no account required.
+Fun Lab is a kid-friendly learning app where students stack blocks, build sentences, and run science labs across North Carolina Grade 2 standards. An AI agent can share the same board — placing blocks, checking answers, and guiding practice through WebMCP tools. Progress saves locally on the device; no account required.
 
 | | |
 | --- | --- |
-| **Repo** | `inquiry-island` |
+| **Repo** | `funlab` |
 | **License** | MIT |
 | **Live demo** | https://inquiry-island.vercel.app |
 | **Hackathon** | [WebMCP Challenge](https://webmcp.devpost.com/) — deadline Sep 3, 2026 @ 1:00pm PDT |
@@ -49,7 +49,7 @@ Then try a sample prompt:
 
 | Subject | Sample prompt |
 | --- | --- |
-| **Math** | Open Place Value Island. Use tools to build 243 with hundreds, tens, and ones blocks, then `run_check`. |
+| **Math** | Open Place Value Lab. Use tools to build 243 with hundreds, tens, and ones blocks, then `run_check`. |
 | **ELA** | Help me write an opinion about recess. Add two reasons and a linking word; suggest one revision and wait for my confirm. |
 | **Science** | Classify the objects, heat the ice, predict the state, then `run_check`. |
 
@@ -77,7 +77,7 @@ Guest mode — no child PII; progress saves in localStorage on this device:
 | `/grade-2/math` | All NC.2.* math standards |
 | `/grade-2/ela` | All Grade 2 ELA standards |
 | `/grade-2/science` | All Grade 2 science standards |
-| `/grade-2/progress` | Island Points, streaks, badges, and island friend |
+| `/grade-2/progress` | Fun Points, streaks, badges, and lab buddy |
 | `/catalog` | Full K–5 standards catalog |
 | `/lab/:code` | Play any Grade 2 standard (e.g. `/lab/NC.2.NBT.1`) |
 
@@ -103,10 +103,10 @@ Import the repo at [vercel.com/new](https://vercel.com/new) — no environment v
 ## Features
 
 - **NCSCOS-complete Grade 2** — 77 playable standards (23 Math, 41 ELA, 13 Science)
-- Hybrid template library + 3 showcase labs (Place Value Island, Opinion Builder, Matter Lab)
+- Hybrid template library + 3 showcase labs (Place Value Lab, Opinion Builder, Matter Lab)
 - Grade 2 hub, subject browsers, and `/lab/:standardCode` routing
-- Island Points, Smart Score, streaks, and 8 achievement badges
-- Optional island friend (corner pet) and subject guides (Ripple, Digits, Spark)
+- Fun Points, Smart Score, streaks, and 8 achievement badges
+- Optional lab buddy (corner pet) and subject guides (Ripple, Digits, Spark)
 - WebMCP tools for agent co-play on curriculum and lab boards
 - localStorage progress per standard
 - K–5 catalog stubs (non–Grade 2 marked coming soon)

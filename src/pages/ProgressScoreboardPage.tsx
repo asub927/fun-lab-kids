@@ -8,12 +8,12 @@ import { PET_SPECIES, type PetSpeciesId } from "../data/pets";
 import { loadProgress, updateProfileName } from "../services/progress";
 import { pickScoreboardHintLine } from "../services/characterDialogue";
 import { getAchievementNavigationPath, getScoreboardSummary } from "../services/progressStats";
-import { getPetSpeciesId, isPetVisible, setPetSpecies, setPetVisible } from "../services/pet";
+import { getPetSpeciesId, isPetVisible, PET_PREFS_EVENT, setPetSpecies, setPetVisible } from "../services/pet";
 
 const SUBJECT_LABELS = {
-  math: "Math Island",
-  ela: "Word Cove",
-  science: "Discovery Bay",
+  math: "Math Lab",
+  ela: "Word Lab",
+  science: "Science Lab",
 } as const;
 
 const SUBJECT_ACCENTS = {
@@ -44,8 +44,8 @@ export function ProgressScoreboardPage() {
         setSpeciesId(detail.speciesId);
       }
     };
-    window.addEventListener("inquiry-island-pet-prefs", onPrefs);
-    return () => window.removeEventListener("inquiry-island-pet-prefs", onPrefs);
+    window.addEventListener(PET_PREFS_EVENT, onPrefs);
+    return () => window.removeEventListener(PET_PREFS_EVENT, onPrefs);
   }, []);
 
   const saveName = () => {
@@ -70,7 +70,7 @@ export function ProgressScoreboardPage() {
       </Link>
       <p className="eyebrow">My Progress</p>
       <h1 className="hero-title">{summary.displayName}&apos;s Scoreboard</h1>
-      <p className="lead">Island Points, streaks, and badges stay on this device.</p>
+      <p className="lead">Fun Points, streaks, and badges stay on this device.</p>
 
       <Reveal>
         <div className="profile-name-edit">
@@ -92,15 +92,15 @@ export function ProgressScoreboardPage() {
       </Reveal>
 
       <section
-        id="island-friend"
+        id="lab-buddy"
         className="scoreboard-section pet-settings-section"
-        aria-labelledby="island-friend-heading"
+        aria-labelledby="lab-buddy-heading"
       >
-        <h2 id="island-friend-heading" className="section-label accent-pink">
-          Island Friend
+        <h2 id="lab-buddy-heading" className="section-label accent-pink">
+          Lab Buddy
         </h2>
         <p className="pet-settings-lead">
-          Pick an island friend to hang out in the bottom-left corner while you practice.
+          Pick a lab buddy to hang out in the bottom-left corner while you practice.
         </p>
         <label className="pet-pref-toggle" htmlFor="pet-visible">
           <input
@@ -109,11 +109,11 @@ export function ProgressScoreboardPage() {
             checked={petVisible}
             onChange={togglePet}
           />
-          <span>Show island friend (corner buddy)</span>
+          <span>Show lab buddy (corner buddy)</span>
         </label>
         <div className="pet-species-picker" role="group" aria-labelledby="pet-species-heading">
           <p id="pet-species-heading" className="pet-species-picker-label">
-            Pick your island friend
+            Pick your lab buddy
           </p>
           <div className="pet-species-picker-grid">
             {PET_SPECIES.map((species) => (
@@ -142,7 +142,7 @@ export function ProgressScoreboardPage() {
 
       <RevealGroup className="scoreboard-hero" role="region" aria-label="Progress summary">
         <div className="scoreboard-stat accent-yellow scoreboard-stat--xp">
-          <span className="scoreboard-stat-label">Island Points</span>
+          <span className="scoreboard-stat-label">Fun Points</span>
           <span className="scoreboard-stat-value">
             <AnimatedNumber value={summary.totalXp} />
           </span>

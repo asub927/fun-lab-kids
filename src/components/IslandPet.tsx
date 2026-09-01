@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getPetSpecies } from "../data/pets";
 import { useApp } from "../context/AppContext";
-import { getPetSpeciesId, isPetVisible, setPetVisible } from "../services/pet";
+import { getPetSpeciesId, isPetVisible, PET_PREFS_EVENT, setPetVisible } from "../services/pet";
 import {
   deriveAmbientMood,
   PET_REACTION_MS,
@@ -59,8 +59,8 @@ export function IslandPet() {
         setSpeciesId(getPetSpeciesId());
       }
     };
-    window.addEventListener("inquiry-island-pet-prefs", onPrefs);
-    return () => window.removeEventListener("inquiry-island-pet-prefs", onPrefs);
+    window.addEventListener(PET_PREFS_EVENT, onPrefs);
+    return () => window.removeEventListener(PET_PREFS_EVENT, onPrefs);
   }, []);
 
   useEffect(() => {
@@ -103,7 +103,7 @@ export function IslandPet() {
   const onPointerDown = () => {
     if (pressTimer.current) window.clearTimeout(pressTimer.current);
     pressTimer.current = window.setTimeout(() => {
-      setHint("Hide island friend?");
+      setHint("Hide lab buddy?");
       if (hideTimer.current) window.clearTimeout(hideTimer.current);
       hideTimer.current = window.setTimeout(() => setHint(null), 4000);
     }, 650);
@@ -147,7 +147,7 @@ export function IslandPet() {
         onPointerLeave={onPointerUp}
         onClick={onWaveClick}
         role="img"
-        aria-label={`${species.name}, your island friend`}
+        aria-label={`${species.name}, your lab buddy`}
       >
         <PetSprite speciesId={speciesId} mood={mood} facing={facing} />
       </div>

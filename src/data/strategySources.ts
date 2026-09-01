@@ -1,4 +1,4 @@
-/** Official strategy frameworks cited in Inquiry Island labs. */
+/** Official strategy frameworks cited in Fun Lab activities. */
 export type StrategySource = {
   label: string;
   url: string;

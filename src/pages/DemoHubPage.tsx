@@ -6,7 +6,8 @@ export function DemoHubPage() {
     <div className="page demo-hub">
       <h1 className="hero-title">Jordan&apos;s Grade 2 Demo</h1>
       <p className="lead">
-        Pick a lab to explore. No login needed. Your progress stays on this device.
+        Pick a lab to explore with Ripple, Digits, and Spark. No login needed. Your progress stays on
+        this device.
       </p>
 
       <div className="lab-cards" role="list">
@@ -19,7 +20,7 @@ export function DemoHubPage() {
                 : "/demo/science";
           const title =
             s.activityType === "showcase:place-value"
-              ? "Place Value Island"
+              ? "Place Value Lab"
               : s.activityType === "showcase:opinion-builder"
                 ? "Opinion Builder"
                 : "Matter Lab";

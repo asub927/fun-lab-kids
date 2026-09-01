@@ -63,7 +63,7 @@ function AppChrome() {
       <div className="app">
         <nav className="top-nav" aria-label="Main">
           <Link to="/" className="brand">
-            <span aria-hidden="true">🏝️</span> Inquiry Island
+            <span aria-hidden="true">🧪</span> Fun Lab
           </Link>
           <div className="nav-links">
             <Link to="/grade-2" className={pathname.startsWith("/grade-2") || pathname.startsWith("/lab") ? "active" : undefined}>

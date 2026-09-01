@@ -10,7 +10,7 @@ type PetSpriteProps = {
   preview?: boolean;
 };
 
-/** Island friend renderer — Codex spritesheet when available, otherwise inline SVG. */
+/** Lab buddy renderer — Codex spritesheet when available, otherwise inline SVG. */
 export function PetSprite({ speciesId, mood, facing = "right", preview = false }: PetSpriteProps) {
   const species = getPetSpecies(speciesId);
 
