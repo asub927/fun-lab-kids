@@ -1,11 +1,14 @@
-import { useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { AnimatedNumber } from "../components/AnimatedNumber";
 import { CharacterGuide } from "../components/CharacterGuide";
+import { PetSprite } from "../components/pets/PetSprite";
 import { Reveal, RevealGroup } from "../components/Reveal";
+import { PET_SPECIES, type PetSpeciesId } from "../data/pets";
 import { loadProgress, updateProfileName } from "../services/progress";
 import { pickScoreboardHintLine } from "../services/characterDialogue";
 import { getScoreboardSummary } from "../services/progressStats";
+import { getPetSpeciesId, isPetVisible, setPetSpecies, setPetVisible } from "../services/pet";
 
 const SUBJECT_LABELS = {
   math: "Math Island",
@@ -30,10 +33,34 @@ export function ProgressScoreboardPage() {
   const [store, setStore] = useState(loadProgress);
   const summary = getScoreboardSummary(store);
   const [nameDraft, setNameDraft] = useState(summary.displayName);
+  const [petVisible, setPetVisibleState] = useState(() => isPetVisible());
+  const [speciesId, setSpeciesId] = useState<PetSpeciesId>(() => getPetSpeciesId());
+
+  useEffect(() => {
+    const onPrefs = (event: Event) => {
+      const detail = (event as CustomEvent<{ visible?: boolean; speciesId?: PetSpeciesId }>).detail;
+      if (detail && typeof detail.visible === "boolean") setPetVisibleState(detail.visible);
+      if (detail?.speciesId === "dog" || detail?.speciesId === "cat" || detail?.speciesId === "rabbit") {
+        setSpeciesId(detail.speciesId);
+      }
+    };
+    window.addEventListener("inquiry-island-pet-prefs", onPrefs);
+    return () => window.removeEventListener("inquiry-island-pet-prefs", onPrefs);
+  }, []);
 
   const saveName = () => {
     const next = updateProfileName(nameDraft);
     setStore(next);
+  };
+
+  const togglePet = () => {
+    const next = setPetVisible(!petVisible);
+    setPetVisibleState(next.visible);
+  };
+
+  const pickSpecies = (id: PetSpeciesId) => {
+    const next = setPetSpecies(id);
+    setSpeciesId(next.speciesId);
   };
 
   return (
@@ -63,6 +90,55 @@ export function ProgressScoreboardPage() {
           </div>
         </div>
       </Reveal>
+
+      <section
+        id="island-friend"
+        className="scoreboard-section pet-settings-section"
+        aria-labelledby="island-friend-heading"
+      >
+        <h2 id="island-friend-heading" className="section-label accent-pink">
+          Island Friend
+        </h2>
+        <p className="pet-settings-lead">
+          Choose a dog, cat, or rabbit. They hang out in the bottom-left corner while you practice.
+        </p>
+        <label className="pet-pref-toggle" htmlFor="pet-visible">
+          <input
+            id="pet-visible"
+            type="checkbox"
+            checked={petVisible}
+            onChange={togglePet}
+          />
+          <span>Show island friend (corner buddy)</span>
+        </label>
+        <div className="pet-species-picker" role="group" aria-labelledby="pet-species-heading">
+          <p id="pet-species-heading" className="pet-species-picker-label">
+            Pick your island friend
+          </p>
+          <div className="pet-species-picker-grid">
+            {PET_SPECIES.map((species) => (
+              <button
+                key={species.id}
+                type="button"
+                className={[
+                  "pet-species-option",
+                  speciesId === species.id ? "is-selected" : "",
+                  !petVisible ? "is-dimmed" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                aria-pressed={speciesId === species.id}
+                onClick={() => pickSpecies(species.id)}
+              >
+                <span className="pet-species-preview" aria-hidden="true">
+                  <PetSprite speciesId={species.id} mood="idle" />
+                </span>
+                <span className="pet-species-label">{species.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <RevealGroup className="scoreboard-hero" role="region" aria-label="Progress summary">
         <div className="scoreboard-stat accent-yellow scoreboard-stat--xp">

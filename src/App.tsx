@@ -1,7 +1,8 @@
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AnimatedLayout } from "./components/AnimatedLayout";
 import { AppProvider } from "./context/AppContext";
-import { WebMCPBanner } from "./components/WebMCPBanner";
+import { IslandCompanion } from "./components/IslandCompanion";
+import { IslandPet } from "./components/IslandPet";
 import { useWebMCPCurriculum } from "./webmcp/register";
 import { HomePage } from "./pages/HomePage";
 import { Grade2HubPage } from "./pages/Grade2HubPage";
@@ -61,7 +62,6 @@ function AppChrome() {
         Skip to main content
       </a>
       <div className="app">
-        <WebMCPBanner />
         <nav className="top-nav" aria-label="Main">
           <Link to="/" className="brand">
             <span aria-hidden="true">🏝️</span> Inquiry Island
@@ -94,6 +94,8 @@ function AppChrome() {
             </Route>
           </Routes>
         </main>
+        <IslandPet />
+        <IslandCompanion />
       </div>
     </>
   );
