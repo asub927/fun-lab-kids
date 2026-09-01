@@ -1,14 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
-import { getPetSpecies, speciesForSubject } from "../data/pets";
+import { getPetSpecies } from "../data/pets";
 import { useApp } from "../context/AppContext";
-import { isPetVisible, setPetVisible } from "../services/pet";
+import { getPetSpeciesId, isPetVisible, setPetVisible } from "../services/pet";
 import {
   deriveAmbientMood,
   PET_REACTION_MS,
   reactionFromAppEvent,
 } from "../services/petActivity";
-import { subjectFromPath } from "../services/companion";
 import { PetSprite } from "./pets/PetSprite";
 
 /**
@@ -17,8 +15,8 @@ import { PetSprite } from "./pets/PetSprite";
  */
 export function IslandPet() {
   const app = useApp();
-  const { pathname } = useLocation();
   const [visible, setVisible] = useState(() => isPetVisible());
+  const [speciesId, setSpeciesId] = useState(() => getPetSpeciesId());
   const [reaction, setReaction] = useState<"celebrating" | "working" | "waiting" | "waving" | null>(
     null,
   );
@@ -33,8 +31,6 @@ export function IslandPet() {
   const hideTimer = useRef<number | null>(null);
   const pressTimer = useRef<number | null>(null);
 
-  const subject = app.activeStandard?.subject ?? subjectFromPath(pathname);
-  const speciesId = speciesForSubject(subject);
   const species = getPetSpecies(speciesId);
   const inLab = Boolean(app.activeStandard);
   const needsAnswer = inLab && boardLooksEmpty(app.boardState);
@@ -54,9 +50,14 @@ export function IslandPet() {
 
   useEffect(() => {
     const onPrefs = (event: Event) => {
-      const detail = (event as CustomEvent<{ visible?: boolean }>).detail;
-      if (typeof detail?.visible === "boolean") setVisible(detail.visible);
+      const detail = (event as CustomEvent<{ visible?: boolean; speciesId?: string }>).detail;
+      if (detail && typeof detail.visible === "boolean") setVisible(detail.visible);
       else setVisible(isPetVisible());
+      if (detail?.speciesId === "dog" || detail?.speciesId === "cat" || detail?.speciesId === "rabbit") {
+        setSpeciesId(detail.speciesId);
+      } else {
+        setSpeciesId(getPetSpeciesId());
+      }
     };
     window.addEventListener("inquiry-island-pet-prefs", onPrefs);
     return () => window.removeEventListener("inquiry-island-pet-prefs", onPrefs);

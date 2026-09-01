@@ -15,9 +15,9 @@ const FEATURES = [
     accent: "green",
   },
   {
-    icon: "🐣",
+    icon: "🐕",
     title: "Island friend",
-    text: "A tiny island friend floats with you while you practice — no buttons, just company.",
+    text: "Pick a dog, cat, or rabbit on Progress — they hang out in the corner while you practice.",
     accent: "pink",
   },
   {

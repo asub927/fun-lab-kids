@@ -1,4 +1,4 @@
-export type PetSpeciesId = "pebble" | "coral" | "sprout";
+export type PetSpeciesId = "dog" | "cat" | "rabbit";
 export type PetMood = "idle" | "working" | "celebrating" | "waiting" | "waving";
 
 export type PetSpecies = {
@@ -8,23 +8,25 @@ export type PetSpecies = {
   accentClass: string;
 };
 
+export const DEFAULT_PET_SPECIES: PetSpeciesId = "dog";
+
 export const PET_SPECIES: PetSpecies[] = [
   {
-    id: "pebble",
-    name: "Pebble",
-    tagline: "A cozy crab who floats along while you solve",
+    id: "dog",
+    name: "Buddy",
+    tagline: "A loyal pup who cheers when you practice",
     accentClass: "accent-green",
   },
   {
-    id: "coral",
-    name: "Coral",
-    tagline: "A bright fish who swirls when you practice",
+    id: "cat",
+    name: "Whiskers",
+    tagline: "A curious cat who keeps you company in the corner",
     accentClass: "accent-pink",
   },
   {
-    id: "sprout",
-    name: "Sprout",
-    tagline: "A gentle turtle who drifts with every discovery",
+    id: "rabbit",
+    name: "Hopper",
+    tagline: "A bouncy bunny who hops for every win",
     accentClass: "accent-orange",
   },
 ];
@@ -33,11 +35,4 @@ const BY_ID = new Map(PET_SPECIES.map((pet) => [pet.id, pet]));
 
 export function getPetSpecies(id: PetSpeciesId): PetSpecies {
   return BY_ID.get(id) ?? PET_SPECIES[0];
-}
-
-/** Subject-linked default creature — no hatch picker in v1. */
-export function speciesForSubject(subject: "math" | "ela" | "science" | null | undefined): PetSpeciesId {
-  if (subject === "ela") return "coral";
-  if (subject === "science") return "sprout";
-  return "pebble";
 }

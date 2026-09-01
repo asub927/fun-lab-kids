@@ -1,9 +1,15 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { speciesForSubject } from "../data/pets";
 import { deriveAmbientMood, reactionFromAppEvent } from "./petActivity";
-import { isPetVisible, loadPetPrefs, setPetVisible } from "./pet";
+import {
+  getPetSpeciesId,
+  isPetVisible,
+  loadPetPrefs,
+  setPetSpecies,
+  setPetVisible,
+} from "./pet";
 
 const store = new Map<string, string>();
+const STORAGE_KEY = "inquiry-island-pet";
 
 beforeEach(() => {
   store.clear();
@@ -23,13 +29,6 @@ beforeEach(() => {
 });
 
 describe("ambient pet activity", () => {
-  it("maps subject to a default creature", () => {
-    expect(speciesForSubject("math")).toBe("pebble");
-    expect(speciesForSubject("ela")).toBe("coral");
-    expect(speciesForSubject("science")).toBe("sprout");
-    expect(speciesForSubject(null)).toBe("pebble");
-  });
-
   it("derives celebrating and working from timed reactions", () => {
     expect(
       deriveAmbientMood({ reaction: "celebrating", inLab: true, needsAnswer: true }),
@@ -53,10 +52,58 @@ describe("ambient pet activity", () => {
 });
 
 describe("ambient pet prefs", () => {
-  it("defaults to visible and can hide", () => {
-    expect(loadPetPrefs().visible).toBe(true);
+  it("defaults to visible dog", () => {
+    const prefs = loadPetPrefs();
+    expect(prefs.visible).toBe(true);
+    expect(prefs.speciesId).toBe("dog");
+    expect(prefs.version).toBe(3);
     expect(isPetVisible()).toBe(true);
+    expect(getPetSpeciesId()).toBe("dog");
+  });
+
+  it("can hide and show the pet", () => {
     setPetVisible(false);
     expect(isPetVisible()).toBe(false);
+    setPetVisible(true);
+    expect(isPetVisible()).toBe(true);
+  });
+
+  it("persists species choice", () => {
+    setPetSpecies("cat");
+    expect(getPetSpeciesId()).toBe("cat");
+    expect(loadPetPrefs().speciesId).toBe("cat");
+    setPetSpecies("rabbit");
+    expect(getPetSpeciesId()).toBe("rabbit");
+  });
+
+  it("preserves species when toggling visibility", () => {
+    setPetSpecies("cat");
+    setPetVisible(false);
+    expect(loadPetPrefs()).toEqual({ version: 3, visible: false, speciesId: "cat" });
+    setPetVisible(true);
+    expect(loadPetPrefs().speciesId).toBe("cat");
+  });
+
+  it("migrates legacy pebble species to dog", () => {
+    store.set(
+      STORAGE_KEY,
+      JSON.stringify({ version: 2, visible: true, speciesId: "pebble" }),
+    );
+    expect(loadPetPrefs().speciesId).toBe("dog");
+    expect(loadPetPrefs().version).toBe(3);
+  });
+
+  it("migrates legacy coral and sprout species", () => {
+    store.set(
+      STORAGE_KEY,
+      JSON.stringify({ version: 2, visible: true, speciesId: "coral" }),
+    );
+    expect(loadPetPrefs().speciesId).toBe("cat");
+
+    store.set(
+      STORAGE_KEY,
+      JSON.stringify({ version: 2, visible: true, speciesId: "sprout" }),
+    );
+    expect(loadPetPrefs().speciesId).toBe("rabbit");
   });
 });

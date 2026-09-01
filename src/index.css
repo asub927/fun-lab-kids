@@ -3476,7 +3476,9 @@ main:has(.home-page) {
 
 .pet-sprite--idle .pet-part--claw-r,
 .pet-sprite--idle .pet-part--fin,
-.pet-sprite--idle .pet-part--leaf {
+.pet-sprite--idle .pet-part--leaf,
+.pet-sprite--idle .pet-part--ear-l,
+.pet-sprite--idle .pet-part--ear-r {
   animation: pet-twitch 3.4s ease-in-out infinite;
 }
 
@@ -3498,7 +3500,9 @@ main:has(.home-page) {
 }
 
 .pet-sprite--working .pet-part--claw-l,
-.pet-sprite--working .pet-part--claw-r {
+.pet-sprite--working .pet-part--claw-r,
+.pet-sprite--working .pet-part--paw-l,
+.pet-sprite--working .pet-part--paw-r {
   animation: pet-claw-work 0.45s ease-in-out infinite;
 }
 
@@ -3529,13 +3533,17 @@ main:has(.home-page) {
 }
 
 .pet-sprite--celebrating .pet-part--claw-r,
-.pet-sprite--celebrating .pet-part--fin {
+.pet-sprite--celebrating .pet-part--fin,
+.pet-sprite--celebrating .pet-part--paw-r,
+.pet-sprite--celebrating .pet-part--paw-l {
   animation: pet-wave-arm 0.45s ease-in-out infinite;
 }
 
 /* Wave */
 .pet-sprite--waving .pet-part--claw-r,
-.pet-sprite--waving .pet-part--fin {
+.pet-sprite--waving .pet-part--fin,
+.pet-sprite--waving .pet-part--paw-r,
+.pet-sprite--waving .pet-part--paw-l {
   animation: pet-wave-arm 0.4s ease-in-out infinite;
 }
 
@@ -3712,6 +3720,90 @@ main:has(.home-page) {
   accent-color: var(--accent);
 }
 
+.pet-pref-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-ink-muted, rgba(10, 10, 10, 0.65));
+}
+
+.pet-species-picker {
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  border: none;
+}
+
+.pet-species-picker legend {
+  font-family: var(--font-chrome);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-2);
+}
+
+.pet-species-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.pet-species-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.55rem 0.4rem 0.65rem;
+  border: 2px solid var(--color-ink);
+  border-radius: var(--radius-md, 0.65rem);
+  background: var(--color-paper);
+  box-shadow: var(--shadow-hard-sm);
+  cursor: pointer;
+  font: inherit;
+  color: var(--color-ink);
+  transition:
+    background 0.15s ease,
+    transform 0.15s var(--ease-spring);
+}
+
+.pet-species-option:hover {
+  background: var(--color-cream);
+}
+
+.pet-species-option.is-selected {
+  background: var(--color-cream);
+  box-shadow: var(--shadow-hard);
+}
+
+.pet-species-option.is-dimmed {
+  opacity: 0.72;
+}
+
+.pet-species-preview {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+}
+
+.pet-species-preview .pet-sprite {
+  width: 3rem;
+  height: 3rem;
+}
+
+.pet-species-label {
+  font-family: var(--font-chrome);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 520px) {
+  .pet-species-picker-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 640px) {
   .island-pet-nest,
   .island-pet-nest-hit {
@@ -3746,6 +3838,10 @@ main:has(.home-page) {
   .pet-part--claw-r,
   .pet-part--fin,
   .pet-part--leaf,
+  .pet-part--ear-l,
+  .pet-part--ear-r,
+  .pet-part--paw-l,
+  .pet-part--paw-r,
   .pet-part--tail,
   .pet-part--leg-l,
   .pet-part--leg-r,
