@@ -11,6 +11,7 @@ export function CatalogPage() {
         The full skills catalog for North Carolina schools. Grade 2 skills are ready to play. More
         grades arrive soon.
       </p>
+      <p className="table-scroll-hint">Swipe sideways to see all columns.</p>
       <div className="table-wrap">
         <table>
           <caption className="sr-only">North Carolina K-5 skills in Inquiry Island</caption>
