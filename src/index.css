@@ -2204,6 +2204,35 @@ tbody tr:last-child td {
   gap: var(--space-2);
 }
 
+.subject-progress-row {
+  display: block;
+  padding: 0.75rem;
+  border: var(--border-width) solid var(--color-ink);
+  border-radius: var(--radius-tablet);
+  background: var(--color-paper);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-out-expo),
+    box-shadow var(--duration-fast) var(--ease-out-expo),
+    background-color 0.15s ease;
+}
+
+.subject-progress-row:hover {
+  background: var(--color-cream-2);
+  transform: translateX(4px);
+}
+
+.subject-progress-row:active {
+  transform: translateX(2px) scale(0.995);
+}
+
+.subject-progress-row:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+}
+
 .subject-progress-header {
   display: flex;
   justify-content: space-between;
@@ -2225,11 +2254,34 @@ tbody tr:last-child td {
 }
 
 .achievement-card {
+  display: block;
   padding: 1rem;
   border: var(--border-width) solid var(--color-ink);
   border-radius: var(--radius-tablet);
   box-shadow: var(--shadow-hard-sm);
   background: var(--color-paper);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-out-expo),
+    box-shadow var(--duration-fast) var(--ease-out-expo),
+    opacity 0.2s ease,
+    background-color 0.15s ease;
+}
+
+.achievement-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hard);
+}
+
+.achievement-card:active {
+  transform: translateY(0) scale(0.995);
+}
+
+.achievement-card:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
 }
 
 .achievement-card.earned {
@@ -2241,6 +2293,16 @@ tbody tr:last-child td {
 .achievement-card.locked {
   opacity: 0.55;
   box-shadow: none;
+  transition:
+    transform var(--duration-fast) var(--ease-out-expo),
+    box-shadow var(--duration-fast) var(--ease-out-expo),
+    opacity 0.2s ease,
+    background-color 0.15s ease;
+}
+
+.achievement-card.locked:hover {
+  opacity: 0.85;
+  box-shadow: var(--shadow-hard-sm);
 }
 
 .achievement-card h3 {
@@ -3680,11 +3742,16 @@ main:has(.home-page) {
 }
 
 .achievement-card.locked {
-  transition: opacity 0.2s ease;
+  transition:
+    transform var(--duration-fast) var(--ease-out-expo),
+    box-shadow var(--duration-fast) var(--ease-out-expo),
+    opacity 0.2s ease,
+    background-color 0.15s ease;
 }
 
 .achievement-card.locked:hover {
   opacity: 0.85;
+  box-shadow: var(--shadow-hard-sm);
 }
 
 .motion-stagger.is-visible > *:nth-child(7) {
