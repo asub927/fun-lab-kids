@@ -1,14 +1,13 @@
 # Inquiry Island
 
-**NC K–5 Math, English & Science — learn with your AI teammate**
+**NC K–5 Math, English & Science — hands-on Grade 2 learning labs**
 
-WebMCP Challenge project: a Synthesis-inspired learning web app where kids and an AI agent share manipulatives, writing boards, and simple science sims via `document.modelContext.registerTool`.
+Inquiry Island is a kid-friendly learning app where students stack blocks, build sentences, and run science labs across North Carolina Grade 2 standards. Progress saves locally on the device — no account required.
 
 | | |
 | --- | --- |
 | **Repo** | `inquiry-island` |
 | **License** | MIT |
-| **Deadline** | Sep 3, 2026 @ 1:00pm PDT |
 | **Hosting** | Vercel |
 
 ## Quick start
@@ -26,13 +25,16 @@ Guest mode — no child PII; progress saves in localStorage on this device:
 
 | URL | Purpose |
 | --- | --- |
-| `/grade-2` | Jordan's Grade 2 hub (Math, ELA, Science) |
+| `/` | Home page |
+| `/grade-2` | Grade 2 hub (Math, ELA, Science) |
 | `/grade-2/math` | All NC.2.* math standards |
 | `/grade-2/ela` | All Grade 2 ELA standards |
 | `/grade-2/science` | All Grade 2 science standards |
+| `/grade-2/progress` | Island Points, streaks, badges, and island friend |
+| `/catalog` | Full K–5 standards catalog |
 | `/lab/:code` | Play any Grade 2 standard (e.g. `/lab/NC.2.NBT.1`) |
 
-Legacy judge deep links redirect automatically:
+Legacy deep links redirect automatically:
 
 | Old URL | Redirects to |
 | --- | --- |
@@ -40,27 +42,6 @@ Legacy judge deep links redirect automatically:
 | `/demo/math` | `/lab/NC.2.NBT.1` |
 | `/demo/ela` | `/lab/W.2.1` |
 | `/demo/science` | `/lab/2.P.2.1` |
-
-## ChatGPT judge prompts
-
-1. **Math:** `Open Place Value Island. Use tools to build 243 with hundreds, tens, and ones blocks, then run_check.`
-2. **ELA:** `Help me write an opinion about recess. Add two reasons and a linking word; suggest one revision and wait for my confirm.`
-3. **Science:** `Classify the objects, heat the ice, predict the state, then run_check.`
-
-## WebMCP testing
-
-Test in one of:
-
-- **ChatGPT** in-app browser (WebMCP enabled by default), or
-- **Chrome:** enable `chrome://flags/#enable-webmcp-testing` and restart
-
-If WebMCP is unavailable, a banner appears — the kid UI still works without an agent.
-
-### Registered tools (P0)
-
-Curriculum: `list_subjects`, `list_grades`, `list_standards`, `get_standard`, `search_standards`, `set_active_standard`, `get_progress`
-
-Board: `get_board_state`, `apply_board_action`, `undo`, `run_check`, `request_hint`, `ask_guiding_question`, `reveal_solution`, `reset_board`, `suggest_revision` (Opinion Builder)
 
 ## Scripts
 
@@ -71,9 +52,9 @@ npm run test       # board reducer tests
 npm run build      # production build → dist/
 ```
 
-## Vercel
+## Deployment
 
-Deploy only after the local smoke checklist passes. See `vercel.json` for build settings and SPA routing. Preview deploys are automatic per PR.
+Deploy after the local build passes. See `vercel.json` for build settings and SPA routing.
 
 ```bash
 npm run build   # verify locally first
@@ -81,14 +62,15 @@ npm run build   # verify locally first
 
 Import the repo at [vercel.com/new](https://vercel.com/new) — no environment variables required.
 
-## Scope (Phase 1 shipped)
+## Features
 
 - **NCSCOS-complete Grade 2** — 77 playable standards (23 Math, 41 ELA, 13 Science)
-- Hybrid template library + 3 showcase labs
-- Grade 2 hub, subject browsers, `/lab/:standardCode` routing
+- Hybrid template library + 3 showcase labs (Place Value Island, Opinion Builder, Matter Lab)
+- Grade 2 hub, subject browsers, and `/lab/:standardCode` routing
+- Island Points, Smart Score, streaks, and 8 achievement badges
+- Optional island friend (corner pet) and subject guides (Ripple, Digits, Spark)
 - localStorage progress per standard
-- WebMCP tools + degradation banner
-- K–5 catalog stubs (non-G2 marked coming soon)
+- K–5 catalog stubs (non–Grade 2 marked coming soon)
 
 ## Standards attribution
 

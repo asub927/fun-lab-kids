@@ -1,23 +1,6 @@
 import { Link } from "react-router-dom";
 import { grade2ShowcaseStandards } from "../data/standards";
 
-const PROMPTS = [
-  {
-    lab: "Math",
-    prompt:
-      "Open Place Value Island. Use tools to build 243 with hundreds, tens, and ones blocks, then run_check.",
-  },
-  {
-    lab: "ELA",
-    prompt:
-      "Help me write an opinion about recess. Add two reasons and a linking word; suggest one revision and wait for my confirm.",
-  },
-  {
-    lab: "Science",
-    prompt: "Classify the objects, heat the ice, predict the state, then run_check.",
-  },
-];
-
 export function DemoHubPage() {
   return (
     <div className="page demo-hub">
@@ -49,17 +32,6 @@ export function DemoHubPage() {
           );
         })}
       </div>
-
-      <section className="judge-prompts" aria-labelledby="judge-prompts-heading">
-        <h2 id="judge-prompts-heading">ChatGPT Judge Prompts</h2>
-        <ol>
-          {PROMPTS.map((p) => (
-            <li key={p.lab}>
-              <strong>{p.lab}:</strong> <code translate="no">{p.prompt}</code>
-            </li>
-          ))}
-        </ol>
-      </section>
     </div>
   );
 }
