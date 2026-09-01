@@ -1,6 +1,8 @@
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { CelebrationBurst } from "./CelebrationBurst";
 import { CharacterGuide } from "./CharacterGuide";
+import { hasStrategyContent, parseStrategyParams, StrategyPanel } from "./StrategyPanel";
 import { useApp } from "../context/AppContext";
 import { loadProgress } from "../services/progress";
 import {
@@ -9,16 +11,47 @@ import {
   pickMasteryLine,
   pickStreakLine,
 } from "../services/characterDialogue";
-import { hasWebMCP } from "../webmcp/register";
 
 type LabShellProps = {
   title: string;
   children: React.ReactNode;
 };
 
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  const tag = target.tagName;
+  return (
+    tag === "INPUT" ||
+    tag === "TEXTAREA" ||
+    tag === "SELECT" ||
+    target.isContentEditable
+  );
+}
+
+function focusPrimaryAnswerInput() {
+  if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) return;
+
+  const root = document.querySelector(".lab-board");
+  if (!root) return;
+
+  const input = root.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+    [
+      ".answer-field input:not([type='hidden'])",
+      ".answer-field textarea",
+      "input:not([type='checkbox']):not([type='radio']):not([type='hidden'])",
+      "textarea",
+    ].join(", "),
+  );
+  if (!input) return;
+
+  input.focus({ preventScroll: true });
+  input.scrollIntoView({ block: "nearest", inline: "nearest" });
+}
+
 export function LabShell({ title, children }: LabShellProps) {
   const {
     activeStandard,
+    boardState,
     lastCheck,
     lastCelebration,
     clearCelebration,
@@ -28,16 +61,22 @@ export function LabShell({ title, children }: LabShellProps) {
     correctCount,
     questionLevel,
     canAdvanceQuestion,
+    canGoPreviousQuestion,
     undo,
     runCheck,
     revealAnswer,
     advanceQuestion,
+    previousQuestion,
     resetBoard,
   } = useApp();
 
   const store = loadProgress();
   const subject = activeStandard?.subject ?? "math";
   const checkCount = store.gamification.lifetimeChecks;
+  const hasQuestionPager = questionTotal > 1;
+  const lastCheckKey = lastCheck
+    ? `${lastCheck.ok ? "ok" : "miss"}:${lastCheck.feedback}`
+    : "none";
 
   const backTo =
     activeStandard?.subject === "math"
@@ -52,6 +91,33 @@ export function LabShell({ title, children }: LabShellProps) {
     if (window.confirm("Reset this question?")) resetBoard();
   };
 
+  useEffect(() => {
+    if (!hasQuestionPager) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (isTypingTarget(event.target)) return;
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        previousQuestion();
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        advanceQuestion();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [hasQuestionPager, previousQuestion, advanceQuestion]);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      focusPrimaryAnswerInput();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [questionIndex, activeStandard?.code, lastCheckKey]);
+
   const resultClass = lastCheck
     ? lastCheck.ok
       ? "ok"
@@ -60,7 +126,8 @@ export function LabShell({ title, children }: LabShellProps) {
         : "warn"
     : "";
 
-  const showCelebration = lastCelebration && (lastCelebration.isNewMastery || lastCelebration.newAchievements.length > 0);
+  const showCelebration =
+    lastCelebration && (lastCelebration.isNewMastery || lastCelebration.newAchievements.length > 0);
 
   const celebrationLine = (() => {
     if (!lastCelebration) return "";
@@ -85,118 +152,160 @@ export function LabShell({ title, children }: LabShellProps) {
       : pickLabLine(subject, "labEncourage", store, checkCount)
     : "";
 
-  const inlineMood = lastCheck?.ok ? "cheering" : "thinking";
+  const inlineMood = lastCheck?.ok ? "happy" : "thinking";
+
+  const strategy = useMemo(() => {
+    if (!boardState || !("params" in boardState) || !boardState.params) return null;
+    const parsed = parseStrategyParams(boardState.params);
+    return hasStrategyContent(parsed) ? parsed : null;
+  }, [boardState]);
+
+  const [helpOpen, setHelpOpen] = useState(false);
+
+  useEffect(() => {
+    setHelpOpen(false);
+  }, [questionIndex, activeStandard?.code, strategy?.panelKey]);
 
   return (
-    <article className="lab-shell">
-      <header className="lab-header">
-        <div>
-          <Link to={backTo} className="back-link">
-            ← Grade 2 Hub
-          </Link>
-          <h1 className="lab-title">{title}</h1>
-          {activeStandard && (
-            <p className="standard-chip">
-              <span translate="no">{activeStandard.code}</span>{" "}
-              {activeStandard.text.slice(0, 120)}
-              {activeStandard.text.length > 120 ? "…" : ""}
-            </p>
-          )}
-          {questionTotal > 1 && (
-            <div className="practice-stats" role="status">
-              <p className="question-progress">
-                Question {questionIndex + 1} of {questionTotal} · Level {questionLevel}
+    <div className={`lab-layout ${strategy ? "lab-layout--with-help" : ""} ${helpOpen ? "lab-layout--help-open" : ""}`}>
+      <article className="lab-shell lab-work-card">
+        <header className="lab-header">
+          <div className="lab-header-meta">
+            <Link to={backTo} className="back-link">
+              ← Grade 2 Hub
+            </Link>
+            <h1 className="lab-title">{title}</h1>
+            {activeStandard && (
+              <p className="standard-chip" title={activeStandard.text}>
+                <span translate="no">{activeStandard.code}</span>
               </p>
-              <p className="smart-score">Smart Score: {smartScore} · Correct: {correctCount}</p>
-            </div>
-          )}
-        </div>
-        <div className="lab-actions" role="toolbar" aria-label="Board actions">
-          <button type="button" className="btn secondary" onClick={undo}>
-            Undo
-          </button>
-          <button type="button" className="btn primary" onClick={() => runCheck()}>
-            Check Answer
-          </button>
-          <button type="button" className="btn secondary" onClick={() => revealAnswer()}>
-            Show Answer
-          </button>
-          {canAdvanceQuestion && (
-            <button type="button" className="btn primary" onClick={advanceQuestion}>
-              Next Question →
-            </button>
-          )}
-          <button type="button" className="btn danger" onClick={handleReset}>
-            Reset Board
-          </button>
-        </div>
-      </header>
-
-      {hasWebMCP() && (
-        <p className="agent-ready" role="status">
-          WebMCP tools are active. Your agent can use this board.
-        </p>
-      )}
-
-      {showCelebration && lastCelebration && (
-        <div className="mastery-panel" role="status" aria-live="polite">
-          <CelebrationBurst withBalloons />
-          <CharacterGuide
-            subject={subject}
-            line={celebrationLine}
-            mood="cheering"
-            live
-          />
-          <div className="mastery-panel-body">
-            <p className="mastery-panel-heading">
-              {lastCelebration.isNewMastery ? "Skill mastered!" : "Badge unlocked!"}
-            </p>
-            {lastCelebration.xpEarned > 0 && (
-              <p className="mastery-xp">+{lastCelebration.xpEarned} Island Points</p>
             )}
-            {lastCelebration.newAchievements.length > 0 && (
-              <ul className="mastery-achievements">
-                {lastCelebration.newAchievements.map((achievement) => (
-                  <li key={achievement.id}>
-                    {achievement.icon} {achievement.title}
-                  </li>
-                ))}
-              </ul>
+            {hasQuestionPager && (
+              <p className="practice-stats" role="status">
+                Question {questionIndex + 1}/{questionTotal} · L{questionLevel} · Score{" "}
+                {smartScore} · Correct {correctCount}
+              </p>
             )}
-            {streakLine && <p className="mastery-streak">{streakLine}</p>}
           </div>
-          <button type="button" className="btn secondary mastery-dismiss" onClick={clearCelebration}>
-            Keep going
-          </button>
-        </div>
-      )}
+          <div className="lab-actions" role="toolbar" aria-label="Board actions">
+            <button type="button" className="btn secondary" onClick={undo}>
+              Undo
+            </button>
+            <button type="button" className="btn primary" onClick={() => runCheck()}>
+              Check Answer
+            </button>
+            <button type="button" className="btn hint" onClick={() => revealAnswer()}>
+              Show Answer
+            </button>
+            <button type="button" className="btn danger" onClick={handleReset}>
+              Reset Board
+            </button>
+          </div>
+        </header>
 
-      {lastCheck && (
-        <div
-          className={`check-result ${resultClass} ${lastCheck.ok ? "check-result--ok" : ""}`}
-          role="status"
-          aria-live="polite"
-        >
-          {lastCheck.ok && !showCelebration && <CelebrationBurst withBalloons />}
-          <span>{lastCheck.feedback}</span>
-          {lastCelebration && lastCelebration.xpEarned > 0 && !showCelebration && (
-            <span className="inline-xp">+{lastCelebration.xpEarned} Island Points</span>
-          )}
-          {!showCelebration && (
-            <div className="character-lab-reaction">
-              <CharacterGuide
-                subject={subject}
-                line={inlineLine}
-                mood={inlineMood}
-                compact
-                live
-              />
+        {showCelebration && lastCelebration && (
+          <div className="mastery-panel" role="status" aria-live="polite">
+            <CelebrationBurst />
+            <CharacterGuide subject={subject} line={celebrationLine} mood="cheering" live />
+            <div className="mastery-panel-body">
+              <p className="mastery-panel-heading">
+                {lastCelebration.isNewMastery ? "Skill mastered!" : "Badge unlocked!"}
+              </p>
+              {lastCelebration.xpEarned > 0 && (
+                <p className="mastery-xp">+{lastCelebration.xpEarned} Island Points</p>
+              )}
+              {lastCelebration.newAchievements.length > 0 && (
+                <ul className="mastery-achievements">
+                  {lastCelebration.newAchievements.map((achievement) => (
+                    <li key={achievement.id}>
+                      {achievement.icon} {achievement.title}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {streakLine && <p className="mastery-streak">{streakLine}</p>}
+            </div>
+            <button type="button" className="btn secondary mastery-dismiss" onClick={clearCelebration}>
+              Keep Going
+            </button>
+          </div>
+        )}
+
+        <div className="lab-work-stage">
+          <div className="lab-board">{children}</div>
+
+          {lastCheck && (
+            <div
+              className={`check-result ${resultClass} ${lastCheck.ok ? "check-result--ok" : ""}`}
+              role="status"
+              aria-live="polite"
+            >
+              <div className="check-result-main">
+                <span>{lastCheck.feedback}</span>
+                {lastCelebration && lastCelebration.xpEarned > 0 && !showCelebration && (
+                  <span className="inline-xp">+{lastCelebration.xpEarned} Island Points</span>
+                )}
+              </div>
+              {!showCelebration && (
+                <div className="character-lab-reaction">
+                  <CharacterGuide
+                    subject={subject}
+                    line={inlineLine}
+                    mood={inlineMood}
+                    compact
+                    live
+                  />
+                </div>
+              )}
             </div>
           )}
-        </div>
-      )}
 
-      <div className="lab-board">{children}</div>
-    </article>
+          {hasQuestionPager && (
+            <nav className="question-nav" aria-label="Question navigation">
+              <button
+                type="button"
+                className="btn secondary question-nav-btn"
+                onClick={previousQuestion}
+                disabled={!canGoPreviousQuestion}
+                aria-label="Previous question"
+              >
+                <span aria-hidden="true">←</span> Previous
+              </button>
+              <p className="question-nav-status" aria-live="polite">
+                Question <span className="tabular">{questionIndex + 1}</span> of{" "}
+                <span className="tabular">{questionTotal}</span>
+              </p>
+              <button
+                type="button"
+                className="btn primary question-nav-btn"
+                onClick={advanceQuestion}
+                disabled={!canAdvanceQuestion}
+                aria-label="Next question"
+              >
+                Next <span aria-hidden="true">→</span>
+              </button>
+            </nav>
+          )}
+        </div>
+      </article>
+
+      {strategy && (
+        <aside className="lab-help-card" aria-label="Strategy help">
+            <StrategyPanel
+              key={strategy.panelKey}
+              title={strategy.title}
+              steps={strategy.steps}
+              sourceLabel={strategy.sourceLabel}
+              sourceUrl={strategy.sourceUrl}
+              videoUrl={strategy.videoUrl}
+              videoTitle={strategy.videoTitle}
+              videoProvider={strategy.videoProvider}
+              layout="rail"
+              open={helpOpen}
+              onOpenChange={setHelpOpen}
+            />
+        </aside>
+      )}
+    </div>
   );
 }

@@ -321,7 +321,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return result;
   }, [boardState, activeStandard, clearAutoCheckTimer]);
 
-    const advanceQuestion = useCallback(() => {
+  const advanceQuestion = useCallback(() => {
     if (questionSet.length === 0 || questionIndex >= questionSet.length - 1) return;
     const nextIndex = questionIndex + 1;
     setQuestionIndex(nextIndex);
