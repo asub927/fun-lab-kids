@@ -59,6 +59,9 @@ export function TemplateLab({ state }: TemplateLabProps) {
               id="numeric-answer"
               type="number"
               inputMode="numeric"
+              name="answer"
+              autoComplete="off"
+              spellCheck={false}
               value={state.numericAnswer}
               onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
             />
@@ -81,6 +84,9 @@ export function TemplateLab({ state }: TemplateLabProps) {
               id="groups-answer"
               type="number"
               inputMode="numeric"
+              name="answer"
+              autoComplete="off"
+              spellCheck={false}
               value={state.numericAnswer}
               onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
             />
@@ -120,6 +126,8 @@ export function TemplateLab({ state }: TemplateLabProps) {
             Write in expanded form (e.g. 300+50+2)
             <input
               id="expanded-form"
+              name="answer"
+              autoComplete="off"
               value={state.textResponse}
               onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
             />
@@ -142,6 +150,9 @@ export function TemplateLab({ state }: TemplateLabProps) {
               id="skip-answer"
               type="number"
               inputMode="numeric"
+              name="answer"
+              autoComplete="off"
+              spellCheck={false}
               value={state.numericAnswer}
               onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
             />
@@ -209,6 +220,8 @@ export function TemplateLab({ state }: TemplateLabProps) {
             {String(p.question ?? "Your answer")}
             <textarea
               id="reading-answer"
+              name="answer"
+              autoComplete="off"
               rows={3}
               value={state.textResponse}
               onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
@@ -228,6 +241,8 @@ export function TemplateLab({ state }: TemplateLabProps) {
             Corrected sentence
             <input
               id="fixed-sentence"
+              name="answer"
+              autoComplete="off"
               value={state.textResponse}
               onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
             />
@@ -253,6 +268,8 @@ export function TemplateLab({ state }: TemplateLabProps) {
             Your observation or answer
             <textarea
               id="science-answer"
+              name="answer"
+              autoComplete="off"
               rows={2}
               value={state.textResponse}
               onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
@@ -274,6 +291,9 @@ export function TemplateLab({ state }: TemplateLabProps) {
               id="mental-answer"
               type="number"
               inputMode="numeric"
+              name="answer"
+              autoComplete="off"
+              spellCheck={false}
               value={state.numericAnswer}
               onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
             />
@@ -329,6 +349,9 @@ export function TemplateLab({ state }: TemplateLabProps) {
               id="measurement-answer"
               type="number"
               inputMode="numeric"
+              name="answer"
+              autoComplete="off"
+              spellCheck={false}
               value={state.numericAnswer}
               onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
             />
@@ -350,6 +373,9 @@ export function TemplateLab({ state }: TemplateLabProps) {
               id="chart-answer"
               type="number"
               inputMode="numeric"
+              name="answer"
+              autoComplete="off"
+              spellCheck={false}
               value={state.numericAnswer}
               onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
             />
@@ -369,6 +395,8 @@ export function TemplateLab({ state }: TemplateLabProps) {
             {typeof p.parts === "number" ? "Name the equal parts" : "Number of sides"}
             <input
               id="geometry-answer"
+              name="answer"
+              autoComplete="off"
               value={state.textResponse || state.numericAnswer}
               onChange={(e) => {
                 applyAction({ action: "set_text", text: e.target.value });
@@ -393,6 +421,8 @@ export function TemplateLab({ state }: TemplateLabProps) {
             {mode === "clock" ? "Write the time" : "Total cents"}
             <input
               id="time-money-answer"
+              name="answer"
+              autoComplete="off"
               value={state.textResponse || state.numericAnswer}
               onChange={(e) => {
                 applyAction({ action: "set_text", text: e.target.value });
@@ -421,6 +451,8 @@ export function TemplateLab({ state }: TemplateLabProps) {
           Answer
           <input
             id="template-answer"
+            name="answer"
+            autoComplete="off"
             value={state.numericAnswer || state.textResponse}
             onChange={(e) => {
               applyAction({ action: "set_numeric", value: e.target.value });

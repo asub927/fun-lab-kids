@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { CelebrationBurst } from "./CelebrationBurst";
 import { CharacterGuide } from "./CharacterGuide";
@@ -29,6 +29,8 @@ function isTypingTarget(target: EventTarget | null): boolean {
 }
 
 function focusPrimaryAnswerInput() {
+  if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) return;
+
   const root = document.querySelector(".lab-board");
   if (!root) return;
 
@@ -158,8 +160,14 @@ export function LabShell({ title, children }: LabShellProps) {
     return hasStrategyContent(parsed) ? parsed : null;
   }, [boardState]);
 
+  const [helpOpen, setHelpOpen] = useState(false);
+
+  useEffect(() => {
+    setHelpOpen(false);
+  }, [questionIndex, activeStandard?.code, strategy?.panelKey]);
+
   return (
-    <div className={`lab-layout ${strategy ? "lab-layout--with-help" : ""}`}>
+    <div className={`lab-layout ${strategy ? "lab-layout--with-help" : ""} ${helpOpen ? "lab-layout--help-open" : ""}`}>
       <article className="lab-shell lab-work-card">
         <header className="lab-header">
           <div className="lab-header-meta">
@@ -283,17 +291,19 @@ export function LabShell({ title, children }: LabShellProps) {
 
       {strategy && (
         <aside className="lab-help-card" aria-label="Strategy help">
-          <StrategyPanel
-            key={strategy.panelKey}
-            title={strategy.title}
-            steps={strategy.steps}
-            sourceLabel={strategy.sourceLabel}
-            sourceUrl={strategy.sourceUrl}
-            videoUrl={strategy.videoUrl}
-            videoTitle={strategy.videoTitle}
-            videoProvider={strategy.videoProvider}
-            layout="rail"
-          />
+            <StrategyPanel
+              key={strategy.panelKey}
+              title={strategy.title}
+              steps={strategy.steps}
+              sourceLabel={strategy.sourceLabel}
+              sourceUrl={strategy.sourceUrl}
+              videoUrl={strategy.videoUrl}
+              videoTitle={strategy.videoTitle}
+              videoProvider={strategy.videoProvider}
+              layout="rail"
+              open={helpOpen}
+              onOpenChange={setHelpOpen}
+            />
         </aside>
       )}
     </div>

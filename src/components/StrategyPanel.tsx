@@ -7,6 +7,8 @@ export type StrategyPanelProps = {
   videoTitle?: string;
   videoProvider?: string;
   layout?: "accordion" | "rail";
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 export function parseStrategyParams(params: Record<string, unknown>) {
@@ -47,7 +49,7 @@ function StrategyPanelBody({
 }: StrategyPanelProps) {
   return (
     <>
-      <h2 className="strategy-title">{title}</h2>
+      <p className="strategy-title">{title}</p>
       {sourceLabel && sourceUrl && (
         <p className="strategy-source">
           Source:{" "}
@@ -84,31 +86,49 @@ export function StrategyPanel({
   videoTitle,
   videoProvider,
   layout = "accordion",
+  open,
+  onOpenChange,
 }: StrategyPanelProps) {
   if (!hasStrategyContent({ title, steps })) return null;
 
   if (layout === "rail") {
+    const isOpen = open ?? false;
+
     return (
-      <details className="strategy-panel strategy-panel--rail" aria-label={`Strategy: ${title}`}>
-        <summary className="strategy-rail-summary">
+      <div
+        className={`strategy-panel strategy-panel--rail ${isOpen ? "is-open" : ""}`}
+        aria-label={`Strategy: ${title}`}
+      >
+        <button
+          type="button"
+          className="strategy-rail-summary"
+          aria-expanded={isOpen}
+          aria-controls="strategy-rail-body"
+          onClick={() => onOpenChange?.(!isOpen)}
+        >
           <span className="strategy-rail-summary-copy">
             <span className="strategy-summary-text">How to solve this</span>
-            <span className="strategy-rail-hint">Tap for steps</span>
+            <span className="strategy-rail-hint">Show steps…</span>
           </span>
-          <span className="strategy-summary-chevron" aria-hidden="true" />
-        </summary>
-        <div className="strategy-panel-body strategy-panel-body--rail">
-          <StrategyPanelBody
-            title={title}
-            steps={steps}
-            sourceLabel={sourceLabel}
-            sourceUrl={sourceUrl}
-            videoUrl={videoUrl}
-            videoTitle={videoTitle}
-            videoProvider={videoProvider}
+          <span
+            className={`strategy-summary-chevron ${isOpen ? "is-open" : ""}`}
+            aria-hidden="true"
           />
-        </div>
-      </details>
+        </button>
+        {isOpen && (
+          <div id="strategy-rail-body" className="strategy-panel-body strategy-panel-body--rail">
+            <StrategyPanelBody
+              title={title}
+              steps={steps}
+              sourceLabel={sourceLabel}
+              sourceUrl={sourceUrl}
+              videoUrl={videoUrl}
+              videoTitle={videoTitle}
+              videoProvider={videoProvider}
+            />
+          </div>
+        )}
+      </div>
     );
   }
 
