@@ -42,6 +42,15 @@ export type CheckResult = {
   revealed?: boolean;
 };
 
+export type ToolCallLogEntry = {
+  id: string;
+  timestamp: number;
+  tool: string;
+  argsSummary: string;
+  ok: boolean;
+  message?: string;
+};
+
 export type BlockType = "hundred" | "ten" | "one";
 
 export type PlaceValueState = {
@@ -123,3 +132,24 @@ export type TemplateAction =
   | { action: "set_frame_field"; field: string; text: string };
 
 export type BoardAction = PlaceValueAction | OpinionAction | MatterAction | TemplateAction;
+
+declare global {
+  interface ModelContextTool {
+    name: string;
+    description: string;
+    inputSchema: Record<string, unknown>;
+    annotations?: { readOnlyHint?: boolean };
+    execute: (input: Record<string, unknown>) => Promise<unknown> | unknown;
+  }
+
+  interface ModelContext {
+    registerTool(tool: ModelContextTool): Promise<void>;
+    unregisterTool(name: string): Promise<void>;
+  }
+
+  interface Document {
+    modelContext?: ModelContext;
+  }
+}
+
+export {};

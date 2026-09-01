@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { BoardState, LabId, Standard } from "../types";
+import type { BoardState, LabId, Standard, ToolCallLogEntry } from "../types";
 import {
   applyBoardAction,
   createBoardState,
@@ -68,6 +68,7 @@ type AppContextValue = {
   activeStandard: Standard | null;
   boardState: BoardState | null;
   labId: LabId | null;
+  toolLog: ToolCallLogEntry[];
   lastCheck: ReturnType<typeof runBoardCheck> | null;
   lastCelebration: CelebrationPayload | null;
   clearCelebration: () => void;
@@ -78,6 +79,7 @@ type AppContextValue = {
   correctCount: number;
   questionLevel: number;
   setActiveLab: (labId: LabId, standardCode: string) => void;
+  setActiveStandard: (standardCode: string) => boolean;
   applyAction: (action: Record<string, unknown>) => BoardState | null;
   undo: () => void;
   runCheck: () => ReturnType<typeof runBoardCheck> | null;
@@ -90,6 +92,8 @@ type AppContextValue = {
   proposeRevision: (revision: string) => void;
   acceptRevision: () => void;
   rejectRevision: () => void;
+  logToolCall: (entry: Omit<ToolCallLogEntry, "id" | "timestamp">) => void;
+  getBoardSnapshot: () => Record<string, unknown> | null;
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -104,6 +108,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [smartScore, setSmartScore] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [, setHistory] = useState<BoardState[]>([]);
+  const [toolLog, setToolLog] = useState<ToolCallLogEntry[]>([]);
   const [lastCheck, setLastCheck] = useState<ReturnType<typeof runBoardCheck> | null>(null);
   const [lastCelebration, setLastCelebration] = useState<CelebrationPayload | null>(null);
 
@@ -162,6 +167,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setActiveLab = useCallback(
     (nextLabId: LabId, standardCode: string) => {
       bootLab(nextLabId, standardCode, resolveLabForStandard(standardCode)?.params ?? {});
+    },
+    [bootLab],
+  );
+
+  const setActiveStandard = useCallback(
+    (standardCode: string) => {
+      const resolved = resolveLabForStandard(standardCode);
+      if (!resolved) return false;
+      bootLab(resolved.labId, standardCode, resolved.params);
+      return true;
     },
     [bootLab],
   );
@@ -358,6 +373,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setBoardState({ ...boardState, pendingRevision: null });
   }, [boardState]);
 
+  const logToolCall = useCallback((entry: Omit<ToolCallLogEntry, "id" | "timestamp">) => {
+    setToolLog((log) =>
+      [{ ...entry, id: crypto.randomUUID(), timestamp: Date.now() }, ...log].slice(0, 50),
+    );
+  }, []);
+
+  const getBoardSnapshot = useCallback(() => {
+    if (!boardState) return null;
+    return { ...boardState };
+  }, [boardState]);
+
   const questionTotal = questionSet.length;
   const currentParams = questionSet[questionIndex] as { difficulty?: number } | undefined;
   const questionLevel = currentParams?.difficulty ?? Math.min(3, Math.floor(questionIndex / 3) + 1);
@@ -367,6 +393,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       activeStandard,
       boardState,
       labId,
+      toolLog,
       lastCheck,
       lastCelebration,
       clearCelebration,
@@ -377,6 +404,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       correctCount,
       questionLevel,
       setActiveLab,
+      setActiveStandard,
       applyAction,
       undo,
       runCheck,
@@ -389,11 +417,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       proposeRevision: proposeRevisionText,
       acceptRevision,
       rejectRevision,
+      logToolCall,
+      getBoardSnapshot,
     }),
     [
       activeStandard,
       boardState,
       labId,
+      toolLog,
       lastCheck,
       lastCelebration,
       clearCelebration,
@@ -404,6 +435,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       correctCount,
       questionLevel,
       setActiveLab,
+      setActiveStandard,
       applyAction,
       undo,
       runCheck,
@@ -416,6 +448,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       proposeRevisionText,
       acceptRevision,
       rejectRevision,
+      logToolCall,
+      getBoardSnapshot,
     ],
   );
 
