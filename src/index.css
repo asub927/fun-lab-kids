@@ -483,9 +483,13 @@ main:focus {
 
 .lab-body--with-strategy {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(15rem, 19rem);
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.85rem;
   align-items: start;
+}
+
+.lab-body--with-strategy:has(.strategy-panel--rail[open]) {
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 19rem);
 }
 
 .lab-main {
@@ -501,13 +505,16 @@ main:focus {
 }
 
 @media (max-width: 860px) {
-  .lab-body--with-strategy {
+  .lab-body--with-strategy,
+  .lab-body--with-strategy:has(.strategy-panel--rail[open]) {
     grid-template-columns: 1fr;
   }
 
-  .strategy-panel--rail {
+  .strategy-panel--rail,
+  .strategy-panel--rail[open] {
     position: static;
     max-height: none;
+    width: 100%;
   }
 }
 
@@ -631,6 +638,17 @@ main:focus {
 }
 
 .strategy-panel--rail {
+  align-self: start;
+  width: min(19rem, 100%);
+}
+
+.strategy-panel--rail:not([open]) {
+  position: static;
+  max-height: none;
+  overflow: visible;
+}
+
+.strategy-panel--rail[open] {
   position: sticky;
   top: 5.5rem;
   max-height: calc(100vh - 6.5rem);
@@ -638,18 +656,52 @@ main:focus {
   overscroll-behavior: contain;
 }
 
-.strategy-rail-header {
-  padding: 0.75rem 0.85rem 0.55rem;
+.strategy-rail-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.75rem 0.85rem;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.strategy-rail-summary::-webkit-details-marker {
+  display: none;
+}
+
+.strategy-rail-summary:focus-visible {
+  outline: 3px solid var(--color-paper);
+  outline-offset: -3px;
+}
+
+.strategy-rail-summary-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.strategy-rail-hint {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.88;
+}
+
+.strategy-panel--rail[open] .strategy-rail-hint {
+  display: none;
+}
+
+.strategy-panel--rail[open] .strategy-rail-summary {
   border-bottom: 2px solid color-mix(in srgb, currentColor 25%, transparent);
 }
 
-.strategy-rail-kicker {
-  margin: 0;
-  font-family: var(--font-chrome);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+.strategy-panel--rail:not([open]) .strategy-rail-summary:hover {
+  filter: brightness(1.05);
 }
 
 .strategy-panel-body--rail {
@@ -700,7 +752,8 @@ main:focus {
   margin-top: -0.15rem;
 }
 
-.strategy-panel[open] .strategy-summary-chevron {
+.strategy-panel[open] .strategy-summary-chevron,
+.strategy-panel--rail[open] .strategy-summary-chevron {
   transform: rotate(45deg);
   margin-top: 0.15rem;
 }

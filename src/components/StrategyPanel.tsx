@@ -89,10 +89,14 @@ export function StrategyPanel({
 
   if (layout === "rail") {
     return (
-      <aside className="strategy-panel strategy-panel--rail" aria-label={`Strategy: ${title}`}>
-        <header className="strategy-rail-header">
-          <p className="strategy-rail-kicker">How to solve this</p>
-        </header>
+      <details className="strategy-panel strategy-panel--rail" aria-label={`Strategy: ${title}`}>
+        <summary className="strategy-rail-summary">
+          <span className="strategy-rail-summary-copy">
+            <span className="strategy-summary-text">How to solve this</span>
+            <span className="strategy-rail-hint">Tap for steps</span>
+          </span>
+          <span className="strategy-summary-chevron" aria-hidden="true" />
+        </summary>
         <div className="strategy-panel-body strategy-panel-body--rail">
           <StrategyPanelBody
             title={title}
@@ -104,7 +108,7 @@ export function StrategyPanel({
             videoProvider={videoProvider}
           />
         </div>
-      </aside>
+      </details>
     );
   }
 
