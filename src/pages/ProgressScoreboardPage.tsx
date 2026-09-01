@@ -100,7 +100,7 @@ export function ProgressScoreboardPage() {
           Island Friend
         </h2>
         <p className="pet-settings-lead">
-          Choose a dog, cat, or rabbit. They hang out in the bottom-left corner while you practice.
+          Pick an island friend to hang out in the bottom-left corner while you practice.
         </p>
         <label className="pet-pref-toggle" htmlFor="pet-visible">
           <input
@@ -131,7 +131,7 @@ export function ProgressScoreboardPage() {
                 onClick={() => pickSpecies(species.id)}
               >
                 <span className="pet-species-preview" aria-hidden="true">
-                  <PetSprite speciesId={species.id} mood="idle" />
+                  <PetSprite speciesId={species.id} mood="idle" preview />
                 </span>
                 <span className="pet-species-label">{species.name}</span>
               </button>
