@@ -8,7 +8,7 @@ Inquiry Island is a kid-friendly learning app where students stack blocks, build
 | --- | --- |
 | **Repo** | `inquiry-island` |
 | **License** | MIT |
-| **Hosting** | Vercel |
+| **Live demo** | https://inquiry-island.vercel.app |
 | **Hackathon** | [WebMCP Challenge](https://webmcp.devpost.com/) — deadline Sep 3, 2026 @ 1:00pm PDT |
 
 ## WebMCP Challenge submission
@@ -38,7 +38,9 @@ The kid UI works fully without an agent. WebMCP is additive — agents use the s
 
 ### Testing instructions (for judges)
 
-Open the **live deployment** in one of:
+**Live URL:** https://inquiry-island.vercel.app
+
+Open the live deployment in one of:
 
 1. **ChatGPT** desktop app → in-app browser (WebMCP enabled by default), or
 2. **Google Chrome 149+** → enable `chrome://flags/#enable-webmcp-testing` → restart

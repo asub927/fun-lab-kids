@@ -129,7 +129,16 @@ export function generateMathQuestion(standard: Standard, seed: number): Activity
       const base = tier === 1 ? 120 + seed * 10 : tier === 2 ? 350 + seed * 10 : 680 + seed * 5;
       const delta = tier === 1 ? 10 : 100;
       const op = seed % 2 === 0 ? "+" : "-";
-      return { base, delta, op, answer: op === "+" ? base + delta : base - delta, difficulty: tier };
+      const answer = op === "+" ? base + delta : base - delta;
+      return {
+        mode: "mental-add",
+        prompt: `What is ${base} ${op} ${delta}?`,
+        base,
+        delta,
+        op,
+        answer,
+        difficulty: tier,
+      };
     }
     const a = tier === 1 ? 200 + seed * 11 : tier === 2 ? 400 + seed * 13 : 600 + seed * 17;
     const b = a - (tier === 1 ? 15 + seed : tier === 2 ? 35 + seed * 2 : 50 + seed * 3);
@@ -144,7 +153,72 @@ export function generateMathQuestion(standard: Standard, seed: number): Activity
     const length = useMetric ? 1 + (seed % 3) : 3 + (seed % 8) + tier;
     const unit = useMetric ? (length === 1 ? "meter" : "meters") : "inches";
     const tool = useMetric ? "meter stick" : "ruler";
+
+    if (code === "NC.2.MD.2") {
+      const inches = 3 + (seed % 6) + tier;
+      const clips = inches + 2 + (seed % 3);
+      return {
+        mode: "measure-twice",
+        object,
+        measure1: { value: inches, unit: "inches" },
+        measure2: { value: clips, unit: "paper clips" },
+        length: inches,
+        answer: inches,
+        difficulty: tier,
+        prompt: `Measure the ${object} twice with different units. How long is it in inches?`,
+      };
+    }
+
+    if (code === "NC.2.MD.3") {
+      return {
+        mode: "estimate",
+        object,
+        length,
+        unit,
+        answer: length,
+        difficulty: tier,
+        prompt: `About how many ${unit} long is the ${object}? Make your best estimate.`,
+      };
+    }
+
+    if (code === "NC.2.MD.4") {
+      const objectA = object;
+      const objectB = objects[(seed + 3) % objects.length];
+      const lengthA = 3 + (seed % 5);
+      const lengthB = lengthA + 2 + (seed % 4);
+      const difference = lengthB - lengthA;
+      return {
+        mode: "compare-length",
+        objectA,
+        objectB,
+        lengthA,
+        lengthB,
+        length: difference,
+        answer: difference,
+        difficulty: tier,
+        prompt: `How much longer is the ${objectB} than the ${objectA}?`,
+      };
+    }
+
+    if (code === "NC.2.MD.6") {
+      const start = tier === 1 ? 2 + seed : tier === 2 ? 5 + seed : 10 + seed * 2;
+      const jump = tier === 1 ? 3 + (seed % 4) : tier === 2 ? 5 + (seed % 5) : 8 + (seed % 4);
+      const end = start + jump;
+      return {
+        mode: "number-line",
+        start,
+        end,
+        min: 0,
+        max: Math.max(20, end + 2),
+        length: jump,
+        answer: jump,
+        difficulty: tier,
+        prompt: `On the number line, how far is it from ${start} to ${end}?`,
+      };
+    }
+
     return {
+      mode: "measure",
       object,
       tool,
       length,
@@ -237,7 +311,7 @@ export function generateMathQuestion(standard: Standard, seed: number): Activity
       { shape: "decagon", sides: 10 },
     ];
     const pick = shapes[seed % shapes.length];
-    const countSides = seed % 2 === 1;
+    const countSides = code === "NC.2.G.1" ? seed % 2 === 0 : seed % 2 === 1;
     if (countSides) {
       return {
         ...pick,

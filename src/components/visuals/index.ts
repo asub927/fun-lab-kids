@@ -3,3 +3,4 @@ export { ClockVisual } from "./ClockVisual";
 export { ChartVisual } from "./ChartVisual";
 export { RulerVisual } from "./RulerVisual";
 export { CoinVisual } from "./CoinVisual";
+export { NumberLineVisual } from "./NumberLineVisual";

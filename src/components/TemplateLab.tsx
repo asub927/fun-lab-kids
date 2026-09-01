@@ -5,6 +5,7 @@ import {
   ChartVisual,
   ClockVisual,
   CoinVisual,
+  NumberLineVisual,
   RulerVisual,
   ShapeVisual,
 } from "./visuals";
@@ -348,6 +349,14 @@ export function TemplateLab({ state }: TemplateLabProps) {
             length={Number(p.length)}
             unit={String(p.unit ?? "inches")}
             object={typeof p.object === "string" ? p.object : "Object"}
+          />
+        )}
+        {mode === "number-line" && typeof p.start === "number" && (
+          <NumberLineVisual
+            min={typeof p.min === "number" ? p.min : 0}
+            max={typeof p.max === "number" ? p.max : 20}
+            start={Number(p.start)}
+            end={typeof p.end === "number" ? p.end : undefined}
           />
         )}
         {typeof p.object === "string" && mode !== "compare-length" && mode !== "measure-twice" && (
