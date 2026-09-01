@@ -757,8 +757,14 @@ main:focus {
   margin-top: 0.15rem;
 }
 
-.strategy-panel-body--rail {
-  padding: 0.65rem 0.85rem 0.85rem;
+.strategy-panel-body {
+  padding: 0 var(--space-2) var(--space-2);
+  border-top: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+}
+
+.strategy-panel-body.strategy-panel-body--rail {
+  padding: 0.75rem 0.85rem 0.85rem;
+  border-top: none;
 }
 
 .strategy-panel--rail .strategy-title {
@@ -808,11 +814,6 @@ main:focus {
 .strategy-panel[open] .strategy-summary-chevron {
   transform: rotate(45deg);
   margin-top: 0.15rem;
-}
-
-.strategy-panel-body {
-  padding: 0 var(--space-2) var(--space-2);
-  border-top: 2px solid color-mix(in srgb, currentColor 25%, transparent);
 }
 
 .strategy-kicker {
