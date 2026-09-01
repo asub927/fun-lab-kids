@@ -21,9 +21,9 @@ const FEATURES = [
     accent: "pink",
   },
   {
-    icon: "🦜",
-    title: "Island companion",
-    text: "Ripple, Digits, and Spark travel with you. They give hints, cheer you on, and suggest what to try next.",
+    icon: "🗺",
+    title: "Island guides",
+    text: "Ripple, Digits, and Spark welcome you on each island. They cheer you on and celebrate every win.",
     accent: "green",
   },
   {
@@ -75,8 +75,8 @@ export function HomePage() {
           <span className="home-headline-line">better together.</span>
         </h1>
         <p className="home-subhead">
-          Inquiry Island is a shared learning board where you and a helper place blocks, build
-          sentences, and run science labs side by side.
+          Inquiry Island is a hands-on Grade 2 playground. Stack blocks, build sentences, and run
+          science labs across math, reading, and science.
         </p>
         <div className="home-hero-actions">
           <Link to="/grade-2" className="btn primary large home-cta-primary">
@@ -133,8 +133,7 @@ export function HomePage() {
             Channel your inner explorer!
           </h2>
           <p className="home-section-lead">
-            Less watching. More building, checking, and winning with a teammate who understands the
-            board.
+            Less watching. More building, checking, and leveling up as you master each skill.
           </p>
           <RevealGroup className="home-feature-grid">
             {FEATURES.map((feature) => (

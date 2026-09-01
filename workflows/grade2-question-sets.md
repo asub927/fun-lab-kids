@@ -240,4 +240,4 @@ npm run build
 - [ ] Validation test enforces coverage
 - [ ] Checkpoint brief delivered; Anantha approves or lists edits
 - [ ] Showcase labs unchanged
-- [ ] WebMCP board snapshot still works per question
+- [ ] Question navigation and Smart Score still work per question

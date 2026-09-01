@@ -23,8 +23,7 @@ Templates: word-problem, numeric-flash, equal-groups, number-sense, computation,
 ## Tools & channels
 
 - Stack: Vite + React + TypeScript, CSS in `src/index.css`
-- Deploy: Netlify static
-- AI teammate: WebMCP tools (unchanged by visual/content work)
+- Deploy: Vercel static
 - User: Anantha, software engineer, codes directly
 
 ## Terminology

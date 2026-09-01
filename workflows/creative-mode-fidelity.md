@@ -10,7 +10,7 @@ Anantha ships Inquiry Island visual changes before demo or judge review. The app
 
 ## Scope
 
-Visual layer only. No changes to board reducers, WebMCP tools, routing logic, or progress semantics.
+Visual layer only. No changes to board reducers, routing logic, or progress semantics.
 
 **Reference:** [Creative Mode design.md](https://github.com/zarazhangrui/beautiful-html-templates/blob/main/templates/creative-mode/design.md)
 
