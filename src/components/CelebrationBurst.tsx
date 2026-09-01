@@ -15,18 +15,26 @@ const PARTICLES = [
   { color: "var(--color-magenta)", tx: "8px", ty: "-76px", rot: "20deg", delay: "120ms" },
 ] as const;
 
+const BALLOONS = [
+  { color: "var(--color-magenta)", left: "14%", delay: "0ms", drift: "-18px" },
+  { color: "var(--color-teal)", left: "38%", delay: "120ms", drift: "16px" },
+  { color: "var(--color-mustard)", left: "62%", delay: "60ms", drift: "-12px" },
+  { color: "var(--color-orange)", left: "82%", delay: "180ms", drift: "20px" },
+] as const;
+
 type CelebrationBurstProps = {
   active?: boolean;
+  withBalloons?: boolean;
 };
 
-export function CelebrationBurst({ active = true }: CelebrationBurstProps) {
+export function CelebrationBurst({ active = true, withBalloons = false }: CelebrationBurstProps) {
   if (!active) return null;
 
   return (
     <div className="celebration-burst" aria-hidden="true">
       {PARTICLES.map((particle, index) => (
         <span
-          key={index}
+          key={`particle-${index}`}
           className="celebration-particle"
           style={
             {
@@ -39,6 +47,21 @@ export function CelebrationBurst({ active = true }: CelebrationBurstProps) {
           }
         />
       ))}
+      {withBalloons &&
+        BALLOONS.map((balloon, index) => (
+          <span
+            key={`balloon-${index}`}
+            className="celebration-balloon"
+            style={
+              {
+                "--balloon-color": balloon.color,
+                "--balloon-left": balloon.left,
+                "--balloon-delay": balloon.delay,
+                "--balloon-drift": balloon.drift,
+              } as CSSProperties
+            }
+          />
+        ))}
     </div>
   );
 }

@@ -85,7 +85,7 @@ export function LabShell({ title, children }: LabShellProps) {
       : pickLabLine(subject, "labEncourage", store, checkCount)
     : "";
 
-  const inlineMood = lastCheck?.ok ? "happy" : "thinking";
+  const inlineMood = lastCheck?.ok ? "cheering" : "thinking";
 
   return (
     <article className="lab-shell">
@@ -140,7 +140,7 @@ export function LabShell({ title, children }: LabShellProps) {
 
       {showCelebration && lastCelebration && (
         <div className="mastery-panel" role="status" aria-live="polite">
-          <CelebrationBurst />
+          <CelebrationBurst withBalloons />
           <CharacterGuide
             subject={subject}
             line={celebrationLine}
@@ -177,6 +177,7 @@ export function LabShell({ title, children }: LabShellProps) {
           role="status"
           aria-live="polite"
         >
+          {lastCheck.ok && !showCelebration && <CelebrationBurst withBalloons />}
           <span>{lastCheck.feedback}</span>
           {lastCelebration && lastCelebration.xpEarned > 0 && !showCelebration && (
             <span className="inline-xp">+{lastCelebration.xpEarned} Island Points</span>

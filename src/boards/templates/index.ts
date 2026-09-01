@@ -214,11 +214,11 @@ export function templateHint(state: TemplateBoardState): string {
     case "checklist":
       return "Tap each step when you finish it.";
     case "writing-frame":
-      return "Fill in every writing part before you check.";
+      return "Fill in every writing part — we check when you pause.";
     case "reading-response":
       return "Use details from the passage in your answer.";
     default:
-      return "Try your best, then tap Check Answer.";
+      return "Try your best — we check when you finish, or tap Check Answer.";
   }
 }
 

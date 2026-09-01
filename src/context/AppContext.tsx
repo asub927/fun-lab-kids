@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { BoardState, LabId, Standard, ToolCallLogEntry } from "../types";
 import {
   applyBoardAction,
@@ -16,6 +24,11 @@ import {
 } from "../data/questionSets";
 import { recordCheckResult, type RecordCheckResult } from "../services/progress";
 import type { Achievement } from "../data/achievements";
+import {
+  AUTO_CHECK_DEBOUNCE_MS,
+  getAutoCheckMode,
+  type AutoCheckMode,
+} from "../services/autoCheck";
 
 export type CelebrationPayload = {
   xpEarned: number;
@@ -41,6 +54,15 @@ function bumpSmartScore(current: number, ok: boolean, revealed: boolean): number
   if (revealed) return Math.min(100, current + 5);
   return Math.max(0, current - 5);
 }
+
+type SessionSnapshot = {
+  activeStandard: Standard | null;
+  questionSet: Record<string, unknown>[];
+  questionIndex: number;
+  sessionScores: number[];
+  smartScore: number;
+  correctCount: number;
+};
 
 type AppContextValue = {
   activeStandard: Standard | null;
@@ -88,10 +110,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [lastCheck, setLastCheck] = useState<ReturnType<typeof runBoardCheck> | null>(null);
   const [lastCelebration, setLastCelebration] = useState<CelebrationPayload | null>(null);
 
+  const sessionRef = useRef<SessionSnapshot>({
+    activeStandard: null,
+    questionSet: [],
+    questionIndex: 0,
+    sessionScores: [],
+    smartScore: 0,
+    correctCount: 0,
+  });
+  const autoCheckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  sessionRef.current = {
+    activeStandard,
+    questionSet,
+    questionIndex,
+    sessionScores,
+    smartScore,
+    correctCount,
+  };
+
+  const clearAutoCheckTimer = useCallback(() => {
+    if (autoCheckTimerRef.current !== null) {
+      clearTimeout(autoCheckTimerRef.current);
+      autoCheckTimerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => () => clearAutoCheckTimer(), [clearAutoCheckTimer]);
+
   const clearCelebration = useCallback(() => setLastCelebration(null), []);
 
   const bootLab = useCallback(
     (nextLabId: LabId, standardCode: string, params: Record<string, unknown>) => {
+      clearAutoCheckTimer();
       const standard = findStandard(standardCode);
       const set = isShowcaseLab(nextLabId) ? [] : getQuestionSet(standardCode);
       const initialParams = set.length > 0 ? set[0] : params;
@@ -108,7 +159,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setLastCheck(null);
       setLastCelebration(null);
     },
-    [],
+    [clearAutoCheckTimer],
   );
 
   const setActiveLab = useCallback(
@@ -128,54 +179,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [bootLab],
   );
 
-  const applyAction = useCallback(
-    (action: Record<string, unknown>) => {
-      if (!boardState) return null;
-      setLastCheck(null);
-      setHistory((h) => [...h, boardState]);
-      const next = applyBoardAction(boardState, action);
-      setBoardState(next);
-      return next;
-    },
-    [boardState],
-  );
-
-  const undo = useCallback(() => {
-    setHistory((h) => {
-      if (h.length === 0) return h;
-      const prev = h[h.length - 1];
-      setBoardState(prev);
-      return h.slice(0, -1);
-    });
-  }, []);
-
-  const loadQuestion = useCallback(
-    (index: number, clearCheck = false) => {
-      if (!labId || !activeStandard || questionSet.length === 0) return;
-      const params = questionSet[index];
-      setBoardState(createBoardState(labId, { standardCode: activeStandard.code, params }));
-      setHistory([]);
-      if (clearCheck) setLastCheck(null);
-    },
-    [labId, activeStandard, questionSet],
-  );
-
-  const runCheck = useCallback(() => {
-    if (!boardState || !activeStandard) return null;
-    const result = runBoardCheck(boardState);
+  const runCheckWithState = useCallback((state: BoardState) => {
+    const session = sessionRef.current;
+    if (!session.activeStandard) return null;
+    const result = runBoardCheck(state);
     setLastCheck(result);
 
     if (!result.ok) {
       setSmartScore((s) => bumpSmartScore(s, false, false));
-      const gamification = recordCheckResult(activeStandard.code, false, 0);
+      const gamification = recordCheckResult(session.activeStandard.code, false, 0);
       setLastCelebration(toCelebration(gamification));
       return result;
     }
 
-    const hasQuestionSet = questionSet.length > 0;
-    const nextScores = [...sessionScores, result.score];
-    const nextCorrect = correctCount + 1;
-    const nextSmart = bumpSmartScore(smartScore, true, false);
+    const hasQuestionSet = session.questionSet.length > 0;
+    const nextScores = [...session.sessionScores, result.score];
+    const nextCorrect = session.correctCount + 1;
+    const nextSmart = bumpSmartScore(session.smartScore, true, false);
 
     setSessionScores(nextScores);
     setCorrectCount(nextCorrect);
@@ -184,10 +204,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const mastered =
       hasQuestionSet &&
       (nextCorrect >= QUESTIONS_TO_MASTER || nextSmart >= SMART_SCORE_TARGET) &&
-      questionIndex >= questionSet.length - 1;
+      session.questionIndex >= session.questionSet.length - 1;
 
-    if (hasQuestionSet && questionIndex < questionSet.length - 1) {
-      const gamification = recordCheckResult(activeStandard.code, true, result.score, {
+    if (hasQuestionSet && session.questionIndex < session.questionSet.length - 1) {
+      const gamification = recordCheckResult(session.activeStandard.code, true, result.score, {
         completed: false,
         questionsCorrect: nextCorrect,
         smartScore: nextSmart,
@@ -204,7 +224,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
 
     if (hasQuestionSet) {
-      const gamification = recordCheckResult(activeStandard.code, mastered, avgScore, {
+      const gamification = recordCheckResult(session.activeStandard.code, mastered, avgScore, {
         completed: mastered,
         questionsCorrect: nextCorrect,
         smartScore: nextSmart,
@@ -218,21 +238,74 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
-    const gamification = recordCheckResult(activeStandard.code, true, result.score, { completed: true });
+    const gamification = recordCheckResult(session.activeStandard.code, true, result.score, {
+      completed: true,
+    });
     setLastCelebration(toCelebration(gamification));
     return result;
-  }, [
-    boardState,
-    activeStandard,
-    questionSet,
-    questionIndex,
-    sessionScores,
-    smartScore,
-    correctCount,
-  ]);
+  }, []);
+
+  const queueAutoCheck = useCallback(
+    (mode: AutoCheckMode, state: BoardState) => {
+      clearAutoCheckTimer();
+      if (!mode) return;
+      if (mode === "now") {
+        runCheckWithState(state);
+        return;
+      }
+      autoCheckTimerRef.current = setTimeout(() => {
+        autoCheckTimerRef.current = null;
+        runCheckWithState(state);
+      }, AUTO_CHECK_DEBOUNCE_MS);
+    },
+    [clearAutoCheckTimer, runCheckWithState],
+  );
+
+  const applyAction = useCallback(
+    (action: Record<string, unknown>) => {
+      if (!boardState) return null;
+      clearAutoCheckTimer();
+      setLastCheck(null);
+      setHistory((h) => [...h, boardState]);
+      const next = applyBoardAction(boardState, action);
+      setBoardState(next);
+      queueAutoCheck(getAutoCheckMode(action, next), next);
+      return next;
+    },
+    [boardState, clearAutoCheckTimer, queueAutoCheck],
+  );
+
+  const undo = useCallback(() => {
+    clearAutoCheckTimer();
+    setHistory((h) => {
+      if (h.length === 0) return h;
+      const prev = h[h.length - 1];
+      setBoardState(prev);
+      return h.slice(0, -1);
+    });
+  }, [clearAutoCheckTimer]);
+
+  const loadQuestion = useCallback(
+    (index: number, clearCheck = false) => {
+      if (!labId || !activeStandard || questionSet.length === 0) return;
+      clearAutoCheckTimer();
+      const params = questionSet[index];
+      setBoardState(createBoardState(labId, { standardCode: activeStandard.code, params }));
+      setHistory([]);
+      if (clearCheck) setLastCheck(null);
+    },
+    [labId, activeStandard, questionSet, clearAutoCheckTimer],
+  );
+
+  const runCheck = useCallback(() => {
+    clearAutoCheckTimer();
+    if (!boardState) return null;
+    return runCheckWithState(boardState);
+  }, [boardState, clearAutoCheckTimer, runCheckWithState]);
 
   const revealAnswer = useCallback(() => {
     if (!boardState || !activeStandard) return null;
+    clearAutoCheckTimer();
     const { result, actions } = revealBoardAnswer(boardState);
     let next = boardState;
     for (const action of actions) {
@@ -244,9 +317,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const gamification = recordCheckResult(activeStandard.code, false, 0);
     setLastCelebration(toCelebration(gamification));
     return result;
-  }, [boardState, activeStandard]);
+  }, [boardState, activeStandard, clearAutoCheckTimer]);
 
-  const advanceQuestion = useCallback(() => {
+    const advanceQuestion = useCallback(() => {
     if (questionSet.length === 0 || questionIndex >= questionSet.length - 1) return;
     if (!lastCheck?.ok && !lastCheck?.revealed) return;
     const nextIndex = questionIndex + 1;
@@ -261,6 +334,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const resetBoard = useCallback(() => {
     if (!labId || !activeStandard) return;
+    clearAutoCheckTimer();
     const params =
       questionSet.length > 0
         ? questionSet[questionIndex]
@@ -268,7 +342,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setBoardState(createBoardState(labId, { standardCode: activeStandard.code, params }));
     setHistory([]);
     setLastCheck(null);
-  }, [labId, activeStandard, questionSet, questionIndex]);
+  }, [labId, activeStandard, questionSet, questionIndex, clearAutoCheckTimer]);
 
   const proposeRevisionText = useCallback(
     (revision: string) => {

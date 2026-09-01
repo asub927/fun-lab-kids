@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from "react";
 import type { TemplateBoardState } from "../types";
 import { useApp } from "../context/AppContext";
 import { StrategyFromParams } from "./StrategyPanel";
@@ -7,7 +8,14 @@ type TemplateLabProps = {
 };
 
 export function TemplateLab({ state }: TemplateLabProps) {
-  const { applyAction } = useApp();
+  const { applyAction, runCheck } = useApp();
+
+  const checkOnEnter = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      runCheck();
+    }
+  };
   const p = state.params;
 
   if (state.labId === "checklist") {
@@ -57,6 +65,7 @@ export function TemplateLab({ state }: TemplateLabProps) {
               inputMode="numeric"
               value={state.numericAnswer}
               onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
+              onKeyDown={checkOnEnter}
             />
           </label>
         </div>
@@ -80,6 +89,7 @@ export function TemplateLab({ state }: TemplateLabProps) {
               inputMode="numeric"
               value={state.numericAnswer}
               onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
+              onKeyDown={checkOnEnter}
             />
           </label>
         </div>
@@ -121,6 +131,7 @@ export function TemplateLab({ state }: TemplateLabProps) {
               id="expanded-form"
               value={state.textResponse}
               onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
+              onKeyDown={checkOnEnter}
             />
           </label>
         </div>
@@ -144,6 +155,7 @@ export function TemplateLab({ state }: TemplateLabProps) {
               inputMode="numeric"
               value={state.numericAnswer}
               onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
+              onKeyDown={checkOnEnter}
             />
           </label>
         </div>
@@ -190,6 +202,7 @@ export function TemplateLab({ state }: TemplateLabProps) {
               onChange={(e) =>
                 applyAction({ action: "set_frame_field", field: part, text: e.target.value })
               }
+              onKeyDown={checkOnEnter}
             />
           </label>
         ))}
@@ -234,6 +247,7 @@ export function TemplateLab({ state }: TemplateLabProps) {
               id="fixed-sentence"
               value={state.textResponse}
               onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
+              onKeyDown={checkOnEnter}
             />
           </label>
         </div>
@@ -290,6 +304,7 @@ export function TemplateLab({ state }: TemplateLabProps) {
               applyAction({ action: "set_numeric", value: e.target.value });
               applyAction({ action: "set_text", text: e.target.value });
             }}
+            onKeyDown={checkOnEnter}
           />
         </label>
       </div>
