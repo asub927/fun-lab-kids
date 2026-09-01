@@ -232,6 +232,10 @@ main {
   padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
 }
 
+main:has(.lab-shell) {
+  max-width: 1180px;
+}
+
 main:focus {
   outline: none;
 }
@@ -469,8 +473,42 @@ main:focus {
   background: var(--color-paper);
   border: var(--border-width) solid var(--color-ink);
   border-radius: var(--radius-tablet);
-  padding: 0.85rem 1rem;
+  padding: 1rem 1.15rem;
   box-shadow: var(--shadow-soft);
+}
+
+.lab-body {
+  display: block;
+}
+
+.lab-body--with-strategy {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 19rem);
+  gap: 1rem;
+  align-items: start;
+}
+
+.lab-main {
+  min-width: 0;
+}
+
+.lab-strategy-rail {
+  min-width: 0;
+}
+
+.lab-board {
+  min-width: 0;
+}
+
+@media (max-width: 860px) {
+  .lab-body--with-strategy {
+    grid-template-columns: 1fr;
+  }
+
+  .strategy-panel--rail {
+    position: static;
+    max-height: none;
+  }
 }
 
 .lab-header {
@@ -501,7 +539,7 @@ main:focus {
 }
 
 .lab-shell .lab-title {
-  font-size: clamp(1.15rem, 2.8vw, 1.65rem);
+  font-size: clamp(1.25rem, 3vw, 1.85rem);
   margin-bottom: 0.15rem;
 }
 
@@ -590,7 +628,42 @@ main:focus {
   border-radius: var(--radius-tablet);
   margin-bottom: 0;
   box-shadow: var(--shadow-hard-sm);
-  order: 20;
+}
+
+.strategy-panel--rail {
+  position: sticky;
+  top: 5.5rem;
+  max-height: calc(100vh - 6.5rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.strategy-rail-header {
+  padding: 0.75rem 0.85rem 0.55rem;
+  border-bottom: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+}
+
+.strategy-rail-kicker {
+  margin: 0;
+  font-family: var(--font-chrome);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.strategy-panel-body--rail {
+  padding: 0.65rem 0.85rem 0.85rem;
+}
+
+.strategy-panel--rail .strategy-title {
+  margin-top: 0;
+  font-size: 1rem;
+}
+
+.strategy-panel--rail .strategy-steps {
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 .strategy-summary {
@@ -682,12 +755,13 @@ main:focus {
 }
 
 .subject-browser--math .strategy-panel,
-.template-lab:has(.story-card) .strategy-panel {
+main[data-accent="green"] .lab-strategy-rail .strategy-panel {
   background: var(--color-teal);
   color: var(--color-paper);
 }
 
-main[data-accent="orange"] .strategy-panel {
+main[data-accent="orange"] .strategy-panel,
+main[data-accent="orange"] .lab-strategy-rail .strategy-panel {
   background: var(--color-orange);
   color: var(--color-paper);
 }
@@ -697,7 +771,8 @@ main[data-accent="green"] .strategy-panel {
   color: var(--color-paper);
 }
 
-main[data-accent="pink"] .strategy-panel {
+main[data-accent="pink"] .strategy-panel,
+main[data-accent="pink"] .lab-strategy-rail .strategy-panel {
   background: var(--color-magenta);
   color: var(--color-paper);
 }
@@ -1249,29 +1324,28 @@ tbody tr:last-child td {
 }
 
 .story-card {
-  padding: 0.65rem 0.75rem;
+  padding: 0.85rem 1rem;
   border: var(--border-width) solid var(--color-ink);
   border-radius: var(--radius-tablet);
   background: var(--color-bone);
-  font-size: 1.05rem;
-  line-height: 1.45;
+  font-size: clamp(1.05rem, 2.2vw, 1.2rem);
+  line-height: 1.5;
   margin: 0;
 }
 
 .template-lab {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.85rem;
 }
 
 .template-lab > label,
 .template-lab .answer-field {
-  padding: 0.65rem 0.75rem;
+  padding: 0.85rem 1rem;
   border: var(--border-width) solid var(--color-ink);
   border-radius: var(--radius-tablet);
   background: var(--color-paper);
   box-shadow: var(--shadow-hard-sm);
-  order: 10;
 }
 
 .template-lab > label,
@@ -1303,12 +1377,12 @@ tbody tr:last-child td {
 .answer-field textarea {
   display: block;
   width: 100%;
-  min-height: 44px;
+  min-height: 52px;
   margin: 0;
-  padding: 0.55rem 0.85rem;
+  padding: 0.65rem 0.95rem;
   border: var(--border-width) solid var(--color-ink);
   border-radius: var(--radius-button);
-  font-size: 1.125rem;
+  font-size: clamp(1.125rem, 2.5vw, 1.35rem);
   font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
   background: var(--color-bone);

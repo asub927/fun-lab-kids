@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { CelebrationBurst } from "./CelebrationBurst";
 import { CharacterGuide } from "./CharacterGuide";
+import { hasStrategyContent, parseStrategyParams, StrategyPanel } from "./StrategyPanel";
 import { useApp } from "../context/AppContext";
 import { loadProgress } from "../services/progress";
 import {
@@ -48,6 +49,7 @@ function focusPrimaryAnswerInput() {
 export function LabShell({ title, children }: LabShellProps) {
   const {
     activeStandard,
+    boardState,
     lastCheck,
     lastCelebration,
     clearCelebration,
@@ -150,6 +152,12 @@ export function LabShell({ title, children }: LabShellProps) {
 
   const inlineMood = lastCheck?.ok ? "happy" : "thinking";
 
+  const strategy = useMemo(() => {
+    if (!boardState || !("params" in boardState) || !boardState.params) return null;
+    const parsed = parseStrategyParams(boardState.params);
+    return hasStrategyContent(parsed) ? parsed : null;
+  }, [boardState]);
+
   return (
     <article className="lab-shell">
       <header className="lab-header">
@@ -214,60 +222,80 @@ export function LabShell({ title, children }: LabShellProps) {
         </div>
       )}
 
-      <div className="lab-board">{children}</div>
+      <div className={`lab-body ${strategy ? "lab-body--with-strategy" : ""}`}>
+        <div className="lab-main">
+          <div className="lab-board">{children}</div>
 
-      {lastCheck && (
-        <div
-          className={`check-result ${resultClass} ${lastCheck.ok ? "check-result--ok" : ""}`}
-          role="status"
-          aria-live="polite"
-        >
-          <div className="check-result-main">
-            <span>{lastCheck.feedback}</span>
-            {lastCelebration && lastCelebration.xpEarned > 0 && !showCelebration && (
-              <span className="inline-xp">+{lastCelebration.xpEarned} Island Points</span>
-            )}
-          </div>
-          {!showCelebration && (
-            <div className="character-lab-reaction">
-              <CharacterGuide
-                subject={subject}
-                line={inlineLine}
-                mood={inlineMood}
-                compact
-                live
-              />
+          {lastCheck && (
+            <div
+              className={`check-result ${resultClass} ${lastCheck.ok ? "check-result--ok" : ""}`}
+              role="status"
+              aria-live="polite"
+            >
+              <div className="check-result-main">
+                <span>{lastCheck.feedback}</span>
+                {lastCelebration && lastCelebration.xpEarned > 0 && !showCelebration && (
+                  <span className="inline-xp">+{lastCelebration.xpEarned} Island Points</span>
+                )}
+              </div>
+              {!showCelebration && (
+                <div className="character-lab-reaction">
+                  <CharacterGuide
+                    subject={subject}
+                    line={inlineLine}
+                    mood={inlineMood}
+                    compact
+                    live
+                  />
+                </div>
+              )}
             </div>
           )}
-        </div>
-      )}
 
-      {hasQuestionPager && (
-        <nav className="question-nav" aria-label="Question navigation">
-          <button
-            type="button"
-            className="btn secondary question-nav-btn"
-            onClick={previousQuestion}
-            disabled={!canGoPreviousQuestion}
-            aria-label="Previous question"
-          >
-            <span aria-hidden="true">←</span> Previous
-          </button>
-          <p className="question-nav-status" aria-live="polite">
-            Question <span className="tabular">{questionIndex + 1}</span> of{" "}
-            <span className="tabular">{questionTotal}</span>
-          </p>
-          <button
-            type="button"
-            className="btn primary question-nav-btn"
-            onClick={advanceQuestion}
-            disabled={!canAdvanceQuestion}
-            aria-label="Next question"
-          >
-            Next <span aria-hidden="true">→</span>
-          </button>
-        </nav>
-      )}
+          {hasQuestionPager && (
+            <nav className="question-nav" aria-label="Question navigation">
+              <button
+                type="button"
+                className="btn secondary question-nav-btn"
+                onClick={previousQuestion}
+                disabled={!canGoPreviousQuestion}
+                aria-label="Previous question"
+              >
+                <span aria-hidden="true">←</span> Previous
+              </button>
+              <p className="question-nav-status" aria-live="polite">
+                Question <span className="tabular">{questionIndex + 1}</span> of{" "}
+                <span className="tabular">{questionTotal}</span>
+              </p>
+              <button
+                type="button"
+                className="btn primary question-nav-btn"
+                onClick={advanceQuestion}
+                disabled={!canAdvanceQuestion}
+                aria-label="Next question"
+              >
+                Next <span aria-hidden="true">→</span>
+              </button>
+            </nav>
+          )}
+        </div>
+
+        {strategy && (
+          <div className="lab-strategy-rail">
+            <StrategyPanel
+              key={strategy.panelKey}
+              title={strategy.title}
+              steps={strategy.steps}
+              sourceLabel={strategy.sourceLabel}
+              sourceUrl={strategy.sourceUrl}
+              videoUrl={strategy.videoUrl}
+              videoTitle={strategy.videoTitle}
+              videoProvider={strategy.videoProvider}
+              layout="rail"
+            />
+          </div>
+        )}
+      </div>
     </article>
   );
 }

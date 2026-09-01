@@ -8,8 +8,6 @@ import {
   RulerVisual,
   ShapeVisual,
 } from "./lab-visuals/LabVisuals";
-import { StrategyFromParams } from "./StrategyPanel";
-
 type TemplateLabProps = {
   state: TemplateBoardState;
 };
@@ -22,7 +20,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
     const items = (p.items as string[]) ?? ["I completed the activity."];
     return (
       <div className="template-lab checklist-lab">
-        <StrategyFromParams params={p} />
         <p className="lead">{String(p.prompt ?? "Complete each step:")}</p>
         <ul className="checklist-items">
           {items.map((item, i) => (
@@ -46,7 +43,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
     const triple = p.mode === "triple-add" && Array.isArray(p.values);
     return (
       <div className="template-lab">
-        <StrategyFromParams params={p} />
         {triple && (
           <p className="story-card tabular">Add: {(p.values as number[]).join(" + ")}</p>
         )}
@@ -75,7 +71,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
   if (state.labId === "equal-groups" && typeof p.rows === "number") {
     return (
       <div className="template-lab">
-        <StrategyFromParams params={p} />
         <p className="story-card">
           {String(p.rows)} rows × {String(p.cols)} columns
         </p>
@@ -98,7 +93,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
   if (state.labId === "equal-groups" && p.mode === "odd-even") {
     return (
       <div className="template-lab">
-        <StrategyFromParams params={p} />
         <p className="story-card">Is {String(p.count)} odd or even?</p>
         <div className="classify-btns">
           {["odd", "even"].map((opt) => (
@@ -120,7 +114,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
   if (state.labId === "number-sense" && p.mode === "expanded") {
     return (
       <div className="template-lab">
-        <StrategyFromParams params={p} />
         <p className="target-number tabular">{String(p.number)}</p>
         <div className="answer-field">
           <label htmlFor="expanded-form">
@@ -139,7 +132,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
   if (state.labId === "number-sense" && p.mode === "skip-count") {
     return (
       <div className="template-lab">
-        <StrategyFromParams params={p} />
         <p className="story-card">
           Skip-count by {String(p.step)} starting at {String(p.start)}. What comes next?
         </p>
@@ -162,7 +154,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
   if (state.labId === "number-sense" && p.mode === "compare") {
     return (
       <div className="template-lab">
-        <StrategyFromParams params={p} />
         <p className="target-number tabular">
           {String(p.a)} ? {String(p.b)}
         </p>
@@ -187,7 +178,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
     const parts = (p.requiredParts as string[]) ?? ["topic", "detail"];
     return (
       <div className="template-lab form-grid">
-        <StrategyFromParams params={p} />
         <p className="lead">{String(p.prompt)}</p>
         {parts.map((part) => (
           <label key={part} htmlFor={`frame-${part}`}>
@@ -208,7 +198,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
   if (state.labId === "reading-response") {
     return (
       <div className="template-lab">
-        <StrategyFromParams params={p} />
         {typeof p.passage === "string" && (
           <section className="paragraph-preview">
             <h2>Passage</h2>
@@ -233,7 +222,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
   if (state.labId === "language-edit") {
     return (
       <div className="template-lab">
-        <StrategyFromParams params={p} />
         <p className="revision-card">Fix this sentence: &ldquo;{String(p.sentence)}&rdquo;</p>
         <div className="answer-field">
           <label htmlFor="fixed-sentence">
@@ -252,7 +240,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
   if (state.labId === "science-inquiry") {
     return (
       <div className="template-lab">
-        <StrategyFromParams params={p} />
         <p className="lead">{String(p.prompt ?? p.scenario)}</p>
         {Array.isArray(p.stages) && (
           <ol>
@@ -279,7 +266,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
   if (state.labId === "number-sense" && p.mode === "mental-add") {
     return (
       <div className="template-lab">
-        <StrategyFromParams params={p} />
         <p className="target-number tabular">{String(p.prompt)}</p>
         <div className="answer-field">
           <label htmlFor="mental-answer">
@@ -301,7 +287,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
     const mode = String(p.mode ?? "measure");
     return (
       <div className="template-lab">
-        <StrategyFromParams params={p} />
         <p className="story-card">{String(p.prompt)}</p>
         {mode === "measure-twice" && (
           <div className="measurement-pair">
@@ -356,7 +341,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
   if (state.labId === "data-chart" && Array.isArray(p.categories) && Array.isArray(p.counts)) {
     return (
       <div className="template-lab">
-        <StrategyFromParams params={p} />
         <BarChartVisual categories={p.categories as string[]} counts={p.counts as number[]} />
         <p className="story-card">{String(p.prompt ?? p.question)}</p>
         <div className="answer-field">
@@ -378,7 +362,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
   if (state.labId === "geometry") {
     return (
       <div className="template-lab">
-        <StrategyFromParams params={p} />
         <ShapeVisual shape={String(p.shape)} parts={typeof p.parts === "number" ? p.parts : undefined} />
         <p className="story-card">{String(p.prompt)}</p>
         <div className="answer-field">
@@ -402,7 +385,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
     const mode = String(p.mode ?? (p.time ? "clock" : "money"));
     return (
       <div className="template-lab">
-        <StrategyFromParams params={p} />
         <p className="story-card">{String(p.prompt)}</p>
         {mode === "clock" && typeof p.time === "string" && <ClockVisual time={p.time} />}
         {mode === "money" && typeof p.coins === "string" && <CoinVisual coins={p.coins} />}
@@ -426,7 +408,6 @@ export function TemplateLab({ state }: TemplateLabProps) {
   // Fallback for any remaining template types
   return (
     <div className="template-lab form-grid">
-      <StrategyFromParams params={p} />
       <p className="lead">{String(p.prompt ?? "Solve the challenge:")}</p>
       {typeof p.object === "string" && (
         <p>
