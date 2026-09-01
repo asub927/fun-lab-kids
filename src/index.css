@@ -347,12 +347,13 @@ main:focus {
 }
 
 .btn.hint {
-  background: var(--color-mustard);
+  /* Distinct from Undo (bone) and Check (subject accent) */
+  background: #7eb8c9;
   color: var(--color-ink);
 }
 
 .btn.hint:hover {
-  background: #c9962f;
+  background: #6aa8bb;
 }
 
 .btn.danger {
@@ -2681,7 +2682,7 @@ main:has(.home-page) {
 }
 
 .btn.hint:hover {
-  background: #c9962f;
+  background: #6aa8bb;
 }
 
 .btn.danger:hover {
