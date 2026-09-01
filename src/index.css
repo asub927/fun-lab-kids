@@ -118,6 +118,7 @@ main[data-accent="yellow"] {
 body {
   margin: 0;
   background: var(--color-cream);
+  overflow-x: clip;
 }
 
 a {
@@ -233,12 +234,12 @@ main {
 }
 
 main:has(.lab-page) {
-  max-width: min(1360px, calc(100vw - 1.25rem));
+  max-width: min(1360px, calc(100% - 1.25rem));
   padding: 0.65rem 0.65rem max(0.65rem, env(safe-area-inset-bottom));
 }
 
 main:has(.lab-shell) {
-  max-width: min(1360px, calc(100vw - 1.25rem));
+  max-width: min(1360px, calc(100% - 1.25rem));
 }
 
 main:focus {
@@ -909,6 +910,7 @@ main[data-accent="pink"] .lab-help-card .strategy-panel {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-ink-soft);
+  overflow-wrap: break-word;
 }
 
 .smart-score {
@@ -1048,7 +1050,7 @@ main[data-accent="pink"] .lab-help-card .strategy-panel {
 
 .island-stamp-label {
   font-family: var(--font-display);
-  font-size: 0.5rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   margin-top: 0.1rem;
@@ -1292,6 +1294,7 @@ main[data-accent="pink"] .lab-help-card .strategy-panel {
 
 .table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border: var(--border-width) solid var(--color-ink);
   border-radius: var(--radius-tablet);
   background: var(--color-paper);
@@ -2778,6 +2781,8 @@ main:has(.home-page) {
 
 .character-avatar-svg {
   display: block;
+  max-width: 100%;
+  height: auto;
 }
 
 .character-avatar--happy {
@@ -4212,13 +4217,120 @@ main:has(.home-page) {
   text-transform: uppercase;
 }
 
-@media (max-width: 520px) {
-  .pet-species-picker-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 @media (max-width: 640px) {
+  main {
+    padding-bottom: max(var(--space-3), calc(5rem + env(safe-area-inset-bottom)));
+  }
+
+  main:has(.lab-page) {
+    padding-bottom: max(0.65rem, calc(5rem + env(safe-area-inset-bottom)));
+  }
+
+  .top-nav {
+    flex-wrap: wrap;
+  }
+
+  .brand {
+    font-size: 0.8125rem;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .standard-list {
+    overflow: visible;
+  }
+
+  .standard-row,
+  .recent-activity-row {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .standard-text,
+  .recent-activity-text {
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  .standard-progress-badge {
+    justify-self: start;
+    text-align: left;
+  }
+
+  .recent-activity-meta {
+    white-space: normal;
+    justify-self: start;
+  }
+
+  .hub-stats-strip {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hub-progress-link,
+  .hub-pet-link {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .mastery-dismiss {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+
+  .practice-stats {
+    font-size: 0.8125rem;
+  }
+
+  .island-pet-nest-hint {
+    white-space: normal;
+    max-width: min(16rem, calc(100% - 1.5rem));
+    font-size: 0.8125rem;
+  }
+
+  .home-hero {
+    overflow: clip;
+  }
+
+  .hero-backdrop {
+    inset: -5% -4% auto;
+  }
+
+  table {
+    min-width: 520px;
+  }
+
+  .table-scroll-hint {
+    margin: 0 0 var(--space-1);
+    font-family: var(--font-chrome);
+    font-size: 0.75rem;
+    color: var(--color-ink-muted);
+  }
+
+  .chart-count {
+    font-size: 13px;
+  }
+
+  .chart-label {
+    font-size: 12px;
+  }
+
+  .ruler-num {
+    font-size: 11px;
+  }
+
+  .ruler-tick {
+    font-size: 0.7rem;
+  }
+
+  .pet-species-picker-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .island-pet-nest,
   .island-pet-nest-hit {
     width: 3.6rem;
@@ -4233,6 +4345,12 @@ main:has(.home-page) {
   .island-pet-nest.pet-pace-1 .island-pet-nest-hit,
   .island-pet-nest.pet-mood-working.pet-pace-1 .island-pet-nest-hit {
     transform: translateX(10px);
+  }
+}
+
+@media (max-width: 520px) {
+  .pet-species-picker-grid {
+    grid-template-columns: 1fr;
   }
 }
 
