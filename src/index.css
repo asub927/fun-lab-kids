@@ -2553,13 +2553,16 @@ main:has(.home-page) {
   background: var(--particle-color, var(--color-mustard));
   border-radius: 2px;
   opacity: 0;
-  animation: motion-particle-burst 0.9s var(--ease-out-expo) var(--delay, 0ms) both;
+  animation: motion-particle-burst 1.7s var(--ease-out-expo) var(--delay, 0ms) both;
 }
 
 @keyframes motion-particle-burst {
   0% {
     opacity: 1;
     transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  55% {
+    opacity: 1;
   }
   100% {
     opacity: 0;
@@ -2576,7 +2579,7 @@ main:has(.home-page) {
   background: var(--balloon-color, var(--color-teal));
   border-radius: 50% 50% 50% 50% / 55% 55% 45% 45%;
   opacity: 0;
-  animation: motion-balloon-float 1.4s var(--ease-out-expo) var(--balloon-delay, 0ms) both;
+  animation: motion-balloon-float 2.4s var(--ease-out-expo) var(--balloon-delay, 0ms) both;
 }
 
 .celebration-balloon::after {
@@ -2595,7 +2598,10 @@ main:has(.home-page) {
     opacity: 0;
     transform: translate(0, 40px) scale(0.7);
   }
-  20% {
+  15% {
+    opacity: 1;
+  }
+  70% {
     opacity: 1;
   }
   100% {
