@@ -210,16 +210,15 @@ function numberSenseNudge(params: ActivityParams): QuestionNudge | null {
 }
 
 function measurementNudge(params: ActivityParams): QuestionNudge | null {
-  const length = params.length;
   const object = String(params.object ?? "object");
   const tool = String(params.tool ?? "ruler");
   return {
     strategy: "Measure & record",
     strategySteps: [
-      `Use a ${tool} to measure the ${object}.`,
-      "Line up zero with the end of the object.",
-      `How many ${params.unit ?? "units"} long is it?`,
-      typeof length === "number" ? `Check: is it close to ${length}?` : "Type the length you find.",
+      `Look at the ${object} lined up on the ${tool}.`,
+      "Find where the object starts (usually at 0).",
+      "Read the number at the other end.",
+      `Write that length in ${params.unit ?? "units"}.`,
     ],
   };
 }
@@ -229,9 +228,9 @@ function timeMoneyNudge(params: ActivityParams): QuestionNudge | null {
     return {
       strategy: "Count coins left to right",
       strategySteps: [
-        `Coins: ${params.coins}.`,
-        "Count quarters (25), then dimes (10), nickels (5), pennies (1).",
-        "Add the values step by step.",
+        "Start with the coins that are worth the most.",
+        "Quarters = 25¢, dimes = 10¢, nickels = 5¢, pennies = 1¢.",
+        "Add the values step by step for the total cents.",
       ],
     };
   }
@@ -239,9 +238,9 @@ function timeMoneyNudge(params: ActivityParams): QuestionNudge | null {
     return {
       strategy: "Read the clock",
       strategySteps: [
-        `Find the hour hand. It points near ${String(params.time).split(":")[0]}.`,
-        "Find the minute hand. Each number is 5 minutes.",
-        `Write the time as hour:minutes (e.g. ${params.time}).`,
+        "Find the short hour hand. Which number is it near?",
+        "Find the long minute hand. Each number is worth 5 minutes.",
+        "Write the time as hour:minutes (for example 3:15).",
       ],
     };
   }
@@ -249,42 +248,46 @@ function timeMoneyNudge(params: ActivityParams): QuestionNudge | null {
 }
 
 function dataChartNudge(params: ActivityParams): QuestionNudge | null {
-  const categories = params.categories as string[] | undefined;
-  const counts = params.counts as number[] | undefined;
-  const question = String(params.question ?? "");
-  if (categories && counts) {
-    const pairs = categories.map((c, i) => `${c}: ${counts[i]}`).join(", ");
-    return {
-      strategy: "Use the chart data",
-      strategySteps: [
-        `Data: ${pairs}.`,
-        `Question: ${question}`,
-        "Subtract to find 'how many more' or add for 'in all'.",
-      ],
-    };
-  }
-  return null;
+  const question = String(params.question ?? params.prompt ?? "");
+  if (!question) return null;
+  return {
+    strategy: "Use the chart data",
+    strategySteps: [
+      "Read the height (or number) on each bar.",
+      `Question: ${question}`,
+      "Subtract to find 'how many more' or add for 'in all'.",
+    ],
+  };
 }
 
 function geometryNudge(params: ActivityParams): QuestionNudge | null {
-  if (params.answer && params.parts) {
+  const mode = String(params.mode ?? "identify");
+  if (mode === "equal-shares" || params.parts) {
     return {
       strategy: "Name equal shares",
       strategySteps: [
-        `Shape split into ${params.parts} equal parts.`,
-        "Each part is one __ of the whole.",
-        "Halves = 2, thirds = 3, fourths = 4.",
+        "Count how many equal pieces the shape is cut into.",
+        "2 equal parts = halves, 3 = thirds, 4 = fourths.",
+        "Choose the matching name.",
       ],
     };
   }
-  const shape = String(params.shape ?? "shape");
-  const sides = params.sides;
+  if (mode === "count-sides") {
+    return {
+      strategy: "Count sides carefully",
+      strategySteps: [
+        "Start at one corner and move around the shape.",
+        "Touch each side once as you count.",
+        "Type the total number of sides.",
+      ],
+    };
+  }
   return {
-    strategy: "Count sides & corners",
+    strategy: "Name the shape",
     strategySteps: [
-      `Draw a ${shape}.`,
-      typeof sides === "number" ? `This shape has ${sides} sides.` : "Count each side carefully.",
-      "Name the shape when you know its sides.",
+      "Count the sides and corners.",
+      "3 sides = triangle, 4 = quadrilateral (square/rectangle/trapezoid), 5 = pentagon, 6 = hexagon.",
+      "Type the shape name.",
     ],
   };
 }

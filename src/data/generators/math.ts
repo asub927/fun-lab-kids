@@ -141,13 +141,17 @@ export function generateMathQuestion(standard: Standard, seed: number): Activity
     const objects = ["pencil", "eraser", "crayon", "marker", "book", "notebook", "folder", "desk", "table", "door"];
     const object = objects[seed];
     const useMetric = seed >= 7 || tier === 3;
-    const length = useMetric ? 1 + (seed % 3) : 3 + seed + tier;
+    const length = useMetric ? 1 + (seed % 3) : 3 + (seed % 8) + tier;
+    const unit = useMetric ? (length === 1 ? "meter" : "meters") : "inches";
+    const tool = useMetric ? "meter stick" : "ruler";
     return {
       object,
-      tool: useMetric ? "meter stick" : "ruler",
+      tool,
       length,
-      unit: useMetric ? (length === 1 ? "meter" : "meters") : "inches",
+      unit,
+      answer: length,
       difficulty: tier,
+      prompt: `How long is the ${object}? Line it up with the ${tool}.`,
     };
   }
 
@@ -157,7 +161,12 @@ export function generateMathQuestion(standard: Standard, seed: number): Activity
       const minuteOptions = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45];
       const minute = minuteOptions[seed];
       const time = `${hour}:${minute.toString().padStart(2, "0")}`;
-      return { time, answer: time, difficulty: tier };
+      return {
+        time,
+        answer: time,
+        difficulty: tier,
+        prompt: "What time does the clock show?",
+      };
     }
     const quarterCount = 1 + (seed % 3);
     const dimeCount = seed % 4;
@@ -170,7 +179,13 @@ export function generateMathQuestion(standard: Standard, seed: number): Activity
       nickelCount ? `${nickelCount} nickel${nickelCount > 1 ? "s" : ""}` : "",
       pennyCount ? `${pennyCount} penn${pennyCount === 1 ? "y" : "ies"}` : "",
     ].filter(Boolean);
-    return { coins: coinParts.join(", "), cents, difficulty: tier };
+    return {
+      coins: coinParts.join(", "),
+      cents,
+      answer: cents,
+      difficulty: tier,
+      prompt: "How many cents are these coins worth in all?",
+    };
   }
 
   if (activityType === "data-chart") {
@@ -187,22 +202,28 @@ export function generateMathQuestion(standard: Standard, seed: number): Activity
         : set.question.includes("all")
           ? a + b + c
           : c - a;
-    return { ...set, answer, difficulty: tier };
+    return { ...set, answer, difficulty: tier, prompt: set.question };
   }
 
   if (activityType === "geometry") {
     if (code === "NC.2.G.3") {
-      const shapes = ["rectangle", "circle", "square", "triangle", "hexagon", "rectangle", "circle", "square", "triangle", "hexagon"];
+      // NC.2.G.3 focuses on circles and rectangles into 2–4 equal shares
+      const shapes = ["rectangle", "circle", "rectangle", "circle", "square", "circle", "rectangle", "circle", "square", "rectangle"];
       const partCount = 2 + (seed % 3);
-      const names = ["halves", "thirds", "fourths"];
+      const names = ["halves", "thirds", "fourths"] as const;
+      const answer = names[partCount === 2 ? 0 : partCount === 3 ? 1 : 2];
       return {
         shape: shapes[seed],
         parts: partCount,
-        answer: names[partCount === 2 ? 0 : partCount === 3 ? 1 : 2],
+        mode: "equal-shares",
+        answer,
+        options: ["halves", "thirds", "fourths"],
         difficulty: tier,
-        prompt: `Split the ${shapes[seed]} into ${partCount} equal parts.`,
+        prompt: "This shape is split into equal parts. What do we call the equal shares?",
       };
     }
+
+    // NC.2.G.1 — recognize shapes by attributes (show visual, hide the name)
     const shapes = [
       { shape: "triangle", sides: 3 },
       { shape: "square", sides: 4 },
@@ -210,13 +231,29 @@ export function generateMathQuestion(standard: Standard, seed: number): Activity
       { shape: "pentagon", sides: 5 },
       { shape: "hexagon", sides: 6 },
       { shape: "octagon", sides: 8 },
-      { shape: "decagon", sides: 10 },
+      { shape: "trapezoid", sides: 4 },
       { shape: "heptagon", sides: 7 },
       { shape: "nonagon", sides: 9 },
-      { shape: "trapezoid", sides: 4 },
+      { shape: "decagon", sides: 10 },
     ];
-    const pick = shapes[seed];
-    return { ...pick, difficulty: tier };
+    const pick = shapes[seed % shapes.length];
+    const countSides = seed % 2 === 1;
+    if (countSides) {
+      return {
+        ...pick,
+        mode: "count-sides",
+        answer: pick.sides,
+        difficulty: tier,
+        prompt: "How many sides does this shape have?",
+      };
+    }
+    return {
+      ...pick,
+      mode: "identify",
+      answer: pick.shape,
+      difficulty: tier,
+      prompt: "What shape is this?",
+    };
   }
 
   return { prompt: standard.text, difficulty: tier };

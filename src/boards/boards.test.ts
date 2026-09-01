@@ -161,4 +161,71 @@ describe("template labs", () => {
     }
     expect(state.textResponse).toBe("the guitar string vibrates");
   });
+
+  it("checks geometry identify by shape name without accepting side count alone", () => {
+    let state = createTemplateState("geometry", "NC.2.G.1", {
+      shape: "triangle",
+      sides: 3,
+      mode: "identify",
+      answer: "triangle",
+      prompt: "What shape is this?",
+    });
+    state = applyTemplateAction(state, { action: "set_text", text: "3" });
+    expect(checkTemplate(state).ok).toBe(false);
+    state = applyTemplateAction(state, { action: "set_text", text: "triangle" });
+    expect(checkTemplate(state).ok).toBe(true);
+  });
+
+  it("checks geometry count-sides numerically", () => {
+    let state = createTemplateState("geometry", "NC.2.G.1", {
+      shape: "hexagon",
+      sides: 6,
+      mode: "count-sides",
+      answer: 6,
+    });
+    state = applyTemplateAction(state, { action: "set_numeric", value: "6" });
+    expect(checkTemplate(state).ok).toBe(true);
+  });
+
+  it("checks equal-shares via option selection", () => {
+    let state = createTemplateState("geometry", "NC.2.G.3", {
+      shape: "circle",
+      parts: 2,
+      mode: "equal-shares",
+      answer: "halves",
+      options: ["halves", "thirds", "fourths"],
+    });
+    state = applyTemplateAction(state, { action: "set_option", value: "halves" });
+    expect(checkTemplate(state).ok).toBe(true);
+  });
+
+  it("checks coin totals numerically", () => {
+    let state = createTemplateState("time-money", "NC.2.MD.8", {
+      coins: "1 quarter, 2 dimes",
+      cents: 45,
+      answer: 45,
+    });
+    state = applyTemplateAction(state, { action: "set_numeric", value: "45" });
+    expect(checkTemplate(state).ok).toBe(true);
+  });
+});
+
+describe("visual math question prompts", () => {
+  it("does not spoil geometry answers in the prompt text", () => {
+    const set = getQuestionSet("NC.2.G.1");
+    expect(set).toHaveLength(10);
+    for (const q of set) {
+      expect(q.prompt).toBeTruthy();
+      expect(String(q.prompt).toLowerCase()).not.toContain(String(q.shape));
+      expect(q.mode === "identify" || q.mode === "count-sides").toBe(true);
+    }
+  });
+
+  it("asks students to read a clock instead of printing the time", () => {
+    const set = getQuestionSet("NC.2.MD.7");
+    for (const q of set) {
+      expect(String(q.prompt).toLowerCase()).toContain("clock");
+      expect(String(q.prompt)).not.toContain(String(q.time));
+    }
+  });
 });
