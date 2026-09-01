@@ -68,6 +68,16 @@ export const CODEX_PET_PACKAGES: Record<string, CodexPetPackage> = {
     author: "Legeling",
     license: "CC BY-NC 4.0",
   },
+  "chispa--giiilberto-nm": {
+    id: "chispa--giiilberto-nm",
+    displayName: "Chispa",
+    description:
+      "A tiny rusty helper robot with binocular eyes, tank treads, and clamp arms.",
+    spriteVersionNumber: 1,
+    spritesheetPath: "/pets/chispa--giiilberto-nm/spritesheet.webp",
+    author: "giiilberto_nm",
+    license: "Community upload; see submission.json for source attribution",
+  },
 };
 
 export function getCodexPetPackage(id: string): CodexPetPackage | undefined {

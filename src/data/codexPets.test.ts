@@ -21,6 +21,13 @@ describe("codexPets", () => {
     expect(pkg?.spritesheetPath).toContain("jinmao--legeling");
   });
 
+  it("loads the chispa package", () => {
+    const pkg = getCodexPetPackage("chispa--giiilberto-nm");
+    expect(pkg?.displayName).toBe("Chispa");
+    expect(pkg?.spriteVersionNumber).toBe(1);
+    expect(pkg?.spritesheetPath).toContain("chispa--giiilberto-nm");
+  });
+
   it("maps moods to Codex animation rows", () => {
     expect(moodToCodexAction("idle", "right")).toBe("idle");
     expect(moodToCodexAction("working", "right")).toBe("running-right");
