@@ -9,7 +9,7 @@ WebMCP Challenge project: a Synthesis-inspired learning web app where kids and a
 | **Repo** | `inquiry-island` |
 | **License** | MIT |
 | **Deadline** | Sep 3, 2026 @ 1:00pm PDT |
-| **Hosting** | Netlify (local-first until smoke tests pass) |
+| **Hosting** | Vercel |
 
 ## Quick start
 
@@ -71,9 +71,15 @@ npm run test       # board reducer tests
 npm run build      # production build → dist/
 ```
 
-## Netlify
+## Vercel
 
-Deploy only after the local smoke checklist passes. See `netlify.toml`. Previews are free; batch production deploys to conserve hackathon credits.
+Deploy only after the local smoke checklist passes. See `vercel.json` for build settings and SPA routing. Preview deploys are automatic per PR.
+
+```bash
+npm run build   # verify locally first
+```
+
+Import the repo at [vercel.com/new](https://vercel.com/new) — no environment variables required.
 
 ## Scope (Phase 1 shipped)
 
