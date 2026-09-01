@@ -71,6 +71,69 @@ export function getNextAchievement(store: ProgressStore): Achievement | null {
   return locked[0] ?? null;
 }
 
+export function getFirstUnmasteredCode(store: ProgressStore, subject?: Subject): string | null {
+  const standards = listGrade2Standards(subject);
+  const unmastered = standards.find((s) => !store.progress[s.code]?.completed);
+  return unmastered?.code ?? null;
+}
+
+export function getBestSmartScoreBelow100(store: ProgressStore): string | null {
+  let best: { code: string; score: number } | null = null;
+  for (const [code, p] of Object.entries(store.progress)) {
+    const score = p.smartScore ?? 0;
+    if (!p.completed && score > 0 && score < 100) {
+      if (!best || score > best.score) {
+        best = { code, score };
+      }
+    }
+  }
+  return best?.code ?? null;
+}
+
+function labPath(code: string): string {
+  return `/lab/${encodeURIComponent(code)}`;
+}
+
+function practicePath(store: ProgressStore): string {
+  const recent = getRecentActivity(store, 10).find((r) => !r.completed);
+  if (recent) return labPath(recent.code);
+  const next = getFirstUnmasteredCode(store);
+  return next ? labPath(next) : "/grade-2";
+}
+
+export function getAchievementNavigationPath(achievement: Achievement, store: ProgressStore): string {
+  switch (achievement.id) {
+    case "math-captain": {
+      const code = getFirstUnmasteredCode(store, "math");
+      return code ? labPath(code) : "/grade-2/math";
+    }
+    case "word-captain": {
+      const code = getFirstUnmasteredCode(store, "ela");
+      return code ? labPath(code) : "/grade-2/ela";
+    }
+    case "science-captain": {
+      const code = getFirstUnmasteredCode(store, "science");
+      return code ? labPath(code) : "/grade-2/science";
+    }
+    case "hot-streak":
+    case "week-warrior":
+      return practicePath(store);
+    case "smart-score-star": {
+      const code = getBestSmartScoreBelow100(store) ?? getFirstUnmasteredCode(store);
+      return code ? labPath(code) : "/grade-2";
+    }
+    case "island-champion": {
+      const code = getFirstUnmasteredCode(store);
+      return code ? labPath(code) : "/grade-2";
+    }
+    case "first-explorer":
+    default: {
+      const code = getFirstUnmasteredCode(store);
+      return code ? labPath(code) : "/grade-2";
+    }
+  }
+}
+
 export function getAverageSmartScore(progress: Record<string, StandardProgress>): number | null {
   const scores = Object.values(progress)
     .map((p) => p.smartScore ?? 0)

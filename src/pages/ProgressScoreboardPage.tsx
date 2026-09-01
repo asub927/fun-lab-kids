@@ -7,7 +7,7 @@ import { Reveal, RevealGroup } from "../components/Reveal";
 import { PET_SPECIES, type PetSpeciesId } from "../data/pets";
 import { loadProgress, updateProfileName } from "../services/progress";
 import { pickScoreboardHintLine } from "../services/characterDialogue";
-import { getScoreboardSummary } from "../services/progressStats";
+import { getAchievementNavigationPath, getScoreboardSummary } from "../services/progressStats";
 import { getPetSpeciesId, isPetVisible, PET_PREFS_EVENT, setPetSpecies, setPetVisible } from "../services/pet";
 
 const SUBJECT_LABELS = {
@@ -181,7 +181,12 @@ export function ProgressScoreboardPage() {
           </h2>
           <div className="subject-progress-list">
             {summary.subjectStats.map((stat) => (
-              <div key={stat.subject} className="subject-progress-row">
+              <Link
+                key={stat.subject}
+                to={`/grade-2/${stat.subject}`}
+                className="subject-progress-row"
+                aria-label={`Go to ${SUBJECT_LABELS[stat.subject]}: ${stat.done} of ${stat.total} skills mastered`}
+              >
                 <div className="subject-progress-header">
                   <span className={`subject-tag accent-${SUBJECT_ACCENTS[stat.subject]}`}>
                     {SUBJECT_LABELS[stat.subject]}
@@ -203,7 +208,7 @@ export function ProgressScoreboardPage() {
                     style={{ width: `${stat.percent}%` }}
                   />
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
@@ -229,22 +234,32 @@ export function ProgressScoreboardPage() {
           )}
           <RevealGroup className="achievement-grid">
             {summary.unlockedAchievements.map((achievement) => (
-              <div key={achievement.id} className="achievement-card earned">
+              <Link
+                key={achievement.id}
+                to={getAchievementNavigationPath(achievement, store)}
+                className="achievement-card earned"
+                aria-label={`${achievement.title} earned: ${achievement.description}`}
+              >
                 <span className="achievement-icon" aria-hidden="true">
                   {achievement.icon}
                 </span>
                 <h3>{achievement.title}</h3>
                 <p>{achievement.description}</p>
-              </div>
+              </Link>
             ))}
             {summary.lockedAchievements.map((achievement) => (
-              <div key={achievement.id} className="achievement-card locked">
+              <Link
+                key={achievement.id}
+                to={getAchievementNavigationPath(achievement, store)}
+                className="achievement-card locked"
+                aria-label={`Work toward ${achievement.title}: ${achievement.description}`}
+              >
                 <span className="achievement-icon" aria-hidden="true">
                   {achievement.icon}
                 </span>
                 <h3>{achievement.title}</h3>
                 <p>{achievement.description}</p>
-              </div>
+              </Link>
             ))}
           </RevealGroup>
         </section>

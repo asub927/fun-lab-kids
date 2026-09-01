@@ -757,8 +757,14 @@ main:focus {
   margin-top: 0.15rem;
 }
 
-.strategy-panel-body--rail {
-  padding: 0.65rem 0.85rem 0.85rem;
+.strategy-panel-body {
+  padding: 0 var(--space-2) var(--space-2);
+  border-top: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+}
+
+.strategy-panel-body.strategy-panel-body--rail {
+  padding: 0.75rem 0.85rem 0.85rem;
+  border-top: none;
 }
 
 .strategy-panel--rail .strategy-title {
@@ -808,11 +814,6 @@ main:focus {
 .strategy-panel[open] .strategy-summary-chevron {
   transform: rotate(45deg);
   margin-top: 0.15rem;
-}
-
-.strategy-panel-body {
-  padding: 0 var(--space-2) var(--space-2);
-  border-top: 2px solid color-mix(in srgb, currentColor 25%, transparent);
 }
 
 .strategy-kicker {
@@ -1337,32 +1338,6 @@ tbody tr:last-child td {
 .catalog .hero-title {
   border-bottom: var(--border-width) solid var(--color-ink);
   padding-bottom: var(--space-2);
-}
-
-.judge-prompts {
-  margin-top: var(--space-4);
-  padding: var(--space-2);
-  border: var(--border-width) solid var(--color-ink);
-  background: var(--color-cream-2);
-}
-
-.judge-prompts h2 {
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  font-size: 1.25rem;
-  margin-top: 0;
-}
-
-.judge-prompts code {
-  display: block;
-  margin-top: 0.35rem;
-  padding: 0.75rem;
-  background: var(--color-paper);
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-size: 0.8125rem;
-  font-family: var(--font-mono);
-  border: var(--border-width-inner) solid var(--color-ink);
 }
 
 .progress-summary {
@@ -2229,6 +2204,35 @@ tbody tr:last-child td {
   gap: var(--space-2);
 }
 
+.subject-progress-row {
+  display: block;
+  padding: 0.75rem;
+  border: var(--border-width) solid var(--color-ink);
+  border-radius: var(--radius-tablet);
+  background: var(--color-paper);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-out-expo),
+    box-shadow var(--duration-fast) var(--ease-out-expo),
+    background-color 0.15s ease;
+}
+
+.subject-progress-row:hover {
+  background: var(--color-cream-2);
+  transform: translateX(4px);
+}
+
+.subject-progress-row:active {
+  transform: translateX(2px) scale(0.995);
+}
+
+.subject-progress-row:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+}
+
 .subject-progress-header {
   display: flex;
   justify-content: space-between;
@@ -2250,11 +2254,34 @@ tbody tr:last-child td {
 }
 
 .achievement-card {
+  display: block;
   padding: 1rem;
   border: var(--border-width) solid var(--color-ink);
   border-radius: var(--radius-tablet);
   box-shadow: var(--shadow-hard-sm);
   background: var(--color-paper);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-out-expo),
+    box-shadow var(--duration-fast) var(--ease-out-expo),
+    opacity 0.2s ease,
+    background-color 0.15s ease;
+}
+
+.achievement-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hard);
+}
+
+.achievement-card:active {
+  transform: translateY(0) scale(0.995);
+}
+
+.achievement-card:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
 }
 
 .achievement-card.earned {
@@ -2266,6 +2293,16 @@ tbody tr:last-child td {
 .achievement-card.locked {
   opacity: 0.55;
   box-shadow: none;
+  transition:
+    transform var(--duration-fast) var(--ease-out-expo),
+    box-shadow var(--duration-fast) var(--ease-out-expo),
+    opacity 0.2s ease,
+    background-color 0.15s ease;
+}
+
+.achievement-card.locked:hover {
+  opacity: 0.85;
+  box-shadow: var(--shadow-hard-sm);
 }
 
 .achievement-card h3 {
@@ -3705,11 +3742,16 @@ main:has(.home-page) {
 }
 
 .achievement-card.locked {
-  transition: opacity 0.2s ease;
+  transition:
+    transform var(--duration-fast) var(--ease-out-expo),
+    box-shadow var(--duration-fast) var(--ease-out-expo),
+    opacity 0.2s ease,
+    background-color 0.15s ease;
 }
 
 .achievement-card.locked:hover {
   opacity: 0.85;
+  box-shadow: var(--shadow-hard-sm);
 }
 
 .motion-stagger.is-visible > *:nth-child(7) {
