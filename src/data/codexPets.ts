@@ -58,6 +58,16 @@ export const CODEX_PET_PACKAGES: Record<string, CodexPetPackage> = {
     author: "Kasyan Janci",
     license: "Unofficial fan content; non-commercial use only (CC BY-NC 4.0)",
   },
+  "jinmao--legeling": {
+    id: "jinmao--legeling",
+    displayName: "Buddy",
+    description:
+      "A pale cream-gold fluffy puppy with oversized floppy ears, a white ruff, pink paw pads, and a chartreuse tennis ball.",
+    spriteVersionNumber: 2,
+    spritesheetPath: "/pets/jinmao--legeling/spritesheet.webp",
+    author: "Legeling",
+    license: "CC BY-NC 4.0",
+  },
 };
 
 export function getCodexPetPackage(id: string): CodexPetPackage | undefined {

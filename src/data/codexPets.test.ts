@@ -14,6 +14,13 @@ describe("codexPets", () => {
     expect(pkg?.spritesheetPath).toContain("spritesheet.webp");
   });
 
+  it("loads the jinmao package", () => {
+    const pkg = getCodexPetPackage("jinmao--legeling");
+    expect(pkg?.displayName).toBe("Buddy");
+    expect(pkg?.spriteVersionNumber).toBe(2);
+    expect(pkg?.spritesheetPath).toContain("jinmao--legeling");
+  });
+
   it("maps moods to Codex animation rows", () => {
     expect(moodToCodexAction("idle", "right")).toBe("idle");
     expect(moodToCodexAction("working", "right")).toBe("running-right");

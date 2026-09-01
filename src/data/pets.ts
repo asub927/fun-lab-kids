@@ -15,16 +15,17 @@ export const DEFAULT_PET_SPECIES: PetSpeciesId = "dog";
 export const PET_SPECIES: PetSpecies[] = [
   {
     id: "dog",
-    name: "Om Nom",
-    tagline: "A candy-loving friend who cheers when you practice",
+    name: "Buddy",
+    tagline: "A fluffy golden pup with a tennis ball who cheers you on",
     accentClass: "accent-green",
-    codexPackageId: "om-nom--kasyan1337",
+    codexPackageId: "jinmao--legeling",
   },
   {
     id: "cat",
-    name: "Whiskers",
-    tagline: "A curious cat who keeps you company in the corner",
+    name: "Om Nom",
+    tagline: "A candy-loving friend who keeps you company in the corner",
     accentClass: "accent-pink",
+    codexPackageId: "om-nom--kasyan1337",
   },
   {
     id: "rabbit",
