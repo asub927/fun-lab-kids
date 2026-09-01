@@ -1282,6 +1282,7 @@ tbody tr:last-child td {
 }
 
 .chart-bar {
+  /* Per-bar fill comes from ChartVisual (matches category color words). */
   fill: var(--accent);
   stroke: var(--color-ink);
   stroke-width: 2;
