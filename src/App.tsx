@@ -2,6 +2,7 @@ import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react
 import { AnimatedLayout } from "./components/AnimatedLayout";
 import { AppProvider } from "./context/AppContext";
 import { IslandCompanion } from "./components/IslandCompanion";
+import { IslandPet } from "./components/IslandPet";
 import { useWebMCPCurriculum } from "./webmcp/register";
 import { HomePage } from "./pages/HomePage";
 import { Grade2HubPage } from "./pages/Grade2HubPage";
@@ -93,6 +94,7 @@ function AppChrome() {
             </Route>
           </Routes>
         </main>
+        <IslandPet />
         <IslandCompanion />
       </div>
     </>

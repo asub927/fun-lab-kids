@@ -63,7 +63,9 @@ type AppContextValue = {
   runCheck: () => ReturnType<typeof runBoardCheck> | null;
   revealAnswer: () => ReturnType<typeof runBoardCheck> | null;
   advanceQuestion: () => void;
+  previousQuestion: () => void;
   canAdvanceQuestion: boolean;
+  canGoPreviousQuestion: boolean;
   resetBoard: () => void;
   proposeRevision: (revision: string) => void;
   acceptRevision: () => void;
@@ -248,16 +250,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const advanceQuestion = useCallback(() => {
     if (questionSet.length === 0 || questionIndex >= questionSet.length - 1) return;
-    if (!lastCheck?.ok && !lastCheck?.revealed) return;
     const nextIndex = questionIndex + 1;
     setQuestionIndex(nextIndex);
     loadQuestion(nextIndex, true);
-  }, [questionSet.length, questionIndex, lastCheck, loadQuestion]);
+  }, [questionSet.length, questionIndex, loadQuestion]);
 
-  const canAdvanceQuestion =
-    questionSet.length > 1 &&
-    questionIndex < questionSet.length - 1 &&
-    Boolean(lastCheck?.ok || lastCheck?.revealed);
+  const previousQuestion = useCallback(() => {
+    if (questionSet.length === 0 || questionIndex <= 0) return;
+    const prevIndex = questionIndex - 1;
+    setQuestionIndex(prevIndex);
+    loadQuestion(prevIndex, true);
+  }, [questionSet.length, questionIndex, loadQuestion]);
+
+  const canAdvanceQuestion = questionSet.length > 1 && questionIndex < questionSet.length - 1;
+  const canGoPreviousQuestion = questionSet.length > 1 && questionIndex > 0;
 
   const resetBoard = useCallback(() => {
     if (!labId || !activeStandard) return;
@@ -330,7 +336,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       runCheck,
       revealAnswer,
       advanceQuestion,
+      previousQuestion,
       canAdvanceQuestion,
+      canGoPreviousQuestion,
       resetBoard,
       proposeRevision: proposeRevisionText,
       acceptRevision,
@@ -359,7 +367,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       runCheck,
       revealAnswer,
       advanceQuestion,
+      previousQuestion,
       canAdvanceQuestion,
+      canGoPreviousQuestion,
       resetBoard,
       proposeRevisionText,
       acceptRevision,

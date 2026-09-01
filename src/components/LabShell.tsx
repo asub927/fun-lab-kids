@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { CelebrationBurst } from "./CelebrationBurst";
 import { CharacterGuide } from "./CharacterGuide";
@@ -15,6 +16,17 @@ type LabShellProps = {
   children: React.ReactNode;
 };
 
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  const tag = target.tagName;
+  return (
+    tag === "INPUT" ||
+    tag === "TEXTAREA" ||
+    tag === "SELECT" ||
+    target.isContentEditable
+  );
+}
+
 export function LabShell({ title, children }: LabShellProps) {
   const {
     activeStandard,
@@ -27,16 +39,19 @@ export function LabShell({ title, children }: LabShellProps) {
     correctCount,
     questionLevel,
     canAdvanceQuestion,
+    canGoPreviousQuestion,
     undo,
     runCheck,
     revealAnswer,
     advanceQuestion,
+    previousQuestion,
     resetBoard,
   } = useApp();
 
   const store = loadProgress();
   const subject = activeStandard?.subject ?? "math";
   const checkCount = store.gamification.lifetimeChecks;
+  const hasQuestionPager = questionTotal > 1;
 
   const backTo =
     activeStandard?.subject === "math"
@@ -51,6 +66,26 @@ export function LabShell({ title, children }: LabShellProps) {
     if (window.confirm("Reset this question?")) resetBoard();
   };
 
+  useEffect(() => {
+    if (!hasQuestionPager) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (isTypingTarget(event.target)) return;
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        previousQuestion();
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        advanceQuestion();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [hasQuestionPager, previousQuestion, advanceQuestion]);
+
   const resultClass = lastCheck
     ? lastCheck.ok
       ? "ok"
@@ -59,7 +94,8 @@ export function LabShell({ title, children }: LabShellProps) {
         : "warn"
     : "";
 
-  const showCelebration = lastCelebration && (lastCelebration.isNewMastery || lastCelebration.newAchievements.length > 0);
+  const showCelebration =
+    lastCelebration && (lastCelebration.isNewMastery || lastCelebration.newAchievements.length > 0);
 
   const celebrationLine = (() => {
     if (!lastCelebration) return "";
@@ -101,12 +137,14 @@ export function LabShell({ title, children }: LabShellProps) {
               {activeStandard.text.length > 120 ? "…" : ""}
             </p>
           )}
-          {questionTotal > 1 && (
+          {hasQuestionPager && (
             <div className="practice-stats" role="status">
               <p className="question-progress">
                 Question {questionIndex + 1} of {questionTotal} · Level {questionLevel}
               </p>
-              <p className="smart-score">Smart Score: {smartScore} · Correct: {correctCount}</p>
+              <p className="smart-score">
+                Smart Score: {smartScore} · Correct: {correctCount}
+              </p>
             </div>
           )}
         </div>
@@ -117,30 +155,19 @@ export function LabShell({ title, children }: LabShellProps) {
           <button type="button" className="btn primary" onClick={() => runCheck()}>
             Check Answer
           </button>
-          <button type="button" className="btn secondary" onClick={() => revealAnswer()}>
+          <button type="button" className="btn hint" onClick={() => revealAnswer()}>
             Show Answer
           </button>
-          {canAdvanceQuestion && (
-            <button type="button" className="btn primary" onClick={advanceQuestion}>
-              Next Question →
-            </button>
-          )}
           <button type="button" className="btn danger" onClick={handleReset}>
             Reset Board
           </button>
         </div>
       </header>
 
-
       {showCelebration && lastCelebration && (
         <div className="mastery-panel" role="status" aria-live="polite">
           <CelebrationBurst />
-          <CharacterGuide
-            subject={subject}
-            line={celebrationLine}
-            mood="cheering"
-            live
-          />
+          <CharacterGuide subject={subject} line={celebrationLine} mood="cheering" live />
           <div className="mastery-panel-body">
             <p className="mastery-panel-heading">
               {lastCelebration.isNewMastery ? "Skill mastered!" : "Badge unlocked!"}
@@ -160,7 +187,7 @@ export function LabShell({ title, children }: LabShellProps) {
             {streakLine && <p className="mastery-streak">{streakLine}</p>}
           </div>
           <button type="button" className="btn secondary mastery-dismiss" onClick={clearCelebration}>
-            Keep going
+            Keep Going
           </button>
         </div>
       )}
@@ -190,6 +217,34 @@ export function LabShell({ title, children }: LabShellProps) {
       )}
 
       <div className="lab-board">{children}</div>
+
+      {hasQuestionPager && (
+        <nav className="question-nav" aria-label="Question navigation">
+          <button
+            type="button"
+            className="btn secondary question-nav-btn"
+            onClick={previousQuestion}
+            disabled={!canGoPreviousQuestion}
+            aria-label="Previous question"
+          >
+            <span aria-hidden="true">←</span> Previous
+          </button>
+          <p className="question-nav-status" aria-live="polite">
+            Question <span className="tabular">{questionIndex + 1}</span> of{" "}
+            <span className="tabular">{questionTotal}</span>
+          </p>
+          <button
+            type="button"
+            className="btn primary question-nav-btn"
+            onClick={advanceQuestion}
+            disabled={!canAdvanceQuestion}
+            aria-label="Next question"
+          >
+            Next <span aria-hidden="true">→</span>
+          </button>
+          <p className="question-nav-hint">Use ← → arrow keys to move between questions</p>
+        </nav>
+      )}
     </article>
   );
 }

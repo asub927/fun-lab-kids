@@ -15,10 +15,16 @@ const FEATURES = [
     accent: "green",
   },
   {
+    icon: "🐣",
+    title: "Island pet",
+    text: "Hatch Pebble, Coral, or Sprout. Your pet grows with practice and cheers when you win.",
+    accent: "pink",
+  },
+  {
     icon: "🦜",
     title: "Island companion",
     text: "Ripple, Digits, and Spark travel with you. They give hints, cheer you on, and suggest what to try next.",
-    accent: "pink",
+    accent: "green",
   },
   {
     icon: "🏝",
@@ -74,7 +80,7 @@ export function HomePage() {
         </p>
         <div className="home-hero-actions">
           <Link to="/grade-2" className="btn primary large home-cta-primary">
-            Start Grade 2
+            Lets go!
           </Link>
           <Link to="/grade-2/progress" className="btn secondary large">
             View Progress
