@@ -38,9 +38,9 @@ describe("ambient pet activity", () => {
     expect(deriveAmbientMood({ reaction: "waving", inLab: false })).toBe("waving");
   });
 
-  it("uses waiting/working while in a lab, otherwise idle", () => {
+  it("stays calm in labs unless waiting for an answer", () => {
     expect(deriveAmbientMood({ reaction: null, inLab: true, needsAnswer: true })).toBe("waiting");
-    expect(deriveAmbientMood({ reaction: null, inLab: true, needsAnswer: false })).toBe("working");
+    expect(deriveAmbientMood({ reaction: null, inLab: true, needsAnswer: false })).toBe("idle");
     expect(deriveAmbientMood({ reaction: null, inLab: false })).toBe("idle");
   });
 

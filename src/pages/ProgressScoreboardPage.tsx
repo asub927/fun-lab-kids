@@ -75,7 +75,7 @@ export function ProgressScoreboardPage() {
               checked={petVisible}
               onChange={togglePet}
             />
-            <span>Show floating island friend</span>
+            <span>Show island friend (corner buddy)</span>
           </label>
         </div>
       </Reveal>

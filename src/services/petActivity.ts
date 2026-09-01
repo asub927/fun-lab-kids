@@ -13,15 +13,16 @@ export type PetActivityInput = {
 
 /**
  * Codex-inspired activity → animation map for the ambient island pet.
- * Presence only — no care economy.
+ * Keep it calm by default; only burst into motion for real events.
  */
 export function deriveAmbientMood(input: PetActivityInput): PetMood {
   if (input.reaction === "celebrating") return "celebrating";
   if (input.reaction === "waving") return "waving";
   if (input.reaction === "working") return "working";
   if (input.reaction === "waiting") return "waiting";
+  // In a lab with an empty board, look gently attentive — not scurrying.
   if (input.inLab && input.needsAnswer) return "waiting";
-  if (input.inLab) return "working";
+  // Otherwise stay calm in the nest (Codex idle).
   return "idle";
 }
 

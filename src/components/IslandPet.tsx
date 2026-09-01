@@ -11,43 +11,10 @@ import {
 import { subjectFromPath } from "../services/companion";
 import { PetSprite } from "./pets/PetSprite";
 
-type Point = { x: number; y: number };
-
-const PET_SIZE = 72;
-const PAD = 16;
-
-function prefersReducedMotion(): boolean {
-  if (typeof window === "undefined" || !window.matchMedia) return false;
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
-}
-
-function randomPoint(width: number, height: number): Point {
-  const maxX = Math.max(PAD, width - PET_SIZE - PAD);
-  const maxY = Math.max(PAD, height - PET_SIZE - PAD - 72);
-  // Bias away from bottom-right companion and top nav.
-  const x = PAD + Math.random() * Math.max(1, maxX - PAD - 120);
-  const y = 72 + Math.random() * Math.max(1, maxY - 72);
-  return {
-    x: clamp(x, PAD, maxX),
-    y: clamp(y, 72, maxY),
-  };
-}
-
-function boardLooksEmpty(boardState: unknown): boolean {
-  if (!boardState || typeof boardState !== "object") return true;
-  const state = boardState as Record<string, unknown>;
-  if (typeof state.answer === "string") return state.answer.trim().length === 0;
-  if (typeof state.value === "string") return state.value.trim().length === 0;
-  if (typeof state.text === "string") return state.text.trim().length === 0;
-  if (Array.isArray(state.blocks)) return state.blocks.length === 0;
-  if (Array.isArray(state.tokens)) return state.tokens.length === 0;
-  return false;
-}
-
+/**
+ * Codex-like ambient pet: stays in a quiet nest (bottom-left),
+ * paces a tiny bit locally, and animates by activity — never roams the page.
+ */
 export function IslandPet() {
   const app = useApp();
   const { pathname } = useLocation();
@@ -55,9 +22,13 @@ export function IslandPet() {
   const [reaction, setReaction] = useState<"celebrating" | "working" | "waiting" | "waving" | null>(
     null,
   );
-  const [pos, setPos] = useState<Point>({ x: 24, y: 120 });
   const [facing, setFacing] = useState<"left" | "right">("right");
-  const [reducedMotion, setReducedMotion] = useState(prefersReducedMotion);
+  const [pace, setPace] = useState(0);
+  const [reducedMotion, setReducedMotion] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false,
+  );
   const [hint, setHint] = useState<string | null>(null);
   const hideTimer = useRef<number | null>(null);
   const pressTimer = useRef<number | null>(null);
@@ -99,37 +70,25 @@ export function IslandPet() {
       lastCheckOk: app.lastCheck ? app.lastCheck.ok : null,
       isCelebrating: celebrating,
     });
-    if (!next && !app.lastCheck && !app.lastCelebration) return;
     if (!next) return;
     setReaction(next);
     const timer = window.setTimeout(() => setReaction(null), PET_REACTION_MS);
     return () => window.clearTimeout(timer);
   }, [app.lastCheck, app.lastCelebration]);
 
+  // Tiny local pace inside the nest — not a full-page wander.
   useEffect(() => {
     if (!visible || reducedMotion) return;
-
-    const move = () => {
-      setPos((current) => {
-        const next = randomPoint(window.innerWidth, window.innerHeight);
-        setFacing(next.x >= current.x ? "right" : "left");
+    const tick = () => {
+      setPace((value) => {
+        const next = value >= 1 ? 0 : value + 1;
+        setFacing(next === 0 ? "right" : "left");
         return next;
       });
     };
-
-    move();
-    const id = window.setInterval(move, 5200 + Math.random() * 2400);
+    const id = window.setInterval(tick, mood === "working" ? 2200 : 4800);
     return () => window.clearInterval(id);
-  }, [visible, reducedMotion, pathname]);
-
-  useEffect(() => {
-    if (!reducedMotion || !visible) return;
-    setPos({
-      x: PAD,
-      y: Math.max(88, window.innerHeight - PET_SIZE - 96),
-    });
-    setFacing("right");
-  }, [reducedMotion, visible]);
+  }, [visible, reducedMotion, mood]);
 
   useEffect(() => {
     return () => {
@@ -170,29 +129,46 @@ export function IslandPet() {
 
   return (
     <div
-      className={`island-pet-ambient pet-mood-${mood}${reducedMotion ? " is-reduced-motion" : ""}`}
-      style={{ transform: `translate3d(${pos.x}px, ${pos.y}px, 0)` }}
+      className={[
+        "island-pet-nest",
+        `pet-mood-${mood}`,
+        `pet-pace-${pace}`,
+        reducedMotion ? "is-reduced-motion" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       aria-hidden={hint ? undefined : true}
     >
       <div
-        className="island-pet-ambient-hit"
+        className="island-pet-nest-hit"
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
         onPointerLeave={onPointerUp}
         onClick={onWaveClick}
         role="img"
-        aria-label={`${species.name}, your floating island friend`}
+        aria-label={`${species.name}, your island friend`}
       >
         <PetSprite speciesId={speciesId} mood={mood} facing={facing} />
       </div>
       {hint && (
-        <div className="island-pet-ambient-hint" role="dialog" aria-label="Hide pet">
+        <div className="island-pet-nest-hint" role="dialog" aria-label="Hide pet">
           <span>{hint}</span>
-          <button type="button" className="island-pet-ambient-hide" onClick={confirmHide}>
+          <button type="button" className="island-pet-nest-hide" onClick={confirmHide}>
             Hide
           </button>
         </div>
       )}
     </div>
   );
+}
+
+function boardLooksEmpty(boardState: unknown): boolean {
+  if (!boardState || typeof boardState !== "object") return true;
+  const state = boardState as Record<string, unknown>;
+  if (typeof state.answer === "string") return state.answer.trim().length === 0;
+  if (typeof state.value === "string") return state.value.trim().length === 0;
+  if (typeof state.text === "string") return state.text.trim().length === 0;
+  if (Array.isArray(state.blocks)) return state.blocks.length === 0;
+  if (Array.isArray(state.tokens)) return state.tokens.length === 0;
+  return false;
 }

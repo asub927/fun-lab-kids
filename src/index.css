@@ -3361,27 +3361,21 @@ main:has(.home-page) {
   }
 }
 
-/* Island Pet — ambient Codex-style floater (no action chrome) */
-.island-pet-ambient {
+/* Island Pet — quiet nest (Codex-style), no roam / no action chrome */
+.island-pet-nest {
   position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 35;
-  width: 4.5rem;
-  height: 4.5rem;
+  left: max(0.75rem, env(safe-area-inset-left));
+  bottom: max(0.85rem, env(safe-area-inset-bottom));
+  z-index: 34;
+  width: 4.25rem;
+  height: 4.25rem;
   pointer-events: none;
-  transition: transform 4.8s var(--ease-out-expo);
-  will-change: transform;
 }
 
-.island-pet-ambient.is-reduced-motion {
-  transition: none;
-}
-
-.island-pet-ambient-hit {
+.island-pet-nest-hit {
   pointer-events: auto;
-  width: 4.5rem;
-  height: 4.5rem;
+  width: 4.25rem;
+  height: 4.25rem;
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -3389,20 +3383,32 @@ main:has(.home-page) {
   background: transparent;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
+  transition: transform 1.8s var(--ease-out-expo);
 }
 
-.island-pet-ambient-hit .pet-sprite {
-  width: 4.25rem;
-  height: 4.25rem;
-  filter: drop-shadow(2px 3px 0 rgba(10, 10, 10, 0.18));
+.island-pet-nest.pet-pace-1 .island-pet-nest-hit {
+  transform: translateX(14px);
 }
 
-.island-pet-ambient-hint {
+.island-pet-nest.pet-mood-working .island-pet-nest-hit {
+  transition-duration: 0.9s;
+}
+
+.island-pet-nest.pet-mood-working.pet-pace-1 .island-pet-nest-hit {
+  transform: translateX(18px);
+}
+
+.island-pet-nest-hit .pet-sprite {
+  width: 3.85rem;
+  height: 3.85rem;
+  filter: drop-shadow(2px 3px 0 rgba(10, 10, 10, 0.16));
+}
+
+.island-pet-nest-hint {
   pointer-events: auto;
   position: absolute;
-  left: 50%;
-  bottom: calc(100% + 0.4rem);
-  transform: translateX(-50%);
+  left: 0;
+  bottom: calc(100% + 0.35rem);
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -3421,7 +3427,7 @@ main:has(.home-page) {
   animation: motion-pop-in 0.3s var(--ease-spring) both;
 }
 
-.island-pet-ambient-hide {
+.island-pet-nest-hide {
   border: 2px solid var(--color-ink);
   border-radius: 999px;
   background: var(--color-bone);
@@ -3431,38 +3437,260 @@ main:has(.home-page) {
   color: var(--color-ink);
 }
 
-.island-pet-ambient-hide:hover {
+.island-pet-nest-hide:hover {
   background: var(--color-cream);
+}
+
+.pet-sprite-wrap {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.pet-sprite-wrap--flip {
+  transform: scaleX(-1);
 }
 
 .pet-sprite {
   display: block;
   overflow: visible;
+  transform-origin: 50% 70%;
 }
 
-.pet-sprite--flip {
-  transform: scaleX(-1);
+.pet-part {
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
+/* Idle: soft breathe + blink + tiny claw twitch */
 .pet-sprite--idle {
-  animation: motion-float 4s ease-in-out infinite;
+  animation: pet-breathe 3.4s ease-in-out infinite;
 }
 
+.pet-sprite--idle .pet-part--eye,
+.pet-sprite--idle .pet-part--eye-l,
+.pet-sprite--idle .pet-part--eye-r {
+  animation: pet-blink 4.8s ease-in-out infinite;
+}
+
+.pet-sprite--idle .pet-part--claw-r,
+.pet-sprite--idle .pet-part--fin,
+.pet-sprite--idle .pet-part--leaf {
+  animation: pet-twitch 3.4s ease-in-out infinite;
+}
+
+.pet-sprite--idle .pet-part--tail {
+  animation: pet-tail-sway 2.8s ease-in-out infinite;
+}
+
+/* Working: scurry-in-place */
 .pet-sprite--working {
-  animation: motion-wiggle 0.55s var(--ease-spring) infinite;
+  animation: pet-scurry 0.55s var(--ease-spring) infinite;
 }
 
+.pet-sprite--working .pet-part--leg-l {
+  animation: pet-leg-l 0.35s ease-in-out infinite;
+}
+
+.pet-sprite--working .pet-part--leg-r {
+  animation: pet-leg-r 0.35s ease-in-out infinite;
+}
+
+.pet-sprite--working .pet-part--claw-l,
+.pet-sprite--working .pet-part--claw-r {
+  animation: pet-claw-work 0.45s ease-in-out infinite;
+}
+
+.pet-sprite--working .pet-part--sweat,
+.pet-sprite--working .pet-part--bubble {
+  animation: pet-bubble 1.1s ease-out infinite;
+}
+
+/* Waiting: slower, quieter */
 .pet-sprite--waiting {
-  animation: motion-float 5.5s ease-in-out infinite;
-  opacity: 0.94;
+  animation: pet-breathe 5s ease-in-out infinite;
+  opacity: 0.92;
 }
 
+.pet-sprite--waiting .pet-part--eye,
+.pet-sprite--waiting .pet-part--eye-l,
+.pet-sprite--waiting .pet-part--eye-r {
+  animation: pet-blink-slow 6s ease-in-out infinite;
+}
+
+/* Celebrate: hop + sparkle */
 .pet-sprite--celebrating {
-  animation: motion-cheer-bounce 0.65s var(--ease-spring) infinite;
+  animation: pet-hop 0.55s var(--ease-spring) infinite;
+}
+
+.pet-sprite--celebrating .pet-part--fx {
+  animation: pet-sparkle 0.7s ease-in-out infinite;
+}
+
+.pet-sprite--celebrating .pet-part--claw-r,
+.pet-sprite--celebrating .pet-part--fin {
+  animation: pet-wave-arm 0.45s ease-in-out infinite;
+}
+
+/* Wave */
+.pet-sprite--waving .pet-part--claw-r,
+.pet-sprite--waving .pet-part--fin {
+  animation: pet-wave-arm 0.4s ease-in-out infinite;
 }
 
 .pet-sprite--waving {
-  animation: motion-wiggle 0.45s var(--ease-spring) infinite;
+  animation: pet-breathe 2.2s ease-in-out infinite;
+}
+
+@keyframes pet-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.02, 0.98);
+  }
+}
+
+@keyframes pet-blink {
+  0%,
+  42%,
+  48%,
+  100% {
+    transform: scaleY(1);
+  }
+  45% {
+    transform: scaleY(0.12);
+  }
+}
+
+@keyframes pet-blink-slow {
+  0%,
+  70%,
+  78%,
+  100% {
+    transform: scaleY(1);
+  }
+  74% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes pet-twitch {
+  0%,
+  70%,
+  100% {
+    transform: rotate(0deg);
+  }
+  78% {
+    transform: rotate(12deg);
+  }
+  86% {
+    transform: rotate(-4deg);
+  }
+}
+
+@keyframes pet-tail-sway {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-10deg);
+  }
+}
+
+@keyframes pet-scurry {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(2px, -1px) rotate(2deg);
+  }
+  75% {
+    transform: translate(-2px, 0) rotate(-2deg);
+  }
+}
+
+@keyframes pet-leg-l {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-18deg);
+  }
+}
+
+@keyframes pet-leg-r {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(18deg);
+  }
+}
+
+@keyframes pet-claw-work {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(14deg);
+  }
+}
+
+@keyframes pet-bubble {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6);
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(1);
+  }
+}
+
+@keyframes pet-hop {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  40% {
+    transform: translateY(-10px) scale(0.96, 1.05);
+  }
+  70% {
+    transform: translateY(0) scale(1.04, 0.94);
+  }
+}
+
+@keyframes pet-sparkle {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes pet-wave-arm {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(28deg);
+  }
 }
 
 .pet-pref-toggle {
@@ -3485,27 +3713,51 @@ main:has(.home-page) {
 }
 
 @media (max-width: 640px) {
-  .island-pet-ambient,
-  .island-pet-ambient-hit {
-    width: 3.75rem;
-    height: 3.75rem;
+  .island-pet-nest,
+  .island-pet-nest-hit {
+    width: 3.6rem;
+    height: 3.6rem;
   }
 
-  .island-pet-ambient-hit .pet-sprite {
-    width: 3.5rem;
-    height: 3.5rem;
+  .island-pet-nest-hit .pet-sprite {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+
+  .island-pet-nest.pet-pace-1 .island-pet-nest-hit,
+  .island-pet-nest.pet-mood-working.pet-pace-1 .island-pet-nest-hit {
+    transform: translateX(10px);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .island-pet-ambient,
-  .island-pet-ambient-hint,
+  .island-pet-nest-hit,
+  .island-pet-nest-hint,
   .pet-sprite--idle,
   .pet-sprite--working,
   .pet-sprite--waiting,
   .pet-sprite--celebrating,
-  .pet-sprite--waving {
+  .pet-sprite--waving,
+  .pet-part,
+  .pet-part--eye,
+  .pet-part--eye-l,
+  .pet-part--eye-r,
+  .pet-part--claw-l,
+  .pet-part--claw-r,
+  .pet-part--fin,
+  .pet-part--leaf,
+  .pet-part--tail,
+  .pet-part--leg-l,
+  .pet-part--leg-r,
+  .pet-part--fx,
+  .pet-part--sweat,
+  .pet-part--bubble {
     animation: none !important;
     transition: none !important;
+  }
+
+  .island-pet-nest.pet-pace-1 .island-pet-nest-hit,
+  .island-pet-nest.pet-mood-working.pet-pace-1 .island-pet-nest-hit {
+    transform: none;
   }
 }
