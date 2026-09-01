@@ -33,7 +33,7 @@ export function StandardLabPage() {
 
 function titleForLab(code: string, fallback: string): string {
   const names: Record<string, string> = {
-    "NC.2.NBT.1": "Place Value Island",
+    "NC.2.NBT.1": "Place Value Lab",
     "W.2.1": "Opinion Builder",
     "2.P.2.1": "Matter Lab",
   };

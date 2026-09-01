@@ -41,7 +41,8 @@ export type RecordCheckResult = {
   isNewMastery: boolean;
 };
 
-const STORAGE_KEY = "inquiry-island-progress";
+const STORAGE_KEY = "funlab-progress";
+const LEGACY_STORAGE_KEY = "inquiry-island-progress";
 
 function emptyStore(): ProgressStore {
   return {
@@ -96,11 +97,21 @@ function normalizeStore(parsed: unknown): ProgressStore {
 export function loadProgress(): ProgressStore {
   if (typeof localStorage === "undefined") return emptyStore();
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    let raw = localStorage.getItem(STORAGE_KEY);
+    let migratedFromLegacy = false;
+    if (!raw) {
+      const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (legacy) {
+        raw = legacy;
+        migratedFromLegacy = true;
+      }
+    }
     if (!raw) return emptyStore();
     const parsed = JSON.parse(raw) as unknown;
     const store = normalizeStore(parsed);
-    if (parsed && typeof parsed === "object" && (parsed as { version?: number }).version === 1) {
+    const migratedFromV1 =
+      parsed && typeof parsed === "object" && (parsed as { version?: number }).version === 1;
+    if (migratedFromLegacy || migratedFromV1) {
       saveProgress(store);
     }
     return store;

@@ -212,7 +212,7 @@ export function LabShell({ title, children }: LabShellProps) {
                 {lastCelebration.isNewMastery ? "Skill mastered!" : "Badge unlocked!"}
               </p>
               {lastCelebration.xpEarned > 0 && (
-                <p className="mastery-xp">+{lastCelebration.xpEarned} Island Points</p>
+                <p className="mastery-xp">+{lastCelebration.xpEarned} Fun Points</p>
               )}
               {lastCelebration.newAchievements.length > 0 && (
                 <ul className="mastery-achievements">
@@ -243,7 +243,7 @@ export function LabShell({ title, children }: LabShellProps) {
               <div className="check-result-main">
                 <span>{lastCheck.feedback}</span>
                 {lastCelebration && lastCelebration.xpEarned > 0 && !showCelebration && (
-                  <span className="inline-xp">+{lastCelebration.xpEarned} Island Points</span>
+                  <span className="inline-xp">+{lastCelebration.xpEarned} Fun Points</span>
                 )}
               </div>
               {!showCelebration && (

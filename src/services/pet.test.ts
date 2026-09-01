@@ -9,7 +9,8 @@ import {
 } from "./pet";
 
 const store = new Map<string, string>();
-const STORAGE_KEY = "inquiry-island-pet";
+const STORAGE_KEY = "funlab-pet";
+const LEGACY_STORAGE_KEY = "inquiry-island-pet";
 
 beforeEach(() => {
   store.clear();
@@ -86,11 +87,12 @@ describe("ambient pet prefs", () => {
 
   it("migrates legacy pebble species to dog", () => {
     store.set(
-      STORAGE_KEY,
+      LEGACY_STORAGE_KEY,
       JSON.stringify({ version: 2, visible: true, speciesId: "pebble" }),
     );
     expect(loadPetPrefs().speciesId).toBe("dog");
     expect(loadPetPrefs().version).toBe(3);
+    expect(store.has(STORAGE_KEY)).toBe(true);
   });
 
   it("migrates legacy coral and sprout species", () => {

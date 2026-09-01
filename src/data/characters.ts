@@ -8,7 +8,7 @@ export type Character = {
   id: CharacterId;
   name: string;
   subject: Subject;
-  island: string;
+  lab: string;
   tagline: string;
   accentClass: string;
 };
@@ -18,7 +18,7 @@ export const CHARACTERS: Character[] = [
     id: "ripple",
     name: "Ripple",
     subject: "ela",
-    island: "Word Cove",
+    lab: "Word Lab",
     tagline: "An otter who loves every story",
     accentClass: "accent-pink",
   },
@@ -26,7 +26,7 @@ export const CHARACTERS: Character[] = [
     id: "digits",
     name: "Digits",
     subject: "math",
-    island: "Math Island",
+    lab: "Math Lab",
     tagline: "A crab who counts every win",
     accentClass: "accent-green",
   },
@@ -34,7 +34,7 @@ export const CHARACTERS: Character[] = [
     id: "spark",
     name: "Spark",
     subject: "science",
-    island: "Discovery Bay",
+    lab: "Science Lab",
     tagline: "A jellyfish who asks why",
     accentClass: "accent-orange",
   },

@@ -14,7 +14,7 @@ export function CatalogPage() {
       <p className="table-scroll-hint">Swipe sideways to see all columns.</p>
       <div className="table-wrap">
         <table>
-          <caption className="sr-only">North Carolina K-5 skills in Inquiry Island</caption>
+          <caption className="sr-only">North Carolina K-5 skills in Fun Lab</caption>
           <thead>
             <tr>
               <th scope="col">Code</th>

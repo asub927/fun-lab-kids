@@ -5,7 +5,7 @@ const PROMPTS = [
   {
     lab: "Math",
     prompt:
-      "Open Place Value Island. Use tools to build 243 with hundreds, tens, and ones blocks, then run_check.",
+      "Open Place Value Lab. Use tools to build 243 with hundreds, tens, and ones blocks, then run_check.",
   },
   {
     lab: "ELA",
@@ -23,7 +23,7 @@ export function DemoHubPage() {
     <div className="page demo-hub">
       <h1 className="hero-title">Jordan&apos;s Grade 2 Demo</h1>
       <p className="lead">
-        Pick a lab to explore with your island companion. No login needed. Your progress stays on this
+        Pick a lab to explore with your lab guides. No login needed. Your progress stays on this
         device.
       </p>
 
@@ -37,7 +37,7 @@ export function DemoHubPage() {
                 : "/demo/science";
           const title =
             s.activityType === "showcase:place-value"
-              ? "Place Value Island"
+              ? "Place Value Lab"
               : s.activityType === "showcase:opinion-builder"
                 ? "Opinion Builder"
                 : "Matter Lab";

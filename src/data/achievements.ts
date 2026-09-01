@@ -70,7 +70,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   },
   {
     id: "island-champion",
-    title: "Island Champion",
+    title: "Lab Champion",
     description: "Master every Grade 2 skill",
     icon: "🏆",
     evaluate: (store) => {

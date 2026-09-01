@@ -1,4 +1,4 @@
-# Inquiry Island
+# Fun Lab
 
 **NC K–5 Math, English & Science — learn with your AI teammate**
 
@@ -6,7 +6,7 @@ WebMCP Challenge project: a Synthesis-inspired learning web app where kids and a
 
 | | |
 | --- | --- |
-| **Repo** | `inquiry-island` |
+| **Repo** | `funlab` |
 | **License** | MIT |
 | **Deadline** | Sep 3, 2026 @ 1:00pm PDT |
 | **Hosting** | Vercel |
@@ -43,7 +43,7 @@ Legacy judge deep links redirect automatically:
 
 ## ChatGPT judge prompts
 
-1. **Math:** `Open Place Value Island. Use tools to build 243 with hundreds, tens, and ones blocks, then run_check.`
+1. **Math:** `Open Place Value Lab. Use tools to build 243 with hundreds, tens, and ones blocks, then run_check.`
 2. **ELA:** `Help me write an opinion about recess. Add two reasons and a linking word; suggest one revision and wait for my confirm.`
 3. **Science:** `Classify the objects, heat the ice, predict the state, then run_check.`
 

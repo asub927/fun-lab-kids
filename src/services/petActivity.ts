@@ -12,7 +12,7 @@ export type PetActivityInput = {
 };
 
 /**
- * Codex-inspired activity → animation map for the ambient island pet.
+ * Codex-inspired activity → animation map for the ambient lab buddy.
  * Keep it calm by default; only burst into motion for real events.
  */
 export function deriveAmbientMood(input: PetActivityInput): PetMood {

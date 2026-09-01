@@ -206,7 +206,7 @@ export function useWebMCPCurriculum() {
       await register(
         gen,
         "get_scoreboard",
-        "Gamification scoreboard: Island Points, streak, subject stats, achievements",
+        "Gamification scoreboard: Fun Points, streak, subject stats, achievements",
         jsonSchema({}),
         () => {
           const summary = getScoreboardSummary(loadProgress());
