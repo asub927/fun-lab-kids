@@ -2,6 +2,13 @@ import type { KeyboardEvent } from "react";
 import type { TemplateBoardState } from "../types";
 import { useApp } from "../context/AppContext";
 import { StrategyFromParams } from "./StrategyPanel";
+import {
+  ChartVisual,
+  ClockVisual,
+  CoinVisual,
+  RulerVisual,
+  ShapeVisual,
+} from "./visuals";
 
 type TemplateLabProps = {
   state: TemplateBoardState;
@@ -282,18 +289,172 @@ export function TemplateLab({ state }: TemplateLabProps) {
     );
   }
 
-  // measurement, time-money, data-chart, geometry, equal-groups default
+  if (state.labId === "geometry" && typeof p.shape === "string") {
+    const mode = String(p.mode ?? "identify");
+    const parts = typeof p.parts === "number" ? p.parts : undefined;
+    const options = Array.isArray(p.options) ? (p.options as string[]) : null;
+    const prompt =
+      typeof p.prompt === "string"
+        ? p.prompt
+        : mode === "count-sides"
+          ? "How many sides does this shape have?"
+          : mode === "equal-shares"
+            ? "What do we call these equal parts?"
+            : "What shape is this?";
+
+    return (
+      <div className="template-lab">
+        <StrategyFromParams params={p} />
+        <p className="lead">{prompt}</p>
+        <ShapeVisual shape={p.shape} parts={parts} />
+        {options ? (
+          <div className="classify-btns">
+            {options.map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                className={`btn ${state.selectedOption === opt ? "primary" : "secondary"}`}
+                aria-pressed={state.selectedOption === opt}
+                onClick={() => applyAction({ action: "set_option", value: opt })}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="answer-field">
+            <label htmlFor="geometry-answer">
+              {mode === "count-sides" ? "Number of sides" : "Your answer"}
+              <input
+                id="geometry-answer"
+                inputMode={mode === "count-sides" ? "numeric" : "text"}
+                value={mode === "count-sides" ? state.numericAnswer : state.textResponse}
+                onChange={(e) => {
+                  if (mode === "count-sides") {
+                    applyAction({ action: "set_numeric", value: e.target.value });
+                  } else {
+                    applyAction({ action: "set_text", text: e.target.value });
+                  }
+                }}
+              />
+            </label>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (state.labId === "time-money" && typeof p.time === "string") {
+    return (
+      <div className="template-lab">
+        <StrategyFromParams params={p} />
+        <p className="lead">{String(p.prompt ?? "What time does the clock show?")}</p>
+        <ClockVisual time={p.time} />
+        <div className="answer-field">
+          <label htmlFor="time-answer">
+            Time (for example 3:30)
+            <input
+              id="time-answer"
+              value={state.textResponse || state.numericAnswer}
+              onChange={(e) => {
+                applyAction({ action: "set_text", text: e.target.value });
+                applyAction({ action: "set_numeric", value: e.target.value });
+              }}
+              placeholder="h:mm"
+            />
+          </label>
+        </div>
+      </div>
+    );
+  }
+
+  if (state.labId === "time-money" && typeof p.coins === "string") {
+    return (
+      <div className="template-lab">
+        <StrategyFromParams params={p} />
+        <p className="lead">{String(p.prompt ?? "How many cents is this in all?")}</p>
+        <CoinVisual coins={p.coins} />
+        <div className="answer-field">
+          <label htmlFor="money-answer">
+            Total cents
+            <input
+              id="money-answer"
+              type="number"
+              inputMode="numeric"
+              value={state.numericAnswer}
+              onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
+            />
+          </label>
+        </div>
+      </div>
+    );
+  }
+
+  if (
+    state.labId === "data-chart" &&
+    Array.isArray(p.categories) &&
+    Array.isArray(p.counts)
+  ) {
+    return (
+      <div className="template-lab">
+        <StrategyFromParams params={p} />
+        <p className="lead">{String(p.question ?? p.prompt ?? "Read the chart:")}</p>
+        <ChartVisual
+          categories={p.categories as string[]}
+          counts={p.counts as number[]}
+        />
+        <div className="answer-field">
+          <label htmlFor="chart-answer">
+            Your answer
+            <input
+              id="chart-answer"
+              type="number"
+              inputMode="numeric"
+              value={state.numericAnswer}
+              onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
+            />
+          </label>
+        </div>
+      </div>
+    );
+  }
+
+  if (state.labId === "measurement" && typeof p.object === "string" && typeof p.length === "number") {
+    return (
+      <div className="template-lab">
+        <StrategyFromParams params={p} />
+        <p className="lead">
+          {String(
+            p.prompt ??
+              `How long is the ${p.object}? Use the ${typeof p.tool === "string" ? p.tool : "ruler"}.`,
+          )}
+        </p>
+        <RulerVisual
+          object={p.object}
+          length={p.length}
+          unit={String(p.unit ?? "inches")}
+        />
+        <div className="answer-field">
+          <label htmlFor="measure-answer">
+            Length ({String(p.unit ?? "units")})
+            <input
+              id="measure-answer"
+              type="number"
+              inputMode="numeric"
+              value={state.numericAnswer}
+              onChange={(e) => applyAction({ action: "set_numeric", value: e.target.value })}
+            />
+          </label>
+        </div>
+      </div>
+    );
+  }
+
+  // equal-groups default and any remaining template
   return (
     <div className="template-lab form-grid">
       <StrategyFromParams params={p} />
       <p className="lead">{String(p.prompt ?? "Solve the challenge:")}</p>
-      {typeof p.object === "string" && (
-        <p>
-          Object: {p.object} · Tool: {typeof p.tool === "string" ? p.tool : ""}
-        </p>
-      )}
-      {typeof p.time === "string" && <p>Time: {p.time}</p>}
-      {typeof p.shape === "string" && <p>Shape: {p.shape}</p>}
       <div className="answer-field">
         <label htmlFor="template-answer">
           Answer

@@ -122,13 +122,16 @@ export function checkTemplate(state: TemplateBoardState): CheckResult {
       return checkNumeric(state, p.length);
 
     case "time-money": {
+      if (p.cents !== undefined && !p.time) {
+        return checkNumeric(state, p.answer ?? p.cents);
+      }
       const got = norm(state.textResponse || state.numericAnswer);
       const wantTime = norm(String(p.answer ?? p.time ?? ""));
-      const ok = got === wantTime || got.includes(String(p.cents));
+      const ok = got === wantTime || got.includes(wantTime);
       return {
         ok,
         score: ok ? 100 : 30,
-        feedback: ok ? "Correct!" : "Check your time or money answer.",
+        feedback: ok ? "Correct!" : "Check the clock hands and write the time.",
       };
     }
 
@@ -136,15 +139,21 @@ export function checkTemplate(state: TemplateBoardState): CheckResult {
       return checkNumeric(state, p.answer);
 
     case "geometry": {
-      const got = norm(state.textResponse || state.selectedOption);
-      const ok =
-        got.includes(String(p.sides)) ||
-        got.includes(String(p.shape)) ||
-        got.includes(String(p.answer));
+      const mode = String(p.mode ?? "identify");
+      if (mode === "count-sides") {
+        return checkNumeric(state, p.answer ?? p.sides);
+      }
+      const got = norm(state.selectedOption || state.textResponse || state.numericAnswer);
+      const want = norm(String(p.answer ?? p.shape ?? ""));
+      const ok = got === want || (want.length > 0 && got.includes(want));
       return {
         ok,
         score: ok ? 100 : 40,
-        feedback: ok ? "Nice geometry work!" : "Name the shape or equal parts.",
+        feedback: ok
+          ? "Nice geometry work!"
+          : mode === "equal-shares"
+            ? "Equal shares are halves (2), thirds (3), or fourths (4)."
+            : "Look at the shape carefully. Count the sides, then name it.",
       };
     }
 
@@ -239,10 +248,13 @@ function expectedAnswerText(state: TemplateBoardState): string {
       if (p.mode === "compare") return String(p.answer);
       if (p.mode === "expanded") return String(p.answer);
       return String(p.answer ?? p.start ?? "");
+    case "geometry":
+      if (String(p.mode) === "count-sides") {
+        return String(p.answer ?? p.sides ?? "");
+      }
+      return String(p.answer ?? p.shape ?? "");
     case "time-money":
       return String(p.answer ?? p.time ?? p.cents ?? "");
-    case "geometry":
-      return String(p.answer ?? p.shape ?? p.sides ?? "");
     case "language-edit":
       return String(p.fixed);
     case "reading-response":
@@ -293,15 +305,21 @@ export function revealTemplateAnswer(state: TemplateBoardState): {
     case "science-inquiry":
       actions.push({ action: "set_text", text: expected });
       break;
-    case "time-money":
-      if (p.cents !== undefined) {
-        actions.push({ action: "set_numeric", value: String(p.cents) });
+    case "geometry":
+      if (String(p.mode) === "equal-shares") {
+        actions.push({ action: "set_option", value: expected });
+      } else if (String(p.mode) === "count-sides") {
+        actions.push({ action: "set_numeric", value: expected });
       } else {
         actions.push({ action: "set_text", text: expected });
       }
       break;
-    case "geometry":
-      actions.push({ action: "set_text", text: expected });
+    case "time-money":
+      if (p.cents !== undefined && !p.time) {
+        actions.push({ action: "set_numeric", value: String(p.answer ?? p.cents) });
+      } else {
+        actions.push({ action: "set_text", text: expected });
+      }
       break;
     case "writing-frame": {
       const parts = (p.requiredParts as string[]) ?? ["topic"];

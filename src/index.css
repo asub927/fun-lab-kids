@@ -1175,6 +1175,289 @@ tbody tr:last-child td {
   gap: var(--space-2);
 }
 
+/* Visual challenge boards (geometry, clock, chart, ruler, coins) */
+.visual-board {
+  margin: 0;
+  padding: var(--space-2);
+  border: var(--border-width) solid var(--color-ink);
+  border-radius: var(--radius-tablet);
+  background: var(--color-paper);
+  box-shadow: var(--shadow-hard-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  animation: visual-pop var(--duration-medium) var(--ease-out-expo) both;
+}
+
+@keyframes visual-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.visual-board svg {
+  width: min(100%, 280px);
+  height: auto;
+  display: block;
+}
+
+.visual-caption {
+  margin: 0;
+  font-family: var(--font-chrome);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-ink);
+}
+
+.visual-caption.muted {
+  color: var(--color-ink-soft);
+  font-size: 0.8rem;
+}
+
+.shape-fill {
+  fill: var(--accent);
+  stroke: var(--color-ink);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.shape-partition {
+  stroke: var(--color-ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.clock-face {
+  fill: var(--color-paper);
+  stroke: var(--color-ink);
+  stroke-width: 4;
+}
+
+.clock-face-inner {
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-width: 1.5;
+  opacity: 0.35;
+}
+
+.clock-num {
+  font-family: var(--font-chrome);
+  font-weight: 700;
+  font-size: 14px;
+  fill: var(--color-ink);
+}
+
+.clock-hand {
+  stroke: var(--color-ink);
+  stroke-linecap: round;
+}
+
+.clock-hand-minute {
+  stroke-width: 3;
+}
+
+.clock-hand-hour {
+  stroke-width: 5;
+}
+
+.clock-pin {
+  fill: var(--accent);
+  stroke: var(--color-ink);
+  stroke-width: 2;
+}
+
+.chart-svg {
+  width: min(100%, 320px);
+}
+
+.chart-axis {
+  stroke: var(--color-ink);
+  stroke-width: 2;
+}
+
+.chart-bar {
+  /* Fill is set via the SVG fill attribute / chart-bar--* class — do not force accent. */
+  stroke: var(--color-ink);
+  stroke-width: 2;
+}
+
+.chart-bar--red {
+  fill: #e53935;
+}
+.chart-bar--blue {
+  fill: #1e88e5;
+}
+.chart-bar--green {
+  fill: #43a047;
+}
+.chart-bar--yellow {
+  fill: #fdd835;
+}
+.chart-bar--orange {
+  fill: #fb8c00;
+}
+.chart-bar--pink {
+  fill: #d81b60;
+}
+.chart-bar--purple {
+  fill: #8e24aa;
+}
+.chart-bar--brown {
+  fill: #6d4c41;
+}
+.chart-bar--black {
+  fill: #212121;
+}
+.chart-bar--white {
+  fill: #fafafa;
+}
+.chart-bar--gray,
+.chart-bar--grey {
+  fill: #757575;
+}
+.chart-bar--tone-0 {
+  fill: #e53935;
+}
+.chart-bar--tone-1 {
+  fill: #1e88e5;
+}
+.chart-bar--tone-2 {
+  fill: #43a047;
+}
+.chart-bar--tone-3 {
+  fill: #fb8c00;
+}
+.chart-bar--tone-4 {
+  fill: #fdd835;
+}
+.chart-bar--tone-5 {
+  fill: #d81b60;
+}
+.chart-bar--tone-6 {
+  fill: #8e24aa;
+}
+
+.chart-count,
+.chart-label {
+  font-family: var(--font-chrome);
+  font-weight: 700;
+  fill: var(--color-ink);
+}
+
+.chart-count {
+  font-size: 12px;
+}
+
+.chart-label {
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.ruler-object {
+  fill: var(--accent);
+  stroke: var(--color-ink);
+  stroke-width: 2;
+}
+
+.ruler-body {
+  fill: var(--color-mustard);
+  stroke: var(--color-ink);
+  stroke-width: 2;
+}
+
+.ruler-tick {
+  stroke: var(--color-ink);
+  stroke-width: 2;
+}
+
+.ruler-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--color-ink);
+}
+
+.coin-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.coin-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.coin-row-label {
+  font-family: var(--font-chrome);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  min-width: 7rem;
+}
+
+.coin-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.coin-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  border: 2px solid var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: var(--color-mustard);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.coin-quarters {
+  background: var(--color-teal);
+  color: var(--color-paper);
+}
+
+.coin-dimes {
+  background: var(--color-blue);
+  color: var(--color-paper);
+}
+
+.coin-nickels {
+  background: var(--color-orange);
+  color: var(--color-ink);
+}
+
+.coin-pennies {
+  background: var(--color-sienna);
+  color: var(--color-paper);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visual-board {
+    animation: none;
+  }
+}
+
+
 .template-lab > label,
 .template-lab .answer-field {
   padding: var(--space-2);
