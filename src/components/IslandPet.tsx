@@ -27,9 +27,9 @@ function clamp(value: number, min: number, max: number): number {
 
 function randomPoint(width: number, height: number): Point {
   const maxX = Math.max(PAD, width - PET_SIZE - PAD);
-  const maxY = Math.max(PAD, height - PET_SIZE - PAD - 72);
-  // Bias away from bottom-right companion and top nav.
-  const x = PAD + Math.random() * Math.max(1, maxX - PAD - 120);
+  const maxY = Math.max(PAD, height - PET_SIZE - PAD);
+  // Bias away from the top nav.
+  const x = PAD + Math.random() * Math.max(1, maxX - PAD);
   const y = 72 + Math.random() * Math.max(1, maxY - 72);
   return {
     x: clamp(x, PAD, maxX),

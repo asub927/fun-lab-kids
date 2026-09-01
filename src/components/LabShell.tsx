@@ -27,6 +27,24 @@ function isTypingTarget(target: EventTarget | null): boolean {
   );
 }
 
+function focusPrimaryAnswerInput() {
+  const root = document.querySelector(".lab-board");
+  if (!root) return;
+
+  const input = root.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+    [
+      ".answer-field input:not([type='hidden'])",
+      ".answer-field textarea",
+      "input:not([type='checkbox']):not([type='radio']):not([type='hidden'])",
+      "textarea",
+    ].join(", "),
+  );
+  if (!input) return;
+
+  input.focus({ preventScroll: true });
+  input.scrollIntoView({ block: "nearest", inline: "nearest" });
+}
+
 export function LabShell({ title, children }: LabShellProps) {
   const {
     activeStandard,
@@ -52,6 +70,9 @@ export function LabShell({ title, children }: LabShellProps) {
   const subject = activeStandard?.subject ?? "math";
   const checkCount = store.gamification.lifetimeChecks;
   const hasQuestionPager = questionTotal > 1;
+  const lastCheckKey = lastCheck
+    ? `${lastCheck.ok ? "ok" : "miss"}:${lastCheck.feedback}`
+    : "none";
 
   const backTo =
     activeStandard?.subject === "math"
@@ -85,6 +106,13 @@ export function LabShell({ title, children }: LabShellProps) {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [hasQuestionPager, previousQuestion, advanceQuestion]);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      focusPrimaryAnswerInput();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [questionIndex, activeStandard?.code, lastCheckKey]);
 
   const resultClass = lastCheck
     ? lastCheck.ok
@@ -125,27 +153,21 @@ export function LabShell({ title, children }: LabShellProps) {
   return (
     <article className="lab-shell">
       <header className="lab-header">
-        <div>
+        <div className="lab-header-meta">
           <Link to={backTo} className="back-link">
             ← Grade 2 Hub
           </Link>
           <h1 className="lab-title">{title}</h1>
           {activeStandard && (
-            <p className="standard-chip">
-              <span translate="no">{activeStandard.code}</span>{" "}
-              {activeStandard.text.slice(0, 120)}
-              {activeStandard.text.length > 120 ? "…" : ""}
+            <p className="standard-chip" title={activeStandard.text}>
+              <span translate="no">{activeStandard.code}</span>
             </p>
           )}
           {hasQuestionPager && (
-            <div className="practice-stats" role="status">
-              <p className="question-progress">
-                Question {questionIndex + 1} of {questionTotal} · Level {questionLevel}
-              </p>
-              <p className="smart-score">
-                Smart Score: {smartScore} · Correct: {correctCount}
-              </p>
-            </div>
+            <p className="practice-stats" role="status">
+              Question {questionIndex + 1}/{questionTotal} · L{questionLevel} · Score{" "}
+              {smartScore} · Correct {correctCount}
+            </p>
           )}
         </div>
         <div className="lab-actions" role="toolbar" aria-label="Board actions">
@@ -192,16 +214,20 @@ export function LabShell({ title, children }: LabShellProps) {
         </div>
       )}
 
+      <div className="lab-board">{children}</div>
+
       {lastCheck && (
         <div
           className={`check-result ${resultClass} ${lastCheck.ok ? "check-result--ok" : ""}`}
           role="status"
           aria-live="polite"
         >
-          <span>{lastCheck.feedback}</span>
-          {lastCelebration && lastCelebration.xpEarned > 0 && !showCelebration && (
-            <span className="inline-xp">+{lastCelebration.xpEarned} Island Points</span>
-          )}
+          <div className="check-result-main">
+            <span>{lastCheck.feedback}</span>
+            {lastCelebration && lastCelebration.xpEarned > 0 && !showCelebration && (
+              <span className="inline-xp">+{lastCelebration.xpEarned} Island Points</span>
+            )}
+          </div>
           {!showCelebration && (
             <div className="character-lab-reaction">
               <CharacterGuide
@@ -215,8 +241,6 @@ export function LabShell({ title, children }: LabShellProps) {
           )}
         </div>
       )}
-
-      <div className="lab-board">{children}</div>
 
       {hasQuestionPager && (
         <nav className="question-nav" aria-label="Question navigation">
@@ -242,7 +266,6 @@ export function LabShell({ title, children }: LabShellProps) {
           >
             Next <span aria-hidden="true">→</span>
           </button>
-          <p className="question-nav-hint">Use ← → arrow keys to move between questions</p>
         </nav>
       )}
     </article>
