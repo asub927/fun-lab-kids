@@ -6,6 +6,8 @@ export type PetSpecies = {
   name: string;
   tagline: string;
   accentClass: string;
+  /** When set, renders a Codex spritesheet pet instead of inline SVG art. */
+  codexPackageId?: string;
 };
 
 export const DEFAULT_PET_SPECIES: PetSpeciesId = "dog";
@@ -13,9 +15,10 @@ export const DEFAULT_PET_SPECIES: PetSpeciesId = "dog";
 export const PET_SPECIES: PetSpecies[] = [
   {
     id: "dog",
-    name: "Buddy",
-    tagline: "A loyal pup who cheers when you practice",
+    name: "Om Nom",
+    tagline: "A candy-loving friend who cheers when you practice",
     accentClass: "accent-green",
+    codexPackageId: "om-nom--kasyan1337",
   },
   {
     id: "cat",

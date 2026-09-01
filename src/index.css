@@ -4024,6 +4024,21 @@ main:has(.home-page) {
   transform-origin: 50% 70%;
 }
 
+.codex-pet-sprite {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  flex-shrink: 0;
+}
+
+.pet-sprite-wrap--preview .codex-pet-sprite {
+  filter: drop-shadow(2px 3px 0 rgba(10, 10, 10, 0.12));
+}
+
+.island-pet-nest-hit .codex-pet-sprite {
+  filter: drop-shadow(2px 3px 0 rgba(10, 10, 10, 0.16));
+}
+
 .pet-part {
   transform-box: fill-box;
   transform-origin: center;
