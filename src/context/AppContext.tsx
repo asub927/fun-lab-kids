@@ -22,7 +22,7 @@ import {
   QUESTIONS_TO_MASTER,
   SMART_SCORE_TARGET,
 } from "../data/questionSets";
-import { recordCheckResult, type RecordCheckResult } from "../services/progress";
+import { recordCheckResult, recordLabVisit, type RecordCheckResult } from "../services/progress";
 import type { Achievement } from "../data/achievements";
 import {
   AUTO_CHECK_DEBOUNCE_MS,
@@ -146,7 +146,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     (nextLabId: LabId, standardCode: string, params: Record<string, unknown>) => {
       clearAutoCheckTimer();
       const standard = findStandard(standardCode);
-      const set = isShowcaseLab(nextLabId) ? [] : getQuestionSet(standardCode);
+      const visitIndex = isShowcaseLab(nextLabId) ? 0 : recordLabVisit(standardCode);
+      const set = isShowcaseLab(nextLabId) ? [] : getQuestionSet(standardCode, visitIndex);
       const initialParams = set.length > 0 ? set[0] : params;
 
       setActiveStandardState(standard ?? null);

@@ -8,6 +8,8 @@ export type StandardProgress = {
   lastAt: number;
   questionsCorrect?: number;
   smartScore?: number;
+  /** How many times this lab has been opened; used to rotate question slices. */
+  visitCount?: number;
 };
 
 export type GamificationState = {
@@ -150,6 +152,7 @@ export function recordCheckResult(
     lastAt: Date.now(),
     questionsCorrect: options?.questionsCorrect ?? prev?.questionsCorrect,
     smartScore: Math.max(prev?.smartScore ?? 0, options?.smartScore ?? 0),
+    visitCount: prev?.visitCount,
   };
 
   const gamification: GamificationResult = applyGamificationEvent(store, {
@@ -167,6 +170,28 @@ export function recordCheckResult(
     streakDays: gamification.streakDays,
     isNewMastery,
   };
+}
+
+/**
+ * Records a lab open and returns the visit index to use for question-slice rotation
+ * (0 on first open, 1 on second, ...).
+ */
+export function recordLabVisit(standardCode: string): number {
+  const store = loadProgress();
+  const prev = store.progress[standardCode];
+  const visitIndex = prev?.visitCount ?? 0;
+
+  store.progress[standardCode] = {
+    completed: prev?.completed ?? false,
+    bestScore: prev?.bestScore ?? 0,
+    lastAt: prev?.lastAt ?? Date.now(),
+    questionsCorrect: prev?.questionsCorrect,
+    smartScore: prev?.smartScore,
+    visitCount: visitIndex + 1,
+  };
+
+  saveProgress(store);
+  return visitIndex;
 }
 
 export function countCompleted(codes: string[]): { done: number; total: number } {

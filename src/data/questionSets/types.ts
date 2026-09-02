@@ -8,6 +8,9 @@ export type QuestionSet = {
 /** Questions in one practice session (IXL-style progressive set). */
 export const QUESTIONS_PER_STANDARD = 10;
 
+/** Full unique pool per standard; sessions rotate through slices of this pool. */
+export const QUESTION_POOL_SIZE = 30;
+
 /** Correct answers needed to master a standard in one session. */
 export const QUESTIONS_TO_MASTER = 8;
 

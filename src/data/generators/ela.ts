@@ -17,6 +17,26 @@ const WRITING_PROMPTS = [
   "Write about a goal you have for this year.",
   "Write about a tool you use to learn.",
   "Write about something that makes you feel proud.",
+  "Write about a favorite recess game.",
+  "Write about how you help at home.",
+  "Write about a science fact you remember.",
+  "Write about a time you were kind.",
+  "Write about your favorite season.",
+  "Write about a pet or animal you know.",
+  "Write about a song you like.",
+  "Write about a place in your neighborhood.",
+  "Write about how plants grow.",
+  "Write about why friends matter.",
+  "Write about a lunch you enjoy.",
+  "Write about a sport or movement activity.",
+  "Write about a holiday memory.",
+  "Write about a problem you solved.",
+  "Write about a teacher who helped you.",
+  "Write about the night sky.",
+  "Write about a museum or library visit.",
+  "Write about how to be a good listener.",
+  "Write about recycling at school.",
+  "Write about a dream you have for the future.",
 ];
 
 const READING_LEADS = [
@@ -30,9 +50,30 @@ const READING_LEADS = [
   "One day,",
   "At last,",
   "Meanwhile,",
+  "Before long,",
+  "In the morning,",
+  "That afternoon,",
+  "By evening,",
+  "Suddenly,",
 ];
 
-const LANGUAGE_TAGS = ["today", "quickly", "outside", "again", "now", "here", "too", "also", "very", "well"];
+const LANGUAGE_TAGS = [
+  "today",
+  "quickly",
+  "outside",
+  "again",
+  "now",
+  "here",
+  "too",
+  "also",
+  "very",
+  "well",
+  "quietly",
+  "happily",
+  "slowly",
+  "inside",
+  "nearby",
+];
 
 const CHECKLIST_ITEMS = [
   ["Read the title", "Look at pictures", "Ask one question"],
@@ -45,6 +86,26 @@ const CHECKLIST_ITEMS = [
   ["Check capitals", "Check ending marks", "Reread aloud"],
   ["Use polite words", "Wait for your turn", "Look at the speaker"],
   ["Pick a vocabulary word", "Use it in a sentence", "Explain what it means"],
+  ["Preview headings", "Predict what you will learn", "Read the first paragraph"],
+  ["Underline a key detail", "Restate it in your words", "Share with a partner"],
+  ["Clap the syllables", "Blend the sounds", "Read the whole word"],
+  ["Find the problem", "Find the solution", "Tell the ending"],
+  ["Name the setting", "Name the characters", "Tell what happened"],
+  ["Ask who", "Ask what", "Ask where"],
+  ["Find a caption", "Read it carefully", "Connect it to the text"],
+  ["Choose a verb", "Make it past tense", "Use it in a sentence"],
+  ["Write a draft", "Add one detail", "Fix one capital"],
+  ["Listen for a fact", "Listen for an opinion", "Explain the difference"],
+  ["Point to punctuation", "Say how your voice should change", "Reread the sentence"],
+  ["Find a text feature", "Say what it helps you do", "Use it to answer a question"],
+  ["Retell beginning", "Retell middle", "Retell end"],
+  ["Name a synonym", "Name an antonym", "Use one in a sentence"],
+  ["Read a poem line", "Notice rhythm", "Read it with expression"],
+  ["Find evidence", "Point to the sentence", "Explain your answer"],
+  ["Plan your idea", "Say it in order", "Add a feeling word"],
+  ["Check spacing", "Check letter size", "Check neatness"],
+  ["Ask a clarifying question", "Repeat the answer", "Thank the speaker"],
+  ["Choose a topic", "List two facts", "Write a closing sentence"],
 ];
 
 function swapNames(text: string, seed: number): string {
@@ -71,26 +132,36 @@ function swapAnimals(text: string, seed: number): string {
 }
 
 function bumpNumbers(text: string, seed: number): string {
-  return text.replace(/\b(\d+)\b/g, (_, n) => String(Number(n) + seed));
+  return text.replace(/\b(\d+)\b/g, (_, n) => String(Number(n) + (seed % 7)));
 }
 
 function varyReading(baseQ: ActivityParams, seed: number, tier: number): ActivityParams {
   let passage = swapAnimals(swapPlaces(swapNames(String(baseQ.passage ?? ""), seed), seed), seed);
-  passage = bumpNumbers(passage, seed % 5);
-  passage = `${READING_LEADS[seed]} ${passage}`;
+  passage = bumpNumbers(passage, seed);
+  passage = `${READING_LEADS[seed % READING_LEADS.length]} ${passage}`;
   const question = swapNames(String(baseQ.question ?? ""), seed);
-  return { passage, question, answer: baseQ.answer, difficulty: tier };
+  let answer = baseQ.answer;
+  if (typeof answer === "string") {
+    answer = swapNames(answer, seed);
+  }
+  return {
+    passage,
+    question,
+    answer,
+    difficulty: tier,
+    practiceId: seed + 1,
+  };
 }
 
 function expandLanguage(baseQ: ActivityParams, seed: number, tier: number): ActivityParams {
   const sentence = String(baseQ.sentence);
   const fixed = String(baseQ.fixed);
-  const nouns = ["dog", "cat", "bird", "fish", "horse", "mouse", "duck", "frog", "bear", "lion"];
-  const places = ["store", "park", "school", "library", "zoo", "farm", "beach", "mall", "home", "yard"];
-  const noun = nouns[seed];
-  const place = places[seed];
+  const nouns = ["dog", "cat", "bird", "fish", "horse", "mouse", "duck", "frog", "bear", "lion", "goat", "fox"];
+  const places = ["store", "park", "school", "library", "zoo", "farm", "beach", "mall", "home", "yard", "garden", "trail"];
+  const noun = nouns[seed % nouns.length];
+  const place = places[seed % places.length];
   const capNoun = noun[0].toUpperCase() + noun.slice(1);
-  const tag = LANGUAGE_TAGS[seed];
+  const tag = LANGUAGE_TAGS[seed % LANGUAGE_TAGS.length];
 
   let variedSentence = sentence
     .replace(/\bdog\b/g, noun)
@@ -103,10 +174,21 @@ function expandLanguage(baseQ: ActivityParams, seed: number, tier: number): Acti
 
   if (variedSentence === sentence) {
     variedSentence = `${sentence} ${tag}`;
-    variedFixed = fixed.endsWith(".") ? fixed.replace(/\.$/, ` ${tag}.`) : `${fixed} ${tag}`;
+    variedFixed = fixed.endsWith(".")
+      ? fixed.replace(/\.$/, ` ${tag}.`)
+      : fixed.endsWith("?")
+        ? fixed.replace(/\?$/, ` ${tag}?`)
+        : fixed.endsWith("!")
+          ? fixed.replace(/!$/, ` ${tag}!`)
+          : `${fixed} ${tag}`;
   }
 
-  return { sentence: variedSentence, fixed: variedFixed, difficulty: tier };
+  return {
+    sentence: variedSentence,
+    fixed: variedFixed,
+    difficulty: tier,
+    practiceId: seed + 1,
+  };
 }
 
 function readingVariant(standardCode: string, seed: number): ActivityParams | null {
@@ -114,11 +196,10 @@ function readingVariant(standardCode: string, seed: number): ActivityParams | nu
   if (!base) return null;
 
   const tier = difficultyForSeed(seed);
-  const variantIndex = seed % 3;
-  const baseQ = base[variantIndex];
+  const baseQ = base[seed % base.length];
 
   if ("passage" in baseQ && "question" in baseQ && "answer" in baseQ) {
-    if (seed < 3) return { ...baseQ, difficulty: tier };
+    if (seed < base.length) return { ...baseQ, difficulty: tier, practiceId: seed + 1 };
     return varyReading(baseQ, seed, tier);
   }
 
@@ -129,12 +210,13 @@ function writingVariant(standardCode: string, seed: number): ActivityParams | nu
   const base = elaQuestionSets[standardCode];
   if (!base) return null;
   const tier = difficultyForSeed(seed);
-  const baseQ = base[seed % 3];
+  const baseQ = base[seed % base.length];
   if ("prompt" in baseQ && "frame" in baseQ) {
     return {
       ...baseQ,
       prompt: WRITING_PROMPTS[seed % WRITING_PROMPTS.length],
       difficulty: tier,
+      practiceId: seed + 1,
     };
   }
   return null;
@@ -144,9 +226,9 @@ function languageVariant(standardCode: string, seed: number): ActivityParams | n
   const base = elaQuestionSets[standardCode];
   if (!base) return null;
   const tier = difficultyForSeed(seed);
-  const baseQ = base[seed % 3];
+  const baseQ = base[seed % base.length];
   if ("sentence" in baseQ && "fixed" in baseQ) {
-    if (seed < 3) return { ...baseQ, difficulty: tier };
+    if (seed < base.length) return { ...baseQ, difficulty: tier, practiceId: seed + 1 };
     return expandLanguage(baseQ, seed, tier);
   }
   return null;
@@ -156,11 +238,17 @@ function checklistVariant(standardCode: string, seed: number): ActivityParams | 
   const base = elaQuestionSets[standardCode];
   if (!base) return null;
   const tier = difficultyForSeed(seed);
-  const items = CHECKLIST_ITEMS[seed % CHECKLIST_ITEMS.length];
+  const baseQ = base[seed % base.length];
+  const poolItems = CHECKLIST_ITEMS[seed % CHECKLIST_ITEMS.length];
+  const items =
+    seed < base.length && Array.isArray(baseQ.items) && baseQ.items.length > 0
+      ? (baseQ.items as string[])
+      : poolItems;
   return {
     items,
     prompt: tier === 3 ? "Complete every step carefully:" : "Complete this step:",
     difficulty: tier,
+    practiceId: seed + 1,
   };
 }
 
