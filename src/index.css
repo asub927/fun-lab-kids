@@ -3902,16 +3902,17 @@ main:has(.home-page) {
   grid-area: footer;
   position: relative;
   flex-shrink: 0;
-  z-index: 2;
+  z-index: 3;
   border-top: var(--border-width) solid var(--color-ink);
   background: var(--color-paper);
   padding-bottom: env(safe-area-inset-bottom);
+  overflow: visible;
 }
 
 .pet-footer-lane {
   position: relative;
   height: var(--pet-footer-height);
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Island Pet — Codex-style patrol inside footer lane */
@@ -3922,6 +3923,7 @@ main:has(.home-page) {
 }
 
 .island-pet-rail {
+  position: relative;
   width: 4.25rem;
   height: 4.25rem;
   transition-property: transform;
@@ -3981,7 +3983,7 @@ main:has(.home-page) {
   left: 0;
   bottom: calc(100% + 0.35rem);
   max-width: 12.5rem;
-  z-index: 1;
+  z-index: 5;
   animation: motion-pop-in 0.3s var(--ease-spring) both;
 }
 
