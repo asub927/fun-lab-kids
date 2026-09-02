@@ -98,7 +98,7 @@ export function ProgressScoreboardPage() {
           Lab Buddy
         </h2>
         <p className="pet-settings-lead">
-          Pick Ripple, Digits, or Spark to hang out in the corner while you practice. Tap them to
+          Pick Digits, Ripple, or Spark to hang out in the buddy lane while you practice. Tap them to
           hear a greeting.
         </p>
         <label className="pet-pref-toggle" htmlFor="pet-visible">

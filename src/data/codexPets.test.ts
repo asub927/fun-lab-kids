@@ -4,6 +4,7 @@ import {
   codexFramePosition,
   getCodexPetPackage,
   moodToCodexAction,
+  resolveCodexAction,
 } from "./codexPets";
 
 describe("codexPets", () => {
@@ -37,11 +38,20 @@ describe("codexPets", () => {
 
   it("maps moods to Codex animation rows", () => {
     expect(moodToCodexAction("idle", "right")).toBe("idle");
-    expect(moodToCodexAction("working", "right")).toBe("running-right");
-    expect(moodToCodexAction("working", "left")).toBe("running-left");
+    expect(moodToCodexAction("working", "right")).toBe("failed");
     expect(moodToCodexAction("celebrating", "right")).toBe("jumping");
     expect(moodToCodexAction("waiting", "right")).toBe("waiting");
     expect(moodToCodexAction("waving", "right")).toBe("waving");
+  });
+
+  it("uses running sprites while patrolling during idle", () => {
+    expect(resolveCodexAction({ mood: "idle", facing: "right", patrolling: true })).toBe(
+      "running-right",
+    );
+    expect(resolveCodexAction({ mood: "idle", facing: "left", patrolling: true })).toBe(
+      "running-left",
+    );
+    expect(resolveCodexAction({ mood: "idle", facing: "right", patrolling: false })).toBe("idle");
   });
 
   it("computes background positions from row and column", () => {

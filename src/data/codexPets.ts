@@ -98,10 +98,10 @@ export function codexAtlasHeight(version: CodexSpriteVersion): number {
   return version === 2 ? 2288 : 1872;
 }
 
-export function moodToCodexAction(mood: PetMood, facing: "left" | "right"): CodexAction {
+export function moodToCodexAction(mood: PetMood, _facing: "left" | "right"): CodexAction {
   switch (mood) {
     case "working":
-      return facing === "left" ? "running-left" : "running-right";
+      return "failed";
     case "celebrating":
       return "jumping";
     case "waiting":
@@ -112,6 +112,18 @@ export function moodToCodexAction(mood: PetMood, facing: "left" | "right"): Code
     default:
       return "idle";
   }
+}
+
+/** Maps activity + patrol state to the Codex spritesheet row to play. */
+export function resolveCodexAction(options: {
+  mood: PetMood;
+  facing: "left" | "right";
+  patrolling?: boolean;
+}): CodexAction {
+  if (options.mood === "idle" && options.patrolling) {
+    return options.facing === "left" ? "running-left" : "running-right";
+  }
+  return moodToCodexAction(options.mood, options.facing);
 }
 
 export function codexFramePosition(
