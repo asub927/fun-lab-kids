@@ -10,7 +10,9 @@ Regenerate TTS drafts with:
 npm run generate:pet-voices
 ```
 
-## Digits (`dog`)
+## Digits (`dog`) — custom recordings active
+
+These eight clips are the live Digits celebration voices.
 
 | Context | Message | File |
 | --- | --- | --- |
