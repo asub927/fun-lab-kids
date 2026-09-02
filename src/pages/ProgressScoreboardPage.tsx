@@ -8,7 +8,7 @@ import { PET_SPECIES, type PetSpeciesId } from "../data/pets";
 import { loadProgress, updateProfileName } from "../services/progress";
 import { pickScoreboardHintLine } from "../services/characterDialogue";
 import { getAchievementNavigationPath, getScoreboardSummary } from "../services/progressStats";
-import { getPetSpeciesId, isPetVisible, PET_PREFS_EVENT, setPetSpecies, setPetVisible } from "../services/pet";
+import { getPetSpeciesId, isPetSoundEnabled, isPetVisible, PET_PREFS_EVENT, setPetSoundEnabled, setPetSpecies, setPetVisible } from "../services/pet";
 
 const SUBJECT_LABELS = {
   math: "Math Lab",
@@ -35,13 +35,17 @@ export function ProgressScoreboardPage() {
   const [nameDraft, setNameDraft] = useState(summary.displayName);
   const [petVisible, setPetVisibleState] = useState(() => isPetVisible());
   const [speciesId, setSpeciesId] = useState<PetSpeciesId>(() => getPetSpeciesId());
+  const [soundEnabled, setSoundEnabledState] = useState(() => isPetSoundEnabled());
 
   useEffect(() => {
     const onPrefs = (event: Event) => {
-      const detail = (event as CustomEvent<{ visible?: boolean; speciesId?: PetSpeciesId }>).detail;
+      const detail = (event as CustomEvent<{ visible?: boolean; speciesId?: PetSpeciesId; soundEnabled?: boolean }>).detail;
       if (detail && typeof detail.visible === "boolean") setPetVisibleState(detail.visible);
       if (detail?.speciesId === "dog" || detail?.speciesId === "cat" || detail?.speciesId === "rabbit") {
         setSpeciesId(detail.speciesId);
+      }
+      if (detail && typeof detail.soundEnabled === "boolean") {
+        setSoundEnabledState(detail.soundEnabled);
       }
     };
     window.addEventListener(PET_PREFS_EVENT, onPrefs);
@@ -61,6 +65,11 @@ export function ProgressScoreboardPage() {
   const pickSpecies = (id: PetSpeciesId) => {
     const next = setPetSpecies(id);
     setSpeciesId(next.speciesId);
+  };
+
+  const toggleSound = () => {
+    const next = setPetSoundEnabled(!soundEnabled);
+    setSoundEnabledState(next.soundEnabled);
   };
 
   return (
@@ -110,6 +119,16 @@ export function ProgressScoreboardPage() {
             onChange={togglePet}
           />
           <span>Show lab buddy (corner buddy)</span>
+        </label>
+        <label className="pet-pref-toggle" htmlFor="pet-sound">
+          <input
+            id="pet-sound"
+            type="checkbox"
+            checked={soundEnabled}
+            disabled={!petVisible}
+            onChange={toggleSound}
+          />
+          <span>Pet voice during celebrations</span>
         </label>
         <div className="pet-species-picker" role="group" aria-labelledby="pet-species-heading">
           <p id="pet-species-heading" className="pet-species-picker-label">

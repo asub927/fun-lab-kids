@@ -1,16 +1,33 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { deriveAmbientMood, reactionFromAppEvent } from "./petActivity";
+import { emptyGamificationState } from "./gamification";
+import { pickPetCelebrationLine } from "./petDialogue";
+import type { ProgressStore } from "./progress";
 import {
   getPetSpeciesId,
+  isPetSoundEnabled,
   isPetVisible,
   loadPetPrefs,
+  savePetPrefs,
+  setPetSoundEnabled,
   setPetSpecies,
   setPetVisible,
 } from "./pet";
+import { isPetSpeechSupported, speakPetLine, stopPetSpeech } from "./petSpeech";
 
 const store = new Map<string, string>();
 const STORAGE_KEY = "funlab-pet";
 const LEGACY_STORAGE_KEY = "inquiry-island-pet";
+
+function makeProgressStore(overrides: Partial<ProgressStore> = {}): ProgressStore {
+  return {
+    version: 2,
+    profile: {},
+    gamification: emptyGamificationState(),
+    progress: {},
+    ...overrides,
+  };
+}
 
 beforeEach(() => {
   store.clear();
@@ -53,13 +70,15 @@ describe("ambient pet activity", () => {
 });
 
 describe("ambient pet prefs", () => {
-  it("defaults to visible dog", () => {
+  it("defaults to visible dog with sound on", () => {
     const prefs = loadPetPrefs();
     expect(prefs.visible).toBe(true);
     expect(prefs.speciesId).toBe("dog");
-    expect(prefs.version).toBe(3);
+    expect(prefs.soundEnabled).toBe(true);
+    expect(prefs.version).toBe(4);
     expect(isPetVisible()).toBe(true);
     expect(getPetSpeciesId()).toBe("dog");
+    expect(isPetSoundEnabled()).toBe(true);
   });
 
   it("can hide and show the pet", () => {
@@ -77,10 +96,23 @@ describe("ambient pet prefs", () => {
     expect(getPetSpeciesId()).toBe("rabbit");
   });
 
+  it("can toggle celebration voice", () => {
+    setPetSoundEnabled(false);
+    expect(isPetSoundEnabled()).toBe(false);
+    expect(loadPetPrefs().soundEnabled).toBe(false);
+    setPetSoundEnabled(true);
+    expect(isPetSoundEnabled()).toBe(true);
+  });
+
   it("preserves species when toggling visibility", () => {
     setPetSpecies("cat");
     setPetVisible(false);
-    expect(loadPetPrefs()).toEqual({ version: 3, visible: false, speciesId: "cat" });
+    expect(loadPetPrefs()).toEqual({
+      version: 4,
+      visible: false,
+      speciesId: "cat",
+      soundEnabled: true,
+    });
     setPetVisible(true);
     expect(loadPetPrefs().speciesId).toBe("cat");
   });
@@ -91,7 +123,8 @@ describe("ambient pet prefs", () => {
       JSON.stringify({ version: 2, visible: true, speciesId: "pebble" }),
     );
     expect(loadPetPrefs().speciesId).toBe("dog");
-    expect(loadPetPrefs().version).toBe(3);
+    expect(loadPetPrefs().version).toBe(4);
+    expect(loadPetPrefs().soundEnabled).toBe(true);
     expect(store.has(STORAGE_KEY)).toBe(true);
   });
 
@@ -107,5 +140,95 @@ describe("ambient pet prefs", () => {
       JSON.stringify({ version: 2, visible: true, speciesId: "sprout" }),
     );
     expect(loadPetPrefs().speciesId).toBe("rabbit");
+  });
+});
+
+describe("pickPetCelebrationLine", () => {
+  it("returns species-specific celebration lines", () => {
+    const progress = makeProgressStore();
+    expect(pickPetCelebrationLine("dog", "correct", progress, 1)).toContain("Woof");
+    expect(pickPetCelebrationLine("cat", "correct", progress, 0)).toContain("Purrr");
+    expect(pickPetCelebrationLine("rabbit", "correct", progress, 0)).toContain("Hop");
+  });
+
+  it("selects deterministically from the pool", () => {
+    const progress = makeProgressStore();
+    const a = pickPetCelebrationLine("dog", "mastery", progress, 1);
+    const b = pickPetCelebrationLine("dog", "mastery", progress, 1);
+    const c = pickPetCelebrationLine("dog", "mastery", progress, 0);
+    expect(a).toBe(b);
+    expect(a).not.toBe(c);
+  });
+});
+
+describe("petSpeech", () => {
+  const speak = vi.fn();
+  const cancel = vi.fn();
+
+  beforeEach(() => {
+    speak.mockClear();
+    cancel.mockClear();
+    class MockUtterance {
+      text: string;
+      pitch = 1;
+      rate = 1;
+      volume = 1;
+      onend: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      constructor(text: string) {
+        this.text = text;
+      }
+    }
+    Object.defineProperty(globalThis, "SpeechSynthesisUtterance", {
+      configurable: true,
+      writable: true,
+      value: MockUtterance,
+    });
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: {
+        speechSynthesis: {
+          speak,
+          cancel,
+        },
+        dispatchEvent: vi.fn(),
+      },
+    });
+    savePetPrefs({
+      version: 4,
+      visible: true,
+      speciesId: "dog",
+      soundEnabled: true,
+    });
+  });
+
+  it("detects speech synthesis support", () => {
+    expect(isPetSpeechSupported()).toBe(true);
+  });
+
+  it("speaks celebration lines when sound is enabled", () => {
+    const spoke = speakPetLine("Woof! You got it!", { speciesId: "dog" });
+    expect(spoke).toBe(true);
+    expect(speak).toHaveBeenCalledTimes(1);
+    expect(speak.mock.calls[0][0]).toBeInstanceOf(SpeechSynthesisUtterance);
+    expect(speak.mock.calls[0][0].text).toBe("Woof! You got it!");
+  });
+
+  it("skips speech when sound is disabled", () => {
+    savePetPrefs({
+      version: 4,
+      visible: true,
+      speciesId: "dog",
+      soundEnabled: false,
+    });
+    const spoke = speakPetLine("Woof! You got it!", { speciesId: "dog" });
+    expect(spoke).toBe(false);
+    expect(speak).not.toHaveBeenCalled();
+  });
+
+  it("cancels speech on stop", () => {
+    speakPetLine("Hop hop!", { speciesId: "rabbit" });
+    stopPetSpeech();
+    expect(cancel).toHaveBeenCalled();
   });
 });

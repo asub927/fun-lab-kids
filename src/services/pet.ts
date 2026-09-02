@@ -1,9 +1,10 @@
 import { DEFAULT_PET_SPECIES, getPetSpecies, type PetSpeciesId } from "../data/pets";
 
 export type PetPrefs = {
-  version: 3;
+  version: 4;
   visible: boolean;
   speciesId: PetSpeciesId;
+  soundEnabled: boolean;
 };
 
 const STORAGE_KEY = "funlab-pet";
@@ -29,16 +30,17 @@ function migrateSpeciesId(raw: unknown): PetSpeciesId {
 }
 
 function defaultPrefs(): PetPrefs {
-  return { version: 3, visible: true, speciesId: DEFAULT_PET_SPECIES };
+  return { version: 4, visible: true, speciesId: DEFAULT_PET_SPECIES, soundEnabled: true };
 }
 
 function normalizePrefs(raw: unknown): PetPrefs {
   if (!raw || typeof raw !== "object") return defaultPrefs();
   const data = raw as Partial<PetPrefs> & { speciesId?: unknown; version?: number };
   return {
-    version: 3,
+    version: 4,
     visible: typeof data.visible === "boolean" ? data.visible : true,
     speciesId: migrateSpeciesId(data.speciesId),
+    soundEnabled: typeof data.soundEnabled === "boolean" ? data.soundEnabled : true,
   };
 }
 
@@ -84,7 +86,7 @@ export function getPetSpeciesId(): PetSpeciesId {
 
 export function setPetVisible(visible: boolean): PetPrefs {
   const current = loadPetPrefs();
-  const next: PetPrefs = { ...current, version: 3, visible };
+  const next: PetPrefs = { ...current, version: 4, visible };
   savePetPrefs(next);
   emitPrefs(next);
   return next;
@@ -92,7 +94,19 @@ export function setPetVisible(visible: boolean): PetPrefs {
 
 export function setPetSpecies(speciesId: PetSpeciesId): PetPrefs {
   const current = loadPetPrefs();
-  const next: PetPrefs = { ...current, version: 3, speciesId };
+  const next: PetPrefs = { ...current, version: 4, speciesId };
+  savePetPrefs(next);
+  emitPrefs(next);
+  return next;
+}
+
+export function isPetSoundEnabled(): boolean {
+  return loadPetPrefs().soundEnabled;
+}
+
+export function setPetSoundEnabled(soundEnabled: boolean): PetPrefs {
+  const current = loadPetPrefs();
+  const next: PetPrefs = { ...current, version: 4, soundEnabled };
   savePetPrefs(next);
   emitPrefs(next);
   return next;

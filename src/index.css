@@ -3810,6 +3810,36 @@ main:has(.home-page) {
   pointer-events: none;
 }
 
+.island-pet-speech {
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 0.35rem);
+  min-width: 8.5rem;
+  max-width: min(13rem, calc(100vw - 2rem));
+  z-index: 1;
+}
+
+.island-pet-speech .character-speech {
+  position: relative;
+}
+
+.island-pet-speech .character-speech::before,
+.island-pet-speech .character-speech::after {
+  left: 1.25rem;
+  top: auto;
+  bottom: -8px;
+  border-top: 8px solid var(--color-ink);
+  border-bottom: none;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+}
+
+.island-pet-speech .character-speech::after {
+  bottom: -5px;
+  border-top-color: var(--color-bone);
+}
+
 .island-pet-nest-hit {
   pointer-events: auto;
   width: 4.25rem;

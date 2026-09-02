@@ -1,12 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getPetSpecies } from "../data/pets";
 import { useApp } from "../context/AppContext";
+import type { PetDialogueContext } from "../data/petDialogue";
 import { getPetSpeciesId, isPetVisible, PET_PREFS_EVENT, setPetVisible } from "../services/pet";
+import { pickPetCelebrationLine } from "../services/petDialogue";
 import {
   deriveAmbientMood,
   PET_REACTION_MS,
   reactionFromAppEvent,
 } from "../services/petActivity";
+import { loadProgress } from "../services/progress";
+import { speakPetLine, stopPetSpeech } from "../services/petSpeech";
+import { CharacterSpeech } from "./CharacterSpeech";
 import { PetSprite } from "./pets/PetSprite";
 
 /**
@@ -28,6 +33,7 @@ export function IslandPet() {
       : false,
   );
   const [hint, setHint] = useState<string | null>(null);
+  const [speechLine, setSpeechLine] = useState<string | null>(null);
   const hideTimer = useRef<number | null>(null);
   const pressTimer = useRef<number | null>(null);
 
@@ -73,9 +79,34 @@ export function IslandPet() {
     });
     if (!next) return;
     setReaction(next);
-    const timer = window.setTimeout(() => setReaction(null), PET_REACTION_MS);
-    return () => window.clearTimeout(timer);
-  }, [app.lastCheck, app.lastCelebration]);
+
+    if (next === "celebrating") {
+      const context: PetDialogueContext = app.lastCelebration?.isNewMastery
+        ? "mastery"
+        : app.lastCelebration && app.lastCelebration.newAchievements.length > 0
+          ? "achievement"
+          : "correct";
+      const store = loadProgress();
+      const line = pickPetCelebrationLine(
+        speciesId,
+        context,
+        store,
+        store.gamification.lifetimeChecks,
+      );
+      setSpeechLine(line);
+      speakPetLine(line, { speciesId });
+    }
+
+    const timer = window.setTimeout(() => {
+      setReaction(null);
+      setSpeechLine(null);
+      stopPetSpeech();
+    }, PET_REACTION_MS);
+    return () => {
+      window.clearTimeout(timer);
+      stopPetSpeech();
+    };
+  }, [app.lastCheck, app.lastCelebration, speciesId]);
 
   // Tiny local pace inside the nest — not a full-page wander.
   useEffect(() => {
@@ -95,6 +126,7 @@ export function IslandPet() {
     return () => {
       if (hideTimer.current) window.clearTimeout(hideTimer.current);
       if (pressTimer.current) window.clearTimeout(pressTimer.current);
+      stopPetSpeech();
     };
   }, []);
 
@@ -138,8 +170,13 @@ export function IslandPet() {
       ]
         .filter(Boolean)
         .join(" ")}
-      aria-hidden={hint ? undefined : true}
+      aria-hidden={hint || speechLine ? undefined : true}
     >
+      {speechLine && (
+        <div className="island-pet-speech" aria-live="polite">
+          <CharacterSpeech text={speechLine} compact live />
+        </div>
+      )}
       <div
         className="island-pet-nest-hit"
         onPointerDown={onPointerDown}
