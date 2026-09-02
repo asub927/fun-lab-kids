@@ -1,16 +1,69 @@
 import type { CelebrationPayload } from "../context/AppContext";
+import type { PetCelebrationCue } from "../data/petDialogue";
 import { getCharacterIdForPet, type PetSpeciesId } from "../data/pets";
 import { listGrade2Standards } from "../data/standards";
 import type { Subject } from "../types";
 import { pickBuddyLine, pickCharacterLineById } from "./characterDialogue";
 import type { ProgressStore } from "./progress";
 import { getNextAchievement } from "./progressStats";
+import { isPetSoundEnabled } from "./pet";
 
 export const PET_SPEECH_MS = 4500;
+
+let activeAudio: HTMLAudioElement | null = null;
 
 function parseSubjectFromPath(pathname: string): Subject | null {
   const match = pathname.match(/^\/grade-2\/(math|ela|science)$/);
   return match ? (match[1] as Subject) : null;
+}
+
+export function isPetSpeechSupported(): boolean {
+  return typeof Audio !== "undefined";
+}
+
+export function playPetCelebrationCue(cue: PetCelebrationCue): boolean {
+  const audioSrc = cue.audio.trim();
+  if (!audioSrc || !isPetSoundEnabled() || !isPetSpeechSupported()) return false;
+
+  stopPetSpeech();
+
+  const audio = new Audio(audioSrc);
+  audio.preload = "auto";
+  audio.volume = 0.9;
+  activeAudio = audio;
+
+  void audio.play().catch(() => {
+    if (activeAudio === audio) activeAudio = null;
+  });
+
+  audio.addEventListener(
+    "ended",
+    () => {
+      if (activeAudio === audio) activeAudio = null;
+    },
+    { once: true },
+  );
+
+  audio.addEventListener(
+    "error",
+    () => {
+      if (activeAudio === audio) activeAudio = null;
+    },
+    { once: true },
+  );
+
+  return true;
+}
+
+export function stopPetSpeech(): void {
+  if (!activeAudio) return;
+  activeAudio.pause();
+  activeAudio.currentTime = 0;
+  activeAudio = null;
+}
+
+export function isPetSpeaking(): boolean {
+  return activeAudio !== null && !activeAudio.paused && !activeAudio.ended;
 }
 
 export function speechForRoute(

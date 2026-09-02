@@ -2,9 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } fro
 import { useLocation } from "react-router-dom";
 import { getPetSpecies } from "../data/pets";
 import { useApp } from "../context/AppContext";
+import type { PetDialogueContext } from "../data/petDialogue";
 import { usePetPatrol } from "../hooks/usePetPatrol";
 import { loadProgress } from "../services/progress";
 import { getPetSpeciesId, PET_PREFS_EVENT, setPetVisible } from "../services/pet";
+import { pickPetCelebrationCue } from "../services/petDialogue";
 import {
   deriveAmbientMood,
   PET_REACTION_MS,
@@ -12,10 +14,11 @@ import {
 } from "../services/petActivity";
 import {
   PET_SPEECH_MS,
-  speechForCelebration,
+  playPetCelebrationCue,
   speechForCheck,
   speechForRoute,
   speechForWave,
+  stopPetSpeech,
 } from "../services/petSpeech";
 import { CharacterSpeech } from "./CharacterSpeech";
 import { PetSprite } from "./pets/PetSprite";
@@ -67,11 +70,37 @@ export function IslandPet({ laneRef }: IslandPetProps) {
 
   const patrolling = mood === "idle" && patrol.phase === "walking";
 
-  const showSpeech = useCallback((line: string) => {
-    setSpeechLine(line);
-    if (speechTimer.current) window.clearTimeout(speechTimer.current);
-    speechTimer.current = window.setTimeout(() => setSpeechLine(null), PET_SPEECH_MS);
+  const clearSpeechTimer = useCallback(() => {
+    if (speechTimer.current) {
+      window.clearTimeout(speechTimer.current);
+      speechTimer.current = null;
+    }
   }, []);
+
+  const showSpeech = useCallback(
+    (line: string) => {
+      stopPetSpeech();
+      setSpeechLine(line);
+      clearSpeechTimer();
+      speechTimer.current = window.setTimeout(() => setSpeechLine(null), PET_SPEECH_MS);
+    },
+    [clearSpeechTimer],
+  );
+
+  const showCelebrationCue = useCallback(
+    (context: PetDialogueContext, seed: number) => {
+      const store = loadProgress();
+      const cue = pickPetCelebrationCue(speciesId, context, store, seed);
+      setSpeechLine(cue.text);
+      playPetCelebrationCue(cue);
+      clearSpeechTimer();
+      speechTimer.current = window.setTimeout(() => {
+        setSpeechLine(null);
+        stopPetSpeech();
+      }, PET_SPEECH_MS);
+    },
+    [speciesId, clearSpeechTimer],
+  );
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -101,16 +130,24 @@ export function IslandPet({ laneRef }: IslandPetProps) {
 
   useEffect(() => {
     if (!app.lastCheck) return;
-    showSpeech(speechForCheck(app.lastCheck.ok, speciesId, loadProgress(), checkCount));
-  }, [app.lastCheck, speciesId, checkCount, showSpeech]);
+    const store = loadProgress();
+    if (app.lastCheck.ok) {
+      showCelebrationCue("correct", store.gamification.lifetimeChecks);
+      return;
+    }
+    showSpeech(speechForCheck(false, speciesId, store, checkCount));
+  }, [app.lastCheck, speciesId, checkCount, showSpeech, showCelebrationCue]);
 
   useEffect(() => {
     if (!app.lastCelebration) return;
     const celebrating =
       app.lastCelebration.isNewMastery || app.lastCelebration.newAchievements.length > 0;
     if (!celebrating) return;
-    showSpeech(speechForCelebration(app.lastCelebration, speciesId, loadProgress(), checkCount));
-  }, [app.lastCelebration, speciesId, checkCount, showSpeech]);
+    const context: PetDialogueContext = app.lastCelebration.isNewMastery
+      ? "mastery"
+      : "achievement";
+    showCelebrationCue(context, checkCount);
+  }, [app.lastCelebration, checkCount, showCelebrationCue]);
 
   useEffect(() => {
     const celebrating =
@@ -130,15 +167,17 @@ export function IslandPet({ laneRef }: IslandPetProps) {
     return () => {
       if (hideTimer.current) window.clearTimeout(hideTimer.current);
       if (pressTimer.current) window.clearTimeout(pressTimer.current);
-      if (speechTimer.current) window.clearTimeout(speechTimer.current);
+      clearSpeechTimer();
+      stopPetSpeech();
     };
-  }, []);
+  }, [clearSpeechTimer]);
 
   const onPointerDown = () => {
     if (pressTimer.current) window.clearTimeout(pressTimer.current);
     pressTimer.current = window.setTimeout(() => {
       setHint("Hide lab buddy?");
       setSpeechLine(null);
+      stopPetSpeech();
       if (hideTimer.current) window.clearTimeout(hideTimer.current);
       hideTimer.current = window.setTimeout(() => setHint(null), 4000);
     }, 650);
@@ -164,6 +203,7 @@ export function IslandPet({ laneRef }: IslandPetProps) {
     setPetVisible(false);
     setHint(null);
     setSpeechLine(null);
+    stopPetSpeech();
   };
 
   const buddyLabel =
