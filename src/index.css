@@ -120,7 +120,8 @@ main[data-accent="yellow"] {
 body {
   margin: 0;
   background: var(--color-cream);
-  overflow-x: clip;
+  overflow: hidden;
+  height: 100dvh;
 }
 
 a {
@@ -167,11 +168,20 @@ a:hover {
 .app {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  min-height: 100dvh;
+  grid-template-areas:
+    "header"
+    "content"
+    "footer";
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
   touch-action: manipulation;
 }
 
 .top-nav {
+  grid-area: header;
+  flex-shrink: 0;
+  z-index: 2;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -231,15 +241,22 @@ a:hover {
 }
 
 main {
+  grid-area: content;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: clip;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   max-width: 960px;
+  width: 100%;
   margin: 0 auto;
   padding: var(--space-3);
-  padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+  padding-bottom: var(--space-3);
 }
 
 main:has(.lab-page) {
   max-width: min(1360px, calc(100% - 1.25rem));
-  padding: 0.65rem 0.65rem max(0.65rem, env(safe-area-inset-bottom));
+  padding: 0.65rem;
 }
 
 main:has(.lab-shell) {
@@ -3805,8 +3822,10 @@ main:has(.home-page) {
 
 /* Lab buddy footer lane */
 .pet-footer {
+  grid-area: footer;
   position: relative;
   flex-shrink: 0;
+  z-index: 2;
   border-top: var(--border-width) solid var(--color-ink);
   background: var(--color-paper);
   padding-bottom: env(safe-area-inset-bottom);
