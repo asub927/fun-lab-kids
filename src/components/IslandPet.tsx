@@ -17,11 +17,9 @@ import {
   PET_SPEECH_MS,
   playPetCelebrationCue,
   speechForCheck,
-  speechForCelebration,
   speechForRoute,
   speechForWave,
   stopPetSpeech,
-  subjectForSpeech,
 } from "../services/petSpeech";
 import { CharacterSpeech } from "./CharacterSpeech";
 import { PetSprite } from "./pets/PetSprite";
@@ -160,26 +158,6 @@ export function IslandPet({ laneRef }: IslandPetProps) {
     [speciesId, clearSpeechTimer],
   );
 
-  const showLabCelebration = useCallback(
-    (seed: number) => {
-      if (!app.lastCelebration) return;
-      const store = loadProgress();
-      const subject = app.activeStandard?.subject ?? subjectForSpeech(pathname, app.activeStandard?.subject);
-      if (!subject) return;
-      showSpeech(
-        speechForCelebration(
-          app.lastCelebration,
-          pathname,
-          speciesId,
-          store,
-          seed,
-          subject,
-        ),
-      );
-    },
-    [app.activeStandard?.subject, app.lastCelebration, pathname, showSpeech, speciesId],
-  );
-
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const onChange = () => setReducedMotion(media.matches);
@@ -209,15 +187,9 @@ export function IslandPet({ laneRef }: IslandPetProps) {
   useEffect(() => {
     if (!app.lastCheck) return;
     const store = loadProgress();
-    const subject = app.activeStandard?.subject ?? subjectForSpeech(pathname, app.activeStandard?.subject);
     if (app.lastCheck.ok) {
-      if (subject) {
-        showSpeech(
-          speechForCheck(true, pathname, speciesId, store, store.gamification.lifetimeChecks, subject),
-        );
-      } else {
-        showCelebrationCue("correct", store.gamification.lifetimeChecks);
-      }
+      // Always use paired pet text + MP3 for correct answers (labs included).
+      showCelebrationCue("correct", store.gamification.lifetimeChecks);
       return;
     }
     showSpeech(
@@ -230,16 +202,12 @@ export function IslandPet({ laneRef }: IslandPetProps) {
     const celebrating =
       app.lastCelebration.isNewMastery || app.lastCelebration.newAchievements.length > 0;
     if (!celebrating) return;
-    const subject = app.activeStandard?.subject ?? subjectForSpeech(pathname, app.activeStandard?.subject);
-    if (subject) {
-      showLabCelebration(checkCount);
-      return;
-    }
+    // Mastery / badge unlocks always play the matching pet voice clip.
     const context: PetDialogueContext = app.lastCelebration.isNewMastery
       ? "mastery"
       : "achievement";
     showCelebrationCue(context, checkCount);
-  }, [app.lastCelebration, app.activeStandard?.subject, checkCount, pathname, showCelebrationCue, showLabCelebration]);
+  }, [app.lastCelebration, checkCount, showCelebrationCue]);
 
   useEffect(() => {
     const celebrating =
