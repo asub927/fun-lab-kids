@@ -162,6 +162,32 @@ describe("template labs", () => {
     expect(state.textResponse).toBe("the guitar string vibrates");
   });
 
+  it("checks science-inquiry with exact answer text", () => {
+    let state = createTemplateState("science-inquiry", "2.P.1.1", {
+      prompt: "What vibrates?",
+      answer: "the guitar string vibrates",
+    });
+    state = applyTemplateAction(state, { action: "set_text", text: "something long enough" });
+    expect(checkTemplate(state).ok).toBe(false);
+    state = applyTemplateAction(state, {
+      action: "set_text",
+      text: "The Guitar String Vibrates",
+    });
+    expect(checkTemplate(state).ok).toBe(true);
+  });
+
+  it("checks reading-response with exact answer text", () => {
+    let state = createTemplateState("reading-response", "RL.2.1", {
+      passage: "Mia found a red kite.",
+      question: "What did Mia find?",
+      answer: "a red kite",
+    });
+    state = applyTemplateAction(state, { action: "set_text", text: "a long wrong answer" });
+    expect(checkTemplate(state).ok).toBe(false);
+    state = applyTemplateAction(state, { action: "set_text", text: "a red kite" });
+    expect(checkTemplate(state).ok).toBe(true);
+  });
+
   it("checks geometry identify by shape name without accepting side count alone", () => {
     let state = createTemplateState("geometry", "NC.2.G.1", {
       shape: "triangle",

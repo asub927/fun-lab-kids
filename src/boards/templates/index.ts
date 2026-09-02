@@ -70,6 +70,18 @@ function checkNumeric(state: TemplateBoardState, expected: unknown): CheckResult
   };
 }
 
+function checkExactText(state: TemplateBoardState, expected: unknown, emptyHint: string): CheckResult {
+  const want = norm(String(expected ?? ""));
+  const got = norm(state.textResponse);
+  const ok = want.length > 0 && got === want;
+  return {
+    ok,
+    score: ok ? 100 : got.length === 0 ? 0 : 40,
+    feedback: ok ? "Correct!" : emptyHint,
+    expectedHint: String(expected ?? ""),
+  };
+}
+
 export function checkTemplate(state: TemplateBoardState): CheckResult {
   const p = state.params;
 
@@ -171,6 +183,9 @@ export function checkTemplate(state: TemplateBoardState): CheckResult {
     }
 
     case "reading-response": {
+      if (p.answer != null && String(p.answer).trim().length > 0) {
+        return checkExactText(state, p.answer, "Type the exact answer from the passage.");
+      }
       const ok = state.textResponse.trim().length >= 8;
       return {
         ok,
@@ -200,6 +215,9 @@ export function checkTemplate(state: TemplateBoardState): CheckResult {
     }
 
     case "science-inquiry": {
+      if (p.answer != null && String(p.answer).trim().length > 0) {
+        return checkExactText(state, p.answer, "Type the exact answer.");
+      }
       const ok =
         state.textResponse.trim().length >= 5 ||
         state.selectedOption.length > 0 ||

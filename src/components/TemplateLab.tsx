@@ -231,13 +231,15 @@ export function TemplateLab({ state }: TemplateLabProps) {
         <div className="answer-field">
           <label htmlFor="reading-answer">
             {String(p.question ?? "Your answer")}
-            <textarea
+            <input
               id="reading-answer"
+              type="text"
               name="answer"
               autoComplete="off"
-              rows={3}
+              spellCheck={false}
               value={state.textResponse}
               onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
+              onKeyDown={checkOnEnter}
             />
           </label>
         </div>
@@ -279,13 +281,15 @@ export function TemplateLab({ state }: TemplateLabProps) {
         <div className="answer-field">
           <label htmlFor="science-answer">
             Your observation or answer
-            <textarea
+            <input
               id="science-answer"
+              type="text"
               name="answer"
               autoComplete="off"
-              rows={2}
+              spellCheck={false}
               value={state.textResponse}
               onChange={(e) => applyAction({ action: "set_text", text: e.target.value })}
+              onKeyDown={checkOnEnter}
             />
           </label>
         </div>
