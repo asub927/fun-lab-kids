@@ -21,6 +21,8 @@ type PatrolState = {
 
 type UsePetPatrolOptions = {
   enabled: boolean;
+  /** Pause patrol in place without resetting position (e.g. while speaking). */
+  suspended?: boolean;
   mood: PetMood;
   laneRef: RefObject<HTMLDivElement | null>;
   railRef: RefObject<HTMLDivElement | null>;
@@ -40,9 +42,16 @@ function readBounds(laneRef: RefObject<HTMLDivElement | null>): PatrolBounds {
   return patrolLaneWidth(containerWidth, petSize);
 }
 
-export function usePetPatrol({ enabled, mood, laneRef, railRef }: UsePetPatrolOptions): PatrolState {
+export function usePetPatrol({
+  enabled,
+  suspended = false,
+  mood,
+  laneRef,
+  railRef,
+}: UsePetPatrolOptions): PatrolState {
   const boundsRef = useRef<PatrolBounds>({ minX: 0, maxX: 0 });
   const pauseTimerRef = useRef<number | null>(null);
+  const wasSuspendedRef = useRef(false);
   const stateRef = useRef<PatrolState>({
     x: 0,
     facing: "right",
@@ -74,6 +83,7 @@ export function usePetPatrol({ enabled, mood, laneRef, railRef }: UsePetPatrolOp
 
   const beginWalk = useCallback(
     (facing: "left" | "right") => {
+      if (suspended) return;
       const bounds = boundsRef.current;
       const startX = clampPatrolX(stateRef.current.x, bounds);
       const targetX = patrolTargetX(facing, bounds);
@@ -90,16 +100,35 @@ export function usePetPatrol({ enabled, mood, laneRef, railRef }: UsePetPatrolOp
         });
       });
     },
-    [commitState],
+    [commitState, suspended],
   );
 
   const scheduleNextWalk = useCallback(
     (facing: "left" | "right") => {
+      if (suspended) return;
       clearPauseTimer();
       pauseTimerRef.current = window.setTimeout(() => beginWalk(facing), PATROL_IDLE_TIMING.pauseMs);
     },
-    [beginWalk, clearPauseTimer],
+    [beginWalk, clearPauseTimer, suspended],
   );
+
+  useEffect(() => {
+    if (suspended) {
+      wasSuspendedRef.current = true;
+      clearPauseTimer();
+      commitState({
+        ...stateRef.current,
+        phase: "paused",
+        walkMs: 0,
+      });
+      return;
+    }
+
+    if (wasSuspendedRef.current && enabled && shouldPatrol(mood)) {
+      wasSuspendedRef.current = false;
+      scheduleNextWalk(stateRef.current.facing);
+    }
+  }, [suspended, clearPauseTimer, commitState, enabled, mood, scheduleNextWalk]);
 
   useEffect(() => {
     clearPauseTimer();
@@ -145,7 +174,7 @@ export function usePetPatrol({ enabled, mood, laneRef, railRef }: UsePetPatrolOp
   }, [beginWalk, clearPauseTimer, commitState, enabled, laneRef, mood, refreshBounds]);
 
   useEffect(() => {
-    if (!enabled || !shouldPatrol(mood)) return;
+    if (!enabled || !shouldPatrol(mood) || suspended) return;
 
     const node = railRef.current;
     if (!node) return;
@@ -167,7 +196,7 @@ export function usePetPatrol({ enabled, mood, laneRef, railRef }: UsePetPatrolOp
 
     node.addEventListener("transitionend", onTransitionEnd);
     return () => node.removeEventListener("transitionend", onTransitionEnd);
-  }, [commitState, enabled, mood, railRef, scheduleNextWalk]);
+  }, [commitState, enabled, mood, railRef, scheduleNextWalk, suspended]);
 
   return state;
 }

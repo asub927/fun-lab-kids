@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { CelebrationBurst } from "./CelebrationBurst";
 import { hasStrategyContent, parseStrategyParams, StrategyPanel } from "./StrategyPanel";
 import { useApp } from "../context/AppContext";
-import { pickBuddyLine } from "../services/characterDialogue";
+import { pickBuddyLine, pickStreakLine } from "../services/characterDialogue";
 import { loadProgress } from "../services/progress";
 import { getPetSpeciesId } from "../services/pet";
 
@@ -122,13 +122,15 @@ export function LabShell({ title, children }: LabShellProps) {
 
   const streakLine =
     lastCelebration && lastCelebration.streakDays > 1
-      ? pickBuddyLine(
-          getPetSpeciesId(),
-          "streak",
-          store,
-          { streak: lastCelebration.streakDays },
-          lastCelebration.streakDays,
-        )
+      ? activeStandard?.subject
+        ? pickStreakLine(activeStandard.subject, store, lastCelebration.streakDays)
+        : pickBuddyLine(
+            getPetSpeciesId(),
+            "streak",
+            store,
+            { streak: lastCelebration.streakDays },
+            lastCelebration.streakDays,
+          )
       : null;
 
   const strategy = useMemo(() => {
