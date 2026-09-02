@@ -3920,6 +3920,7 @@ main:has(.home-page) {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  --pet-size: 4.25rem;
 }
 
 .island-pet-rail {
@@ -3979,17 +3980,26 @@ main:has(.home-page) {
   position: absolute;
   top: 50%;
   translate: 0 -50%;
-  max-width: min(calc(100vw - 5rem), 16rem);
   z-index: 5;
   animation: motion-pop-in 0.3s var(--ease-spring) both;
+  box-sizing: border-box;
+}
+
+.island-pet-side-speech .character-speech {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .island-pet-side-speech--right {
-  left: calc(100% + 0.35rem);
+  left: calc(var(--pet-x, 0px) + var(--pet-size) + 0.35rem);
+  width: min(16rem, calc(100% - var(--pet-x, 0px) - var(--pet-size) - 1.25rem));
+  min-width: 11rem;
 }
 
 .island-pet-side-speech--left {
-  right: calc(100% + 0.35rem);
+  left: max(0.75rem, calc(var(--pet-x, 0px) - 0.35rem - min(16rem, calc(var(--pet-x, 0px) - 1rem))));
+  width: min(16rem, calc(var(--pet-x, 0px) - 1rem));
+  min-width: 11rem;
 }
 
 .island-pet-side-speech--right .character-speech::before {
@@ -4519,10 +4529,6 @@ main:has(.home-page) {
     font-size: 0.8125rem;
   }
 
-  .island-pet-side-speech {
-    max-width: min(calc(100vw - 4.5rem), 18rem);
-  }
-
   .home-hero {
     overflow: clip;
   }
@@ -4567,6 +4573,20 @@ main:has(.home-page) {
   .island-pet-hit {
     width: 3.6rem;
     height: 3.6rem;
+  }
+
+  .island-pet-anchor {
+    --pet-size: 3.6rem;
+  }
+
+  .island-pet-side-speech--right {
+    width: min(18rem, calc(100% - var(--pet-x, 0px) - var(--pet-size) - 1rem));
+    min-width: 12rem;
+  }
+
+  .island-pet-side-speech--left {
+    width: min(18rem, calc(var(--pet-x, 0px) - 0.75rem));
+    min-width: 12rem;
   }
 
   .island-pet-hit .pet-sprite {
