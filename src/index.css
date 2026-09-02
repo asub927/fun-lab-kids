@@ -3921,6 +3921,8 @@ main:has(.home-page) {
   inset: 0;
   pointer-events: none;
   --pet-size: 4.25rem;
+  --pet-speech-max: 24rem;
+  --pet-speech-min: 14rem;
 }
 
 .island-pet-rail {
@@ -3992,14 +3994,30 @@ main:has(.home-page) {
 
 .island-pet-side-speech--right {
   left: calc(var(--pet-x, 0px) + var(--pet-size) + 0.35rem);
-  width: min(16rem, calc(100% - var(--pet-x, 0px) - var(--pet-size) - 1.25rem));
-  min-width: 11rem;
+  width: min(
+    var(--pet-speech-max),
+    max(
+      var(--pet-speech-min),
+      calc(var(--lane-width, 100%) - var(--pet-x, 0px) - var(--pet-size) - 1rem)
+    )
+  );
 }
 
 .island-pet-side-speech--left {
-  left: max(0.75rem, calc(var(--pet-x, 0px) - 0.35rem - min(16rem, calc(var(--pet-x, 0px) - 1rem))));
-  width: min(16rem, calc(var(--pet-x, 0px) - 1rem));
-  min-width: 11rem;
+  left: max(
+    0.75rem,
+    calc(
+      var(--pet-x, 0px) - 0.35rem -
+        min(
+          var(--pet-speech-max),
+          max(var(--pet-speech-min), calc(var(--pet-x, 0px) - 1rem))
+        )
+    )
+  );
+  width: min(
+    var(--pet-speech-max),
+    max(var(--pet-speech-min), calc(var(--pet-x, 0px) - 1rem))
+  );
 }
 
 .island-pet-side-speech--right .character-speech::before {
@@ -4577,16 +4595,25 @@ main:has(.home-page) {
 
   .island-pet-anchor {
     --pet-size: 3.6rem;
+    --pet-speech-max: 20rem;
+    --pet-speech-min: 13rem;
   }
 
   .island-pet-side-speech--right {
-    width: min(18rem, calc(100% - var(--pet-x, 0px) - var(--pet-size) - 1rem));
-    min-width: 12rem;
+    width: min(
+      var(--pet-speech-max),
+      max(
+        var(--pet-speech-min),
+        calc(var(--lane-width, 100%) - var(--pet-x, 0px) - var(--pet-size) - 0.75rem)
+      )
+    );
   }
 
   .island-pet-side-speech--left {
-    width: min(18rem, calc(var(--pet-x, 0px) - 0.75rem));
-    min-width: 12rem;
+    width: min(
+      var(--pet-speech-max),
+      max(var(--pet-speech-min), calc(var(--pet-x, 0px) - 0.75rem))
+    );
   }
 
   .island-pet-hit .pet-sprite {

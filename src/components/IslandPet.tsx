@@ -4,6 +4,7 @@ import { getPetSpecies } from "../data/pets";
 import { useApp } from "../context/AppContext";
 import type { PetDialogueContext } from "../data/petDialogue";
 import { usePetPatrol } from "../hooks/usePetPatrol";
+import { petSizeForViewport } from "../services/petPatrol";
 import { loadProgress } from "../services/progress";
 import { getPetSpeciesId, PET_PREFS_EVENT, setPetVisible } from "../services/pet";
 import { pickPetCelebrationCue } from "../services/petDialogue";
@@ -35,7 +36,18 @@ function computeSpeechSide(
 ): "left" | "right" {
   const laneWidth = laneRef.current?.getBoundingClientRect().width ?? 0;
   if (laneWidth <= 0) return "right";
-  return patrolX < laneWidth / 2 ? "right" : "left";
+
+  const petSize =
+    laneRef.current?.querySelector(".island-pet-rail")?.getBoundingClientRect().width ??
+    petSizeForViewport(window.innerWidth);
+  const minSpeechWidth = window.innerWidth <= 640 ? 208 : 224;
+  const edgeGap = 12;
+  const spaceRight = laneWidth - patrolX - petSize - edgeGap;
+  const spaceLeft = patrolX - edgeGap;
+
+  if (spaceRight >= minSpeechWidth) return "right";
+  if (spaceLeft >= minSpeechWidth) return "left";
+  return spaceRight >= spaceLeft ? "right" : "left";
 }
 
 /**
@@ -58,6 +70,7 @@ export function IslandPet({ laneRef }: IslandPetProps) {
       : false,
   );
   const [hint, setHint] = useState<string | null>(null);
+  const [laneWidth, setLaneWidth] = useState(0);
   const hideTimer = useRef<number | null>(null);
   const pressTimer = useRef<number | null>(null);
   const speechTimer = useRef<number | null>(null);
@@ -83,6 +96,37 @@ export function IslandPet({ laneRef }: IslandPetProps) {
 
   const patrolling = mood === "idle" && patrol.phase === "walking" && !speaking;
   const speechSide = computeSpeechSide(laneRef, patrol.x);
+
+  useEffect(() => {
+    const lane = laneRef.current;
+    if (!lane) return;
+
+    const updateLaneWidth = () => {
+      setLaneWidth(lane.getBoundingClientRect().width);
+    };
+
+    updateLaneWidth();
+
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      observer = new ResizeObserver(updateLaneWidth);
+      observer.observe(lane);
+    }
+
+    window.addEventListener("resize", updateLaneWidth);
+    window.addEventListener("orientationchange", updateLaneWidth);
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", updateLaneWidth);
+      window.removeEventListener("orientationchange", updateLaneWidth);
+    };
+  }, [laneRef]);
+
+  const anchorStyle = {
+    "--pet-x": `${patrol.x}px`,
+    "--lane-width": `${laneWidth}px`,
+  } as CSSProperties;
 
   const clearSpeechTimer = useCallback(() => {
     if (speechTimer.current) {
@@ -270,7 +314,7 @@ export function IslandPet({ laneRef }: IslandPetProps) {
       ]
         .filter(Boolean)
         .join(" ")}
-      style={{ "--pet-x": `${patrol.x}px` } as CSSProperties}
+      style={anchorStyle}
     >
       {speechLine && !hint && (
         <div
