@@ -31,8 +31,10 @@ This was difficult before WebMCP because ed-tech UIs are built for human clicks,
 
 Tools register via `document.modelContext.registerTool` in [`src/webmcp/register.ts`](src/webmcp/register.ts):
 
-- **App-wide (curriculum):** `list_subjects`, `list_grades`, `list_standards`, `get_standard`, `search_standards`, `set_active_standard`, `get_progress`, `get_scoreboard`
-- **Active lab (board):** `get_board_state`, `apply_board_action`, `undo`, `run_check`, `request_hint`, `ask_guiding_question`, `reveal_solution`, `reset_board`, `suggest_revision` (Opinion Builder)
+- **App-wide (curriculum / navigation):** `list_subjects`, `list_grades`, `list_standards`, `list_playable_standards`, `get_standard`, `search_standards`, `open_lab`, `set_active_standard` (navigates to `/lab/:code`), `open_showcase`, `get_app_location`, `get_progress`, `get_scoreboard`, `recommend_next_standard`, `get_recent_events`, `dismiss_celebration`
+- **Active lab (board):** `get_board_state` (answer-safe), `list_board_actions`, `get_current_challenge`, `get_session_state`, `get_strategy`, `get_lab_overview`, `apply_board_action`, `undo`, `run_check`, `next_question`, `request_hint`, `ask_guiding_question` (shows on board), `reveal_solution` / `reset_board` (child confirm UI), `suggest_revision` (Opinion Builder)
+
+Agents poll `get_recent_events` for `route_changed`, `check_completed`, `board_updated`, `celebration_shown`, `revision_pending`, and related signals. Spoiler actions (`compose_number`, accept/reject revision) stay human-gated.
 
 The kid UI works fully without an agent. WebMCP is additive — agents use the same reducers and check logic as the on-screen controls.
 
@@ -49,9 +51,9 @@ Then try a sample prompt:
 
 | Subject | Sample prompt |
 | --- | --- |
-| **Math** | Open Place Value Lab. Use tools to build 243 with hundreds, tens, and ones blocks, then `run_check`. |
-| **ELA** | Help me write an opinion about recess. Add two reasons and a linking word; suggest one revision and wait for my confirm. |
-| **Science** | Classify the objects, heat the ice, predict the state, then `run_check`. |
+| **Math** | `Open Place Value Lab with open_lab or open_showcase. Use list_board_actions, then build 243 with place_block actions, then run_check.` |
+| **ELA** | `Open the opinion showcase. Help me write an opinion about recess. Add two reasons and a linking word; suggest one revision and wait for my confirm.` |
+| **Science** | `Open the matter showcase. Classify the objects, heat the ice, predict the state, then run_check.` |
 
 Legacy deep links still work: `/demo/math` → `/lab/NC.2.NBT.1`, `/demo/ela` → `/lab/W.2.1`, `/demo/science` → `/lab/2.P.2.1`.
 

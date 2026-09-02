@@ -7,7 +7,13 @@ import {
   useRef,
   useState,
 } from "react";
-import type { BoardState, LabId, Standard, ToolCallLogEntry } from "../types";
+import type {
+  BoardState,
+  LabId,
+  PendingConfirmKind,
+  Standard,
+  ToolCallLogEntry,
+} from "../types";
 import {
   applyBoardAction,
   createBoardState,
@@ -29,6 +35,8 @@ import {
   getAutoCheckMode,
   type AutoCheckMode,
 } from "../services/autoCheck";
+import { emitAgentEvent } from "../webmcp/events";
+import { safeBoardSnapshot } from "../webmcp/safeReads";
 
 export type CelebrationPayload = {
   xpEarned: number;
@@ -72,6 +80,12 @@ type AppContextValue = {
   lastCheck: ReturnType<typeof runBoardCheck> | null;
   lastCelebration: CelebrationPayload | null;
   clearCelebration: () => void;
+  guidingQuestion: string | null;
+  setGuidingQuestion: (question: string | null) => void;
+  pendingConfirm: PendingConfirmKind | null;
+  requestConfirm: (kind: PendingConfirmKind) => void;
+  resolveConfirm: (accepted: boolean) => ReturnType<typeof runBoardCheck> | { ok: true } | null;
+  clearPendingConfirm: () => void;
   questionIndex: number;
   questionTotal: number;
   sessionScores: number[];
@@ -94,6 +108,7 @@ type AppContextValue = {
   rejectRevision: () => void;
   logToolCall: (entry: Omit<ToolCallLogEntry, "id" | "timestamp">) => void;
   getBoardSnapshot: () => Record<string, unknown> | null;
+  getSafeBoardSnapshot: () => Record<string, unknown> | null;
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -111,6 +126,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [toolLog, setToolLog] = useState<ToolCallLogEntry[]>([]);
   const [lastCheck, setLastCheck] = useState<ReturnType<typeof runBoardCheck> | null>(null);
   const [lastCelebration, setLastCelebration] = useState<CelebrationPayload | null>(null);
+  const [guidingQuestion, setGuidingQuestionState] = useState<string | null>(null);
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirmKind | null>(null);
 
   const sessionRef = useRef<SessionSnapshot>({
     activeStandard: null,
@@ -142,6 +159,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const clearCelebration = useCallback(() => setLastCelebration(null), []);
 
+  const setGuidingQuestion = useCallback((question: string | null) => {
+    const trimmed = question?.trim() || null;
+    setGuidingQuestionState(trimmed);
+    if (trimmed) {
+      emitAgentEvent("guiding_question_shown", { question: trimmed });
+    }
+  }, []);
+
+  const requestConfirm = useCallback((kind: PendingConfirmKind) => {
+    setPendingConfirm(kind);
+    emitAgentEvent("confirm_requested", { kind });
+  }, []);
+
+  const clearPendingConfirm = useCallback(() => setPendingConfirm(null), []);
+
   const bootLab = useCallback(
     (nextLabId: LabId, standardCode: string, params: Record<string, unknown>) => {
       clearAutoCheckTimer();
@@ -160,6 +192,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setHistory([]);
       setLastCheck(null);
       setLastCelebration(null);
+      setGuidingQuestionState(null);
+      setPendingConfirm(null);
     },
     [clearAutoCheckTimer],
   );
@@ -186,11 +220,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!session.activeStandard) return null;
     const result = runBoardCheck(state);
     setLastCheck(result);
+    emitAgentEvent("check_completed", {
+      ok: result.ok,
+      score: result.score,
+      revealed: Boolean(result.revealed),
+      standardCode: session.activeStandard.code,
+      feedback: result.feedback,
+    });
 
     if (!result.ok) {
       setSmartScore((s) => bumpSmartScore(s, false, false));
       const gamification = recordCheckResult(session.activeStandard.code, false, 0);
-      setLastCelebration(toCelebration(gamification));
+      const celebration = toCelebration(gamification);
+      setLastCelebration(celebration);
+      if (celebration) {
+        emitAgentEvent("celebration_shown", {
+          xpEarned: celebration.xpEarned,
+          isNewMastery: celebration.isNewMastery,
+          achievements: celebration.newAchievements.map((a) => a.id),
+        });
+      }
       return result;
     }
 
@@ -214,7 +263,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         questionsCorrect: nextCorrect,
         smartScore: nextSmart,
       });
-      setLastCelebration(toCelebration(gamification));
+      const celebration = toCelebration(gamification);
+      setLastCelebration(celebration);
+      if (celebration) {
+        emitAgentEvent("celebration_shown", {
+          xpEarned: celebration.xpEarned,
+          isNewMastery: celebration.isNewMastery,
+          achievements: celebration.newAchievements.map((a) => a.id),
+        });
+      }
       return {
         ...result,
         feedback: `${result.feedback} Smart Score: ${nextSmart}. Tap Next Question when you are ready.`,
@@ -231,7 +288,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         questionsCorrect: nextCorrect,
         smartScore: nextSmart,
       });
-      setLastCelebration(toCelebration(gamification));
+      const celebration = toCelebration(gamification);
+      setLastCelebration(celebration);
+      if (celebration) {
+        emitAgentEvent("celebration_shown", {
+          xpEarned: celebration.xpEarned,
+          isNewMastery: celebration.isNewMastery,
+          achievements: celebration.newAchievements.map((a) => a.id),
+        });
+      }
       return {
         ...result,
         feedback: mastered
@@ -243,7 +308,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const gamification = recordCheckResult(session.activeStandard.code, true, result.score, {
       completed: true,
     });
-    setLastCelebration(toCelebration(gamification));
+    const celebration = toCelebration(gamification);
+    setLastCelebration(celebration);
+    if (celebration) {
+      emitAgentEvent("celebration_shown", {
+        xpEarned: celebration.xpEarned,
+        isNewMastery: celebration.isNewMastery,
+        achievements: celebration.newAchievements.map((a) => a.id),
+      });
+    }
     return result;
   }, []);
 
@@ -271,6 +344,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setHistory((h) => [...h, boardState]);
       const next = applyBoardAction(boardState, action);
       setBoardState(next);
+      emitAgentEvent("board_updated", {
+        action: String(action.action ?? ""),
+        labId: next.labId,
+      });
       queueAutoCheck(getAutoCheckMode(action, next), next);
       return next;
     },
@@ -316,8 +393,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setBoardState(next);
     setSmartScore((s) => bumpSmartScore(s, false, true));
     setLastCheck(result);
+    emitAgentEvent("check_completed", {
+      ok: false,
+      score: result.score,
+      revealed: true,
+      standardCode: activeStandard.code,
+      feedback: result.feedback,
+    });
     const gamification = recordCheckResult(activeStandard.code, false, 0);
-    setLastCelebration(toCelebration(gamification));
+    const celebration = toCelebration(gamification);
+    setLastCelebration(celebration);
+    if (celebration) {
+      emitAgentEvent("celebration_shown", {
+        xpEarned: celebration.xpEarned,
+        isNewMastery: celebration.isNewMastery,
+        achievements: celebration.newAchievements.map((a) => a.id),
+      });
+    }
     return result;
   }, [boardState, activeStandard, clearAutoCheckTimer]);
 
@@ -326,6 +418,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const nextIndex = questionIndex + 1;
     setQuestionIndex(nextIndex);
     loadQuestion(nextIndex, true);
+    emitAgentEvent("question_advanced", {
+      questionIndex: nextIndex,
+      questionTotal: questionSet.length,
+      direction: "next",
+    });
   }, [questionSet.length, questionIndex, loadQuestion]);
 
   const previousQuestion = useCallback(() => {
@@ -333,6 +430,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const prevIndex = questionIndex - 1;
     setQuestionIndex(prevIndex);
     loadQuestion(prevIndex, true);
+    emitAgentEvent("question_advanced", {
+      questionIndex: prevIndex,
+      questionTotal: questionSet.length,
+      direction: "previous",
+    });
   }, [questionSet.length, questionIndex, loadQuestion]);
 
   const canAdvanceQuestion = questionSet.length > 1 && questionIndex < questionSet.length - 1;
@@ -354,6 +456,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     (revision: string) => {
       if (boardState?.labId !== "opinion-builder") return;
       setBoardState(proposeRevision(boardState, revision));
+      emitAgentEvent("revision_pending", { revision: revision.trim() });
     },
     [boardState],
   );
@@ -366,11 +469,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       opinion: boardState.pendingRevision,
       pendingRevision: null,
     });
+    emitAgentEvent("board_updated", { action: "accept_revision", labId: "opinion-builder" });
   }, [boardState]);
 
   const rejectRevision = useCallback(() => {
     if (boardState?.labId !== "opinion-builder") return;
     setBoardState({ ...boardState, pendingRevision: null });
+    emitAgentEvent("board_updated", { action: "reject_revision", labId: "opinion-builder" });
   }, [boardState]);
 
   const logToolCall = useCallback((entry: Omit<ToolCallLogEntry, "id" | "timestamp">) => {
@@ -383,6 +488,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!boardState) return null;
     return { ...boardState };
   }, [boardState]);
+
+  const getSafeBoardSnapshot = useCallback(() => safeBoardSnapshot(boardState), [boardState]);
+
+  const resolveConfirm = useCallback(
+    (accepted: boolean) => {
+      const kind = pendingConfirm;
+      setPendingConfirm(null);
+      emitAgentEvent("confirm_resolved", { kind, accepted });
+      if (!accepted || !kind) return null;
+      if (kind === "reveal") return revealAnswer();
+      resetBoard();
+      return { ok: true as const };
+    },
+    [pendingConfirm, revealAnswer, resetBoard],
+  );
 
   const questionTotal = questionSet.length;
   const currentParams = questionSet[questionIndex] as { difficulty?: number } | undefined;
@@ -397,6 +517,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       lastCheck,
       lastCelebration,
       clearCelebration,
+      guidingQuestion,
+      setGuidingQuestion,
+      pendingConfirm,
+      requestConfirm,
+      resolveConfirm,
+      clearPendingConfirm,
       questionIndex,
       questionTotal,
       sessionScores,
@@ -419,6 +545,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       rejectRevision,
       logToolCall,
       getBoardSnapshot,
+      getSafeBoardSnapshot,
     }),
     [
       activeStandard,
@@ -428,6 +555,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       lastCheck,
       lastCelebration,
       clearCelebration,
+      guidingQuestion,
+      setGuidingQuestion,
+      pendingConfirm,
+      requestConfirm,
+      resolveConfirm,
+      clearPendingConfirm,
       questionIndex,
       questionTotal,
       sessionScores,
@@ -450,6 +583,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       rejectRevision,
       logToolCall,
       getBoardSnapshot,
+      getSafeBoardSnapshot,
     ],
   );
 

@@ -48,6 +48,10 @@ export function LabShell({ title, children }: LabShellProps) {
     lastCheck,
     lastCelebration,
     clearCelebration,
+    guidingQuestion,
+    setGuidingQuestion,
+    pendingConfirm,
+    resolveConfirm,
     questionIndex,
     questionTotal,
     smartScore,
@@ -81,6 +85,29 @@ export function LabShell({ title, children }: LabShellProps) {
   const handleReset = () => {
     if (window.confirm("Reset this question?")) resetBoard();
   };
+
+  const handleRevealClick = () => {
+    if (pendingConfirm === "reveal") {
+      resolveConfirm(true);
+      return;
+    }
+    revealAnswer();
+  };
+
+  const confirmCopy =
+    pendingConfirm === "reveal"
+      ? {
+          title: "Agent wants to show the answer",
+          accept: "Show Answer",
+          body: "Confirm to reveal the solution on this board.",
+        }
+      : pendingConfirm === "reset"
+        ? {
+            title: "Agent wants to reset the board",
+            accept: "Reset Board",
+            body: "Confirm to clear this question and start fresh.",
+          }
+        : null;
 
   useEffect(() => {
     if (!hasQuestionPager) return;
@@ -171,7 +198,7 @@ export function LabShell({ title, children }: LabShellProps) {
             <button type="button" className="btn primary" onClick={() => runCheck()}>
               Check Answer
             </button>
-            <button type="button" className="btn hint" onClick={() => revealAnswer()}>
+            <button type="button" className="btn hint" onClick={handleRevealClick}>
               Show Answer
             </button>
             <button type="button" className="btn danger" onClick={handleReset}>
@@ -179,6 +206,45 @@ export function LabShell({ title, children }: LabShellProps) {
             </button>
           </div>
         </header>
+
+        {confirmCopy && (
+          <div className="agent-confirm-panel" role="alertdialog" aria-labelledby="agent-confirm-title">
+            <p id="agent-confirm-title" className="agent-confirm-title">
+              {confirmCopy.title}
+            </p>
+            <p className="agent-confirm-body">{confirmCopy.body}</p>
+            <div className="agent-confirm-actions">
+              <button
+                type="button"
+                className="btn primary"
+                onClick={() => resolveConfirm(true)}
+              >
+                {confirmCopy.accept}
+              </button>
+              <button
+                type="button"
+                className="btn secondary"
+                onClick={() => resolveConfirm(false)}
+              >
+                Not now
+              </button>
+            </div>
+          </div>
+        )}
+
+        {guidingQuestion && (
+          <div className="agent-guide-panel" role="status" aria-live="polite">
+            <p className="agent-guide-label">Agent asks</p>
+            <p className="agent-guide-question">{guidingQuestion}</p>
+            <button
+              type="button"
+              className="btn secondary agent-guide-dismiss"
+              onClick={() => setGuidingQuestion(null)}
+            >
+              Got it
+            </button>
+          </div>
+        )}
 
         {showCelebration && lastCelebration && (
           <div className="mastery-panel" role="status" aria-live="polite">

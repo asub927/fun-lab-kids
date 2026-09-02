@@ -1,10 +1,19 @@
 import { useEffect, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import { listStandards, findStandard, listGrade2Standards } from "../data/standards";
+import { resolveLabForStandard } from "../data/activities";
 import { getProgressSnapshot, loadProgress } from "../services/progress";
 import { getScoreboardSummary } from "../services/progressStats";
-import { labHint } from "../boards";
-import type { LabId } from "../types";
+import { labHint, isShowcaseLab } from "../boards";
+import type { LabId, Subject } from "../types";
+import { HUMAN_CONFIRM_ACTIONS, getLabGoal, listBoardActionsForLab } from "./boardActions";
+import { getRecentAgentEvents } from "./events";
+import { getWebMCPPathname, navigateWebMCP } from "./navigation";
+import {
+  buildLabOverview,
+  extractCurrentChallenge,
+  extractStrategy,
+} from "./safeReads";
 
 function jsonSchema(
   props: Record<string, unknown>,
@@ -34,10 +43,14 @@ const BOARD_ACTION_SCHEMA = jsonSchema(
     state: { type: "string" },
     revision: { type: "string" },
     question: { type: "string" },
+    index: { type: "number" },
+    field: { type: "string" },
   },
   ["action"],
   true,
 );
+
+const SHOWCASE_CODES = ["NC.2.NBT.1", "W.2.1", "2.P.2.1"] as const;
 
 type AppApi = ReturnType<typeof useApp>;
 
@@ -45,6 +58,51 @@ function useAppRef(app: AppApi) {
   const ref = useRef(app);
   ref.current = app;
   return ref;
+}
+
+function openLabByCode(code: string) {
+  const standard = findStandard(code);
+  if (!standard) return { error: "Standard not found", code };
+  const resolved = resolveLabForStandard(code);
+  if (!resolved) return { error: "No lab for this standard", code };
+  const path = `/lab/${encodeURIComponent(code)}`;
+  const nav = navigateWebMCP(path);
+  if ("error" in nav) return nav;
+  return {
+    ok: true,
+    path,
+    labId: resolved.labId,
+    standard: code,
+    goal: getLabGoal(resolved.labId),
+  };
+}
+
+function recommendNext(subject?: Subject) {
+  const progress = getProgressSnapshot();
+  const standards = listGrade2Standards(subject);
+  const incomplete = standards.filter((s) => !progress[s.code]?.completed);
+  if (incomplete.length === 0) {
+    return {
+      done: true,
+      message: subject
+        ? `All Grade 2 ${subject} skills are mastered on this device.`
+        : "All Grade 2 skills are mastered on this device.",
+      suggestion: null,
+    };
+  }
+
+  const suggestion = incomplete[0];
+  return {
+    done: false,
+    suggestion: {
+      code: suggestion.code,
+      subject: suggestion.subject,
+      strand: suggestion.strand,
+      text: suggestion.text,
+      path: `/lab/${encodeURIComponent(suggestion.code)}`,
+    },
+    remaining: incomplete.length,
+  };
 }
 
 export function useWebMCPCurriculum() {
@@ -123,7 +181,7 @@ export function useWebMCPCurriculum() {
         "List grade levels with standards",
         jsonSchema({ subject: { type: "string", enum: ["math", "ela", "science"] } }, ["subject"]),
         (input) => {
-          const standards = listStandards({ subject: input.subject as "math" | "ela" | "science" });
+          const standards = listStandards({ subject: input.subject as Subject });
           return [...new Set(standards.map((s) => s.grade))].sort();
         },
         true,
@@ -139,9 +197,37 @@ export function useWebMCPCurriculum() {
         }),
         (input) =>
           listStandards({
-            subject: input.subject as "math" | "ela" | "science",
+            subject: input.subject as Subject,
             grade: input.grade as 0 | 1 | 2 | 3 | 4 | 5,
           }).map((s) => ({ code: s.code, strand: s.strand, activityType: s.activityType })),
+        true,
+      );
+
+      await register(
+        gen,
+        "list_playable_standards",
+        "List Grade 2 playable standards with local progress flags",
+        jsonSchema({
+          subject: { type: "string", enum: ["math", "ela", "science"] },
+        }, [], true),
+        (input) => {
+          const subject = input.subject ? (String(input.subject) as Subject) : undefined;
+          const progress = getProgressSnapshot();
+          return listGrade2Standards(subject).map((s) => ({
+            code: s.code,
+            subject: s.subject,
+            strand: s.strand,
+            text: s.text,
+            activityType: s.activityType,
+            showcase: (() => {
+              const labId = resolveLabForStandard(s.code)?.labId;
+              return labId ? isShowcaseLab(labId) : false;
+            })(),
+            completed: Boolean(progress[s.code]?.completed),
+            bestScore: progress[s.code]?.bestScore ?? 0,
+            smartScore: progress[s.code]?.smartScore ?? 0,
+          }));
+        },
         true,
       );
 
@@ -173,17 +259,61 @@ export function useWebMCPCurriculum() {
 
       await register(
         gen,
-        "set_active_standard",
-        "Switch to a standard's lab by code (Grade 2 NCSCOS)",
+        "open_lab",
+        "Navigate the shared UI to a Grade 2 lab by standard code (registers board tools)",
         jsonSchema({ code: { type: "string" } }),
+        (input) => openLabByCode(String(input.code)),
+      );
+
+      await register(
+        gen,
+        "set_active_standard",
+        "Open a standard lab in the UI by code (alias of open_lab — navigates to /lab/:code)",
+        jsonSchema({ code: { type: "string" } }),
+        (input) => openLabByCode(String(input.code)),
+      );
+
+      await register(
+        gen,
+        "open_showcase",
+        "Open a judge showcase lab: place-value, opinion, or matter",
+        jsonSchema({
+          showcase: {
+            type: "string",
+            enum: ["place-value", "opinion", "matter", "math", "ela", "science"],
+          },
+        }),
         (input) => {
-          const code = String(input.code);
-          const standard = findStandard(code);
-          if (!standard) return { error: "Standard not found" };
-          const ok = appRef.current.setActiveStandard(code);
-          if (!ok) return { error: "No lab for this standard", standard: code };
-          return { ok: true, lab: appRef.current.labId, standard: code };
+          const key = String(input.showcase);
+          const map: Record<string, string> = {
+            "place-value": "NC.2.NBT.1",
+            math: "NC.2.NBT.1",
+            opinion: "W.2.1",
+            ela: "W.2.1",
+            matter: "2.P.2.1",
+            science: "2.P.2.1",
+          };
+          const code = map[key];
+          if (!code) {
+            return { error: "Unknown showcase", allowed: Object.keys(map) };
+          }
+          return openLabByCode(code);
         },
+      );
+
+      await register(
+        gen,
+        "get_app_location",
+        "Get the child's current route and active lab context",
+        jsonSchema({}),
+        () => ({
+          pathname: getWebMCPPathname(),
+          labId: appRef.current.labId,
+          activeStandard: appRef.current.activeStandard?.code ?? null,
+          guidingQuestion: appRef.current.guidingQuestion,
+          pendingConfirm: appRef.current.pendingConfirm,
+        }),
+        true,
       );
 
       await register(
@@ -198,7 +328,14 @@ export function useWebMCPCurriculum() {
           })),
           activeStandard: appRef.current.activeStandard?.code ?? null,
           labId: appRef.current.labId,
-          lastCheck: appRef.current.lastCheck,
+          lastCheck: appRef.current.lastCheck
+            ? {
+                ok: appRef.current.lastCheck.ok,
+                score: appRef.current.lastCheck.score,
+                feedback: appRef.current.lastCheck.feedback,
+                revealed: appRef.current.lastCheck.revealed,
+              }
+            : null,
         }),
         true,
       );
@@ -206,7 +343,7 @@ export function useWebMCPCurriculum() {
       await register(
         gen,
         "get_scoreboard",
-        "Gamification scoreboard: Fun Points, streak, subject stats, achievements",
+        "Gamification scoreboard: Island Points, streak, subject stats, achievements",
         jsonSchema({}),
         () => {
           const summary = getScoreboardSummary(loadProgress());
@@ -238,6 +375,45 @@ export function useWebMCPCurriculum() {
           };
         },
         true,
+      );
+
+      await register(
+        gen,
+        "recommend_next_standard",
+        "Suggest the next incomplete Grade 2 standard to practice",
+        jsonSchema({
+          subject: { type: "string", enum: ["math", "ela", "science"] },
+        }, [], true),
+        (input) =>
+          recommendNext(input.subject ? (String(input.subject) as Subject) : undefined),
+        true,
+      );
+
+      await register(
+        gen,
+        "get_recent_events",
+        "Poll recent agent-relevant UI events (route, check, board, celebration, revision)",
+        jsonSchema({
+          limit: { type: "number" },
+          since: { type: "number", description: "Unix ms — only events after this time" },
+        }, [], true),
+        (input) => {
+          const limit = typeof input.limit === "number" ? input.limit : 20;
+          const since = typeof input.since === "number" ? input.since : undefined;
+          return { events: getRecentAgentEvents(limit, since) };
+        },
+        true,
+      );
+
+      await register(
+        gen,
+        "dismiss_celebration",
+        "Dismiss the mastery/badge celebration overlay",
+        jsonSchema({}),
+        () => {
+          appRef.current.clearCelebration();
+          return { ok: true };
+        },
       );
     })();
 
@@ -320,9 +496,85 @@ export function useWebMCPLab(activeLabId: LabId | null) {
       await register(
         gen,
         "get_board_state",
-        "Get current board state for the active lab",
+        "Get answer-safe board state for the active lab (spoilers redacted)",
         jsonSchema({}),
-        () => appRef.current.getBoardSnapshot() ?? { error: "No active lab" },
+        () => appRef.current.getSafeBoardSnapshot() ?? { error: "No active lab" },
+        true,
+      );
+
+      await register(
+        gen,
+        "list_board_actions",
+        "List valid apply_board_action operations for the active lab",
+        jsonSchema({}),
+        () => ({
+          labId: appRef.current.labId,
+          actions: listBoardActionsForLab(appRef.current.labId),
+        }),
+        true,
+      );
+
+      await register(
+        gen,
+        "get_current_challenge",
+        "Kid-visible challenge prompt/passage/options without answer keys",
+        jsonSchema({}),
+        () => extractCurrentChallenge(appRef.current.boardState),
+        true,
+      );
+
+      await register(
+        gen,
+        "get_session_state",
+        "Live practice session meters and last feedback (answer-safe)",
+        jsonSchema({}),
+        () => {
+          const last = appRef.current.lastCheck;
+          return {
+            standardCode: appRef.current.activeStandard?.code ?? null,
+            labId: appRef.current.labId,
+            questionIndex: appRef.current.questionIndex,
+            questionTotal: appRef.current.questionTotal,
+            questionLevel: appRef.current.questionLevel,
+            smartScore: appRef.current.smartScore,
+            correctCount: appRef.current.correctCount,
+            canAdvanceQuestion: appRef.current.canAdvanceQuestion,
+            canGoPreviousQuestion: appRef.current.canGoPreviousQuestion,
+            guidingQuestion: appRef.current.guidingQuestion,
+            pendingConfirm: appRef.current.pendingConfirm,
+            lastCheck: last
+              ? {
+                  ok: last.ok,
+                  score: last.score,
+                  feedback: last.feedback,
+                  revealed: last.revealed,
+                }
+              : null,
+            challenge: extractCurrentChallenge(appRef.current.boardState),
+          };
+        },
+        true,
+      );
+
+      await register(
+        gen,
+        "get_strategy",
+        "Coaching strategy steps for the current question (no answers)",
+        jsonSchema({}),
+        () => extractStrategy(appRef.current.boardState),
+        true,
+      );
+
+      await register(
+        gen,
+        "get_lab_overview",
+        "One-shot lab goal plus allowed board actions",
+        jsonSchema({}),
+        () =>
+          buildLabOverview(
+            appRef.current.labId,
+            appRef.current.activeStandard?.code ?? null,
+          ),
         true,
       );
 
@@ -332,14 +584,27 @@ export function useWebMCPLab(activeLabId: LabId | null) {
         "Apply an action on the active lab board (action plus payload fields)",
         BOARD_ACTION_SCHEMA,
         (input) => {
+          const action = String(input.action ?? "");
+          if (HUMAN_CONFIRM_ACTIONS.has(action)) {
+            return {
+              error: "This action requires child confirmation in the UI",
+              action,
+              hint:
+                action === "compose_number"
+                  ? "Use reveal_solution so the child can confirm Show Answer."
+                  : "Ask the child to Accept or Reject the revision in the app.",
+            };
+          }
           const next = appRef.current.applyAction(input);
-          return next ?? { error: "No active lab" };
+          return next
+            ? (appRef.current.getSafeBoardSnapshot() ?? { ok: true })
+            : { error: "No active lab" };
         },
       );
 
       await register(gen, "undo", "Undo the last board action", jsonSchema({}), () => {
         appRef.current.undo();
-        return appRef.current.getBoardSnapshot();
+        return appRef.current.getSafeBoardSnapshot();
       });
 
       await register(
@@ -347,7 +612,41 @@ export function useWebMCPLab(activeLabId: LabId | null) {
         "run_check",
         "Check whether the board meets the lab success criteria",
         jsonSchema({}),
-        () => appRef.current.runCheck() ?? { error: "No active lab" },
+        () => {
+          const result = appRef.current.runCheck();
+          if (!result) return { error: "No active lab" };
+          return {
+            ok: result.ok,
+            score: result.score,
+            feedback: result.feedback,
+            revealed: result.revealed,
+          };
+        },
+      );
+
+      await register(
+        gen,
+        "next_question",
+        "Advance to the next question in a multi-question practice set",
+        jsonSchema({}),
+        () => {
+          if (!appRef.current.canAdvanceQuestion) {
+            return {
+              error: "Cannot advance",
+              questionIndex: appRef.current.questionIndex,
+              questionTotal: appRef.current.questionTotal,
+            };
+          }
+          const nextIndex = appRef.current.questionIndex + 1;
+          const questionTotal = appRef.current.questionTotal;
+          appRef.current.advanceQuestion();
+          return {
+            ok: true,
+            questionIndex: nextIndex,
+            questionTotal,
+            message: `Advanced to question ${nextIndex + 1} of ${questionTotal}. Call get_current_challenge for the new prompt.`,
+          };
+        },
       );
 
       await register(
@@ -362,34 +661,42 @@ export function useWebMCPLab(activeLabId: LabId | null) {
       await register(
         gen,
         "ask_guiding_question",
-        "Surface a guiding question on the board for the child",
+        "Show a guiding/Socratic question on the shared board for the child",
         jsonSchema({ question: { type: "string" } }),
-        (input) => ({ displayed: String(input.question) }),
-        true,
+        (input) => {
+          const question = String(input.question ?? "").trim();
+          if (!question) return { error: "question is required" };
+          appRef.current.setGuidingQuestion(question);
+          return { displayed: true, question };
+        },
       );
 
       await register(
         gen,
         "reveal_solution",
-        "Reveal the answer (requires child confirmation in UI)",
+        "Request Show Answer — child must confirm in the UI",
         jsonSchema({}),
-        () => ({
-          message: "Ask the child to tap Show answer in the app to confirm.",
-          requiresConfirm: true,
-        }),
-        true,
+        () => {
+          appRef.current.requestConfirm("reveal");
+          return {
+            requiresConfirm: true,
+            message: "Ask the child to tap Confirm Show Answer in the app.",
+          };
+        },
       );
 
       await register(
         gen,
         "reset_board",
-        "Reset the board (requires confirmation in UI)",
+        "Request Reset Board — child must confirm in the UI",
         jsonSchema({}),
-        () => ({
-          message: "Ask the child to tap Reset in the app to confirm.",
-          requiresConfirm: true,
-        }),
-        true,
+        () => {
+          appRef.current.requestConfirm("reset");
+          return {
+            requiresConfirm: true,
+            message: "Ask the child to tap Confirm Reset in the app.",
+          };
+        },
       );
 
       if (activeLabId === "opinion-builder") {
@@ -427,3 +734,5 @@ export function useWebMCP(activeLabId: LabId | null) {
 export function hasWebMCP(): boolean {
   return typeof document !== "undefined" && !!document.modelContext?.registerTool;
 }
+
+export { SHOWCASE_CODES };

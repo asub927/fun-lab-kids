@@ -1,8 +1,10 @@
-import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { AnimatedLayout } from "./components/AnimatedLayout";
 import { AppProvider } from "./context/AppContext";
 import { PetFooter } from "./components/PetFooter";
 import { useWebMCPCurriculum } from "./webmcp/register";
+import { bindWebMCPNavigation, reportWebMCPPathname } from "./webmcp/navigation";
 import { HomePage } from "./pages/HomePage";
 import { Grade2HubPage } from "./pages/Grade2HubPage";
 import { SubjectBrowserPage } from "./pages/SubjectBrowserPage";
@@ -53,7 +55,13 @@ function AppShell() {
 
 function AppChrome() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const accent = accentForPath(pathname);
+
+  useEffect(() => bindWebMCPNavigation((to) => navigate(to)), [navigate]);
+  useEffect(() => {
+    reportWebMCPPathname(pathname);
+  }, [pathname]);
 
   return (
     <>
