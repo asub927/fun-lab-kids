@@ -11,6 +11,7 @@ export type DialogueVars = {
   total?: number;
   streak?: number;
   achievement?: string;
+  labName?: string;
 };
 
 function displayName(store: ProgressStore): string {
@@ -23,7 +24,8 @@ function interpolate(template: string, vars: DialogueVars): string {
     .replace(/\{done\}/g, String(vars.done ?? 0))
     .replace(/\{total\}/g, String(vars.total ?? 0))
     .replace(/\{streak\}/g, String(vars.streak ?? 0))
-    .replace(/\{achievement\}/g, vars.achievement ?? "your next badge");
+    .replace(/\{achievement\}/g, vars.achievement ?? "your next badge")
+    .replace(/\{labName\}/g, vars.labName ?? "Fun Lab");
 }
 
 export function getCharacterIdForSubject(subject: Subject): CharacterId {

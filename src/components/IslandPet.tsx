@@ -5,7 +5,7 @@ import { useApp } from "../context/AppContext";
 import type { PetDialogueContext } from "../data/petDialogue";
 import { usePetPatrol } from "../hooks/usePetPatrol";
 import { loadProgress } from "../services/progress";
-import { getPetSpeciesId, PET_PREFS_EVENT, setPetVisible } from "../services/pet";
+import { getPetSpeciesId, PET_PREFS_EVENT } from "../services/pet";
 import { pickPetCelebrationCue } from "../services/petDialogue";
 import {
   deriveAmbientMood,
@@ -20,18 +20,33 @@ import {
   speechForWave,
   stopPetSpeech,
 } from "../services/petSpeech";
-import { CharacterSpeech } from "./CharacterSpeech";
 import { PetSprite } from "./pets/PetSprite";
+
+export type PetSpeechDockState = {
+  line: string | null;
+  hint: string | null;
+  side: "left" | "right";
+};
 
 type IslandPetProps = {
   laneRef: RefObject<HTMLDivElement | null>;
+  onSpeechDockChange?: (state: PetSpeechDockState | null) => void;
 };
+
+function computeDockSide(
+  laneRef: RefObject<HTMLDivElement | null>,
+  patrolX: number,
+): "left" | "right" {
+  const laneWidth = laneRef.current?.getBoundingClientRect().width ?? 0;
+  if (laneWidth <= 0) return "right";
+  return patrolX < laneWidth / 2 ? "right" : "left";
+}
 
 /**
  * Codex-like ambient pet: patrols left-to-right inside the footer lane when calm,
  * plays in-place Codex sprite actions for activity, and speaks in a bubble.
  */
-export function IslandPet({ laneRef }: IslandPetProps) {
+export function IslandPet({ laneRef, onSpeechDockChange }: IslandPetProps) {
   const app = useApp();
   const { pathname } = useLocation();
   const railRef = useRef<HTMLDivElement>(null);
@@ -172,6 +187,19 @@ export function IslandPet({ laneRef }: IslandPetProps) {
     };
   }, [clearSpeechTimer]);
 
+  useEffect(() => {
+    if (!onSpeechDockChange) return;
+    if (!speechLine && !hint) {
+      onSpeechDockChange(null);
+      return;
+    }
+    onSpeechDockChange({
+      line: speechLine,
+      hint,
+      side: computeDockSide(laneRef, patrol.x),
+    });
+  }, [speechLine, hint, patrol.x, laneRef, onSpeechDockChange]);
+
   const onPointerDown = () => {
     if (pressTimer.current) window.clearTimeout(pressTimer.current);
     pressTimer.current = window.setTimeout(() => {
@@ -195,15 +223,8 @@ export function IslandPet({ laneRef }: IslandPetProps) {
     setReaction("waving");
     const nextSeed = waveSeed + 1;
     setWaveSeed(nextSeed);
-    showSpeech(speechForWave(speciesId, loadProgress(), nextSeed));
+    showSpeech(speechForWave(pathname, speciesId, loadProgress(), nextSeed));
     window.setTimeout(() => setReaction(null), 1800);
-  };
-
-  const confirmHide = () => {
-    setPetVisible(false);
-    setHint(null);
-    setSpeechLine(null);
-    stopPetSpeech();
   };
 
   const buddyLabel =
@@ -230,11 +251,6 @@ export function IslandPet({ laneRef }: IslandPetProps) {
           transitionDuration: patrol.walkMs > 0 ? `${patrol.walkMs}ms` : undefined,
         }}
       >
-        {speechLine && !hint && (
-          <div className="island-pet-nest-speech" aria-live="polite">
-            <CharacterSpeech text={speechLine} compact live />
-          </div>
-        )}
         <div
           className="island-pet-hit"
           onPointerDown={onPointerDown}
@@ -251,14 +267,6 @@ export function IslandPet({ laneRef }: IslandPetProps) {
             patrolling={patrolling}
           />
         </div>
-        {hint && (
-          <div className="island-pet-hint" role="dialog" aria-label="Hide pet">
-            <span>{hint}</span>
-            <button type="button" className="island-pet-hide" onClick={confirmHide}>
-              Hide
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

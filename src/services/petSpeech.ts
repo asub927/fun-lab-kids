@@ -1,9 +1,10 @@
 import type { CelebrationPayload } from "../context/AppContext";
 import type { PetCelebrationCue } from "../data/petDialogue";
+import { getCharacterBySubject } from "../data/characters";
 import { getCharacterIdForPet, type PetSpeciesId } from "../data/pets";
 import { listGrade2Standards } from "../data/standards";
 import type { Subject } from "../types";
-import { pickBuddyLine, pickCharacterLineById } from "./characterDialogue";
+import { pickBuddyLine, pickCharacterLineById, type DialogueVars } from "./characterDialogue";
 import type { ProgressStore } from "./progress";
 import { getNextAchievement } from "./progressStats";
 import { isPetSoundEnabled } from "./pet";
@@ -15,6 +16,16 @@ let activeAudio: HTMLAudioElement | null = null;
 function parseSubjectFromPath(pathname: string): Subject | null {
   const match = pathname.match(/^\/grade-2\/(math|ela|science)$/);
   return match ? (match[1] as Subject) : null;
+}
+
+export function labNameForPath(pathname: string): string {
+  const subject = parseSubjectFromPath(pathname);
+  if (subject) return getCharacterBySubject(subject).lab;
+  return "Fun Lab";
+}
+
+function dialogueVarsForPath(pathname: string, extra: DialogueVars = {}): DialogueVars {
+  return { labName: labNameForPath(pathname), ...extra };
 }
 
 export function isPetSpeechSupported(): boolean {
@@ -71,9 +82,11 @@ export function speechForRoute(
   speciesId: PetSpeciesId,
   store: ProgressStore,
 ): string | null {
+  const routeVars = dialogueVarsForPath(pathname);
+
   if (pathname === "/" || pathname === "/grade-2") {
     const seed = store.gamification.currentStreak;
-    return pickBuddyLine(speciesId, "hubGreeting", store, {}, seed);
+    return pickBuddyLine(speciesId, "hubGreeting", store, routeVars, seed);
   }
 
   const subject = parseSubjectFromPath(pathname);
@@ -81,7 +94,7 @@ export function speechForRoute(
     const codes = listGrade2Standards(subject).map((s) => s.code);
     const done = codes.filter((c) => store.progress[c]?.completed).length;
     const total = codes.length;
-    return pickBuddyLine(speciesId, "subjectWelcome", store, { done, total }, done);
+    return pickBuddyLine(speciesId, "subjectWelcome", store, { ...routeVars, done, total }, done);
   }
 
   if (pathname === "/grade-2/progress") {
@@ -133,9 +146,10 @@ export function speechForCelebration(
 }
 
 export function speechForWave(
+  pathname: string,
   speciesId: PetSpeciesId,
   store: ProgressStore,
   seed: number,
 ): string {
-  return pickBuddyLine(speciesId, "hubGreeting", store, {}, seed);
+  return pickBuddyLine(speciesId, "hubGreeting", store, dialogueVarsForPath(pathname), seed);
 }

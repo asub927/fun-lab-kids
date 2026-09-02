@@ -3956,9 +3956,6 @@ main:has(.home-page) {
 
 .island-pet-hint {
   pointer-events: auto;
-  position: absolute;
-  left: 0;
-  bottom: calc(100% + 0.35rem);
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -3977,18 +3974,26 @@ main:has(.home-page) {
   animation: motion-pop-in 0.3s var(--ease-spring) both;
 }
 
-.island-pet-nest-speech {
+.pet-footer-speech-dock {
   pointer-events: none;
   position: absolute;
-  left: 0;
-  bottom: calc(100% + 0.35rem);
-  max-width: 12.5rem;
+  bottom: calc(var(--pet-footer-height) + 0.35rem);
+  max-width: min(calc(100vw - 1.5rem), 16rem);
   z-index: 5;
   animation: motion-pop-in 0.3s var(--ease-spring) both;
 }
 
-.island-pet-nest-speech .character-speech::before {
-  left: 1.25rem;
+.pet-footer-speech-dock--left {
+  left: 0.75rem;
+}
+
+.pet-footer-speech-dock--right {
+  right: 0.75rem;
+}
+
+.pet-footer-speech-dock .character-speech::before {
+  left: 50%;
+  translate: -50% 0;
   top: auto;
   bottom: -10px;
   border-top: 10px solid var(--color-ink);
@@ -3997,14 +4002,32 @@ main:has(.home-page) {
   border-bottom: none;
 }
 
-.island-pet-nest-speech .character-speech::after {
-  left: calc(1.25rem + 2px);
+.pet-footer-speech-dock .character-speech::after {
+  left: 50%;
+  translate: -50% 0;
   top: auto;
   bottom: -6px;
   border-top: 8px solid var(--color-bone);
   border-right: 6px solid transparent;
   border-left: 6px solid transparent;
   border-bottom: none;
+}
+
+.pet-footer-speech-dock--left .character-speech::before,
+.pet-footer-speech-dock--left .character-speech::after {
+  left: 1.25rem;
+  translate: none;
+}
+
+.pet-footer-speech-dock--right .character-speech::before,
+.pet-footer-speech-dock--right .character-speech::after {
+  left: auto;
+  right: 1.25rem;
+  translate: none;
+}
+
+.pet-footer-speech-dock .island-pet-hint {
+  pointer-events: auto;
 }
 
 .island-pet-hide {
@@ -4480,6 +4503,10 @@ main:has(.home-page) {
     white-space: normal;
     max-width: min(16rem, calc(100% - 1.5rem));
     font-size: 0.8125rem;
+  }
+
+  .pet-footer-speech-dock {
+    max-width: min(calc(100vw - 1.5rem), 18rem);
   }
 
   .home-hero {
