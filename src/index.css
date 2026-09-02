@@ -26,6 +26,10 @@
   --color-on-dark: var(--color-paper);
 
   --pet-footer-height: 5rem;
+  --shell-chrome-height: calc(
+    4.75rem + var(--pet-footer-height) + var(--space-3) * 2 +
+      env(safe-area-inset-top) + env(safe-area-inset-bottom)
+  );
 
   /* Semantic aliases */
   --color-surface: var(--color-bone);
@@ -176,6 +180,12 @@ a:hover {
   max-height: 100dvh;
   overflow: hidden;
   touch-action: manipulation;
+}
+
+.app:not(:has(.pet-footer)) {
+  --shell-chrome-height: calc(
+    4.75rem + var(--space-3) * 2 + env(safe-area-inset-top) + env(safe-area-inset-bottom)
+  );
 }
 
 .top-nav {
@@ -2496,6 +2506,8 @@ tbody tr:last-child td {
 /* Homepage — Detach-inspired landing layout */
 main:has(.home-page) {
   max-width: 1120px;
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
 }
 
 .home-page {
@@ -2506,8 +2518,35 @@ main:has(.home-page) {
 }
 
 .home-hero {
-  padding-top: clamp(1rem, 4vw, 2.5rem);
-  padding-bottom: 0.75rem;
+  position: relative;
+  overflow: visible;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(0.45rem, 1.6vh, 0.9rem);
+  min-height: calc(100dvh - var(--shell-chrome-height));
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.home-hero .home-eyebrow {
+  margin: 0;
+}
+
+.home-hero .home-headline {
+  font-size: clamp(2rem, 7.5vw, 4.25rem);
+}
+
+.home-hero .home-subhead {
+  margin: 0;
+  font-size: clamp(0.95rem, 2.1vw, 1.125rem);
+  line-height: 1.5;
+}
+
+.home-hero .home-hero-actions {
+  margin-top: clamp(0.35rem, 1.2vh, 0.75rem);
+  padding-bottom: 0;
 }
 
 .home-eyebrow {
@@ -2793,8 +2832,25 @@ main:has(.home-page) {
 }
 
 @media (max-width: 640px) {
+  :root {
+    --shell-chrome-height: calc(
+      7.5rem + var(--pet-footer-height) + var(--space-2) * 2 +
+        env(safe-area-inset-top) + env(safe-area-inset-bottom)
+    );
+  }
+
+  .app:not(:has(.pet-footer)) {
+    --shell-chrome-height: calc(
+      7.5rem + var(--space-2) * 2 + env(safe-area-inset-top) + env(safe-area-inset-bottom)
+    );
+  }
+
   .home-headline {
     max-width: none;
+  }
+
+  .home-hero .home-headline {
+    font-size: clamp(1.85rem, 10vw, 2.65rem);
   }
 
   .home-hero-actions .btn {
@@ -3368,11 +3424,6 @@ main:has(.home-page) {
 }
 
 /* Hero floating backdrop */
-.home-hero {
-  position: relative;
-  overflow: visible; /* allow button borders/shadows to render fully */
-}
-
 .hero-backdrop {
   position: absolute;
   inset: -10% -8% auto;
