@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { deriveAmbientMood, reactionFromAppEvent } from "./petActivity";
 import {
+  getPetDisplayName,
   getPetSpeciesId,
   isPetVisible,
   loadPetPrefs,
@@ -53,13 +54,14 @@ describe("ambient pet activity", () => {
 });
 
 describe("ambient pet prefs", () => {
-  it("defaults to visible dog", () => {
+  it("defaults to visible dog named Digits", () => {
     const prefs = loadPetPrefs();
     expect(prefs.visible).toBe(true);
     expect(prefs.speciesId).toBe("dog");
     expect(prefs.version).toBe(3);
     expect(isPetVisible()).toBe(true);
     expect(getPetSpeciesId()).toBe("dog");
+    expect(getPetDisplayName("dog")).toBe("Digits");
   });
 
   it("can hide and show the pet", () => {
@@ -72,9 +74,11 @@ describe("ambient pet prefs", () => {
   it("persists species choice", () => {
     setPetSpecies("cat");
     expect(getPetSpeciesId()).toBe("cat");
+    expect(getPetDisplayName("cat")).toBe("Ripple");
     expect(loadPetPrefs().speciesId).toBe("cat");
     setPetSpecies("rabbit");
     expect(getPetSpeciesId()).toBe("rabbit");
+    expect(getPetDisplayName("rabbit")).toBe("Spark");
   });
 
   it("preserves species when toggling visibility", () => {

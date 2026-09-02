@@ -1,13 +1,23 @@
-import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { useLocation } from "react-router-dom";
 import { getPetSpecies } from "../data/pets";
 import { useApp } from "../context/AppContext";
 import { usePetPatrol } from "../hooks/usePetPatrol";
+import { loadProgress } from "../services/progress";
 import { getPetSpeciesId, PET_PREFS_EVENT, setPetVisible } from "../services/pet";
 import {
   deriveAmbientMood,
   PET_REACTION_MS,
   reactionFromAppEvent,
 } from "../services/petActivity";
+import {
+  PET_SPEECH_MS,
+  speechForCelebration,
+  speechForCheck,
+  speechForRoute,
+  speechForWave,
+} from "../services/petSpeech";
+import { CharacterSpeech } from "./CharacterSpeech";
 import { PetSprite } from "./pets/PetSprite";
 
 type IslandPetProps = {
@@ -16,12 +26,15 @@ type IslandPetProps = {
 
 /**
  * Codex-like ambient pet: patrols left-to-right inside the footer lane when calm,
- * and plays in-place Codex sprite actions for waiting, failed, jumping, and waving.
+ * plays in-place Codex sprite actions for activity, and speaks in a bubble.
  */
 export function IslandPet({ laneRef }: IslandPetProps) {
   const app = useApp();
+  const { pathname } = useLocation();
   const railRef = useRef<HTMLDivElement>(null);
   const [speciesId, setSpeciesId] = useState(() => getPetSpeciesId());
+  const [speechLine, setSpeechLine] = useState<string | null>(null);
+  const [waveSeed, setWaveSeed] = useState(0);
   const [reaction, setReaction] = useState<"celebrating" | "working" | "waiting" | "waving" | null>(
     null,
   );
@@ -33,10 +46,12 @@ export function IslandPet({ laneRef }: IslandPetProps) {
   const [hint, setHint] = useState<string | null>(null);
   const hideTimer = useRef<number | null>(null);
   const pressTimer = useRef<number | null>(null);
+  const speechTimer = useRef<number | null>(null);
 
   const species = getPetSpecies(speciesId);
   const inLab = Boolean(app.activeStandard);
   const needsAnswer = inLab && boardLooksEmpty(app.boardState);
+  const checkCount = loadProgress().gamification.lifetimeChecks;
 
   const mood = useMemo(
     () => deriveAmbientMood({ reaction, inLab, needsAnswer }),
@@ -51,6 +66,12 @@ export function IslandPet({ laneRef }: IslandPetProps) {
   });
 
   const patrolling = mood === "idle" && patrol.phase === "walking";
+
+  const showSpeech = useCallback((line: string) => {
+    setSpeechLine(line);
+    if (speechTimer.current) window.clearTimeout(speechTimer.current);
+    speechTimer.current = window.setTimeout(() => setSpeechLine(null), PET_SPEECH_MS);
+  }, []);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -74,6 +95,24 @@ export function IslandPet({ laneRef }: IslandPetProps) {
   }, []);
 
   useEffect(() => {
+    const line = speechForRoute(pathname, speciesId, loadProgress());
+    if (line) showSpeech(line);
+  }, [pathname, speciesId, showSpeech]);
+
+  useEffect(() => {
+    if (!app.lastCheck) return;
+    showSpeech(speechForCheck(app.lastCheck.ok, speciesId, loadProgress(), checkCount));
+  }, [app.lastCheck, speciesId, checkCount, showSpeech]);
+
+  useEffect(() => {
+    if (!app.lastCelebration) return;
+    const celebrating =
+      app.lastCelebration.isNewMastery || app.lastCelebration.newAchievements.length > 0;
+    if (!celebrating) return;
+    showSpeech(speechForCelebration(app.lastCelebration, speciesId, loadProgress(), checkCount));
+  }, [app.lastCelebration, speciesId, checkCount, showSpeech]);
+
+  useEffect(() => {
     const celebrating =
       Boolean(app.lastCelebration?.isNewMastery) ||
       Boolean(app.lastCelebration && app.lastCelebration.newAchievements.length > 0);
@@ -91,6 +130,7 @@ export function IslandPet({ laneRef }: IslandPetProps) {
     return () => {
       if (hideTimer.current) window.clearTimeout(hideTimer.current);
       if (pressTimer.current) window.clearTimeout(pressTimer.current);
+      if (speechTimer.current) window.clearTimeout(speechTimer.current);
     };
   }, []);
 
@@ -98,6 +138,7 @@ export function IslandPet({ laneRef }: IslandPetProps) {
     if (pressTimer.current) window.clearTimeout(pressTimer.current);
     pressTimer.current = window.setTimeout(() => {
       setHint("Hide lab buddy?");
+      setSpeechLine(null);
       if (hideTimer.current) window.clearTimeout(hideTimer.current);
       hideTimer.current = window.setTimeout(() => setHint(null), 4000);
     }, 650);
@@ -113,13 +154,22 @@ export function IslandPet({ laneRef }: IslandPetProps) {
   const onWaveClick = () => {
     if (hint) return;
     setReaction("waving");
+    const nextSeed = waveSeed + 1;
+    setWaveSeed(nextSeed);
+    showSpeech(speechForWave(speciesId, loadProgress(), nextSeed));
     window.setTimeout(() => setReaction(null), 1800);
   };
 
   const confirmHide = () => {
     setPetVisible(false);
     setHint(null);
+    setSpeechLine(null);
   };
+
+  const buddyLabel =
+    speechLine && !hint
+      ? `${species.name}, your lab buddy: ${speechLine}`
+      : `${species.name}, your lab buddy`;
 
   return (
     <div
@@ -131,8 +181,12 @@ export function IslandPet({ laneRef }: IslandPetProps) {
       ]
         .filter(Boolean)
         .join(" ")}
-      aria-hidden={hint ? undefined : true}
     >
+      {speechLine && !hint && (
+        <div className="island-pet-nest-speech" aria-live="polite">
+          <CharacterSpeech text={speechLine} compact live />
+        </div>
+      )}
       <div
         ref={railRef}
         className="island-pet-rail"
@@ -148,7 +202,7 @@ export function IslandPet({ laneRef }: IslandPetProps) {
           onPointerLeave={onPointerUp}
           onClick={onWaveClick}
           role="img"
-          aria-label={`${species.name}, your lab buddy`}
+          aria-label={buddyLabel}
         >
           <PetSprite
             speciesId={speciesId}

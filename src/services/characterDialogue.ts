@@ -1,6 +1,7 @@
 import type { Achievement } from "../data/achievements";
 import { getCharacterBySubject, type CharacterId } from "../data/characters";
 import { DIALOGUE_POOLS, type DialogueContext } from "../data/characterDialogue";
+import { getCharacterIdForPet, type PetSpeciesId } from "../data/pets";
 import type { ProgressStore } from "./progress";
 import type { Subject } from "../types";
 
@@ -29,14 +30,13 @@ export function getCharacterIdForSubject(subject: Subject): CharacterId {
   return getCharacterBySubject(subject).id;
 }
 
-export function pickCharacterLine(
-  subject: Subject,
+export function pickCharacterLineById(
+  characterId: CharacterId,
   context: DialogueContext,
   store: ProgressStore,
   vars: DialogueVars = {},
   seed = 0,
 ): string {
-  const characterId = getCharacterIdForSubject(subject);
   const pool = DIALOGUE_POOLS[characterId][context];
   const index = pool.length > 0 ? Math.abs(seed) % pool.length : 0;
   const template = pool[index] ?? "";
@@ -45,6 +45,26 @@ export function pickCharacterLine(
     streak: store.gamification.currentStreak,
     ...vars,
   });
+}
+
+export function pickCharacterLine(
+  subject: Subject,
+  context: DialogueContext,
+  store: ProgressStore,
+  vars: DialogueVars = {},
+  seed = 0,
+): string {
+  return pickCharacterLineById(getCharacterIdForSubject(subject), context, store, vars, seed);
+}
+
+export function pickBuddyLine(
+  speciesId: PetSpeciesId,
+  context: DialogueContext,
+  store: ProgressStore,
+  vars: DialogueVars = {},
+  seed = 0,
+): string {
+  return pickCharacterLineById(getCharacterIdForPet(speciesId), context, store, vars, seed);
 }
 
 export function pickAchievementLine(
@@ -59,9 +79,10 @@ export function pickAchievementLine(
 export function pickScoreboardHintLine(
   store: ProgressStore,
   achievement: Achievement,
+  speciesId: PetSpeciesId,
   seed = 0,
 ): string {
-  return pickCharacterLine("ela", "scoreboardHint", store, { achievement: achievement.title }, seed);
+  return pickBuddyLine(speciesId, "scoreboardHint", store, { achievement: achievement.title }, seed);
 }
 
 export function pickHubGreetingLine(subject: Subject, store: ProgressStore, seed = 0): string {

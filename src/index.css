@@ -3975,6 +3975,36 @@ main:has(.home-page) {
   animation: motion-pop-in 0.3s var(--ease-spring) both;
 }
 
+.island-pet-nest-speech {
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 0.35rem);
+  max-width: 12.5rem;
+  z-index: 1;
+  animation: motion-pop-in 0.3s var(--ease-spring) both;
+}
+
+.island-pet-nest-speech .character-speech::before {
+  left: 1.25rem;
+  top: auto;
+  bottom: -10px;
+  border-top: 10px solid var(--color-ink);
+  border-right: 8px solid transparent;
+  border-left: 8px solid transparent;
+  border-bottom: none;
+}
+
+.island-pet-nest-speech .character-speech::after {
+  left: calc(1.25rem + 2px);
+  top: auto;
+  bottom: -6px;
+  border-top: 8px solid var(--color-bone);
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+  border-bottom: none;
+}
+
 .island-pet-hide {
   border: 2px solid var(--color-ink);
   border-radius: 999px;

@@ -1,11 +1,9 @@
 import type { CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
-import { CharacterGuide } from "../components/CharacterGuide";
 import { Reveal } from "../components/Reveal";
 import { listGrade2Standards } from "../data/standards";
 import type { Standard } from "../types";
 import { loadProgress } from "../services/progress";
-import { pickSubjectWelcomeLine } from "../services/characterDialogue";
 
 const SUBJECTS = {
   math: { title: "Math Standards" },
@@ -24,7 +22,6 @@ export function SubjectBrowserPage() {
   const progress = store.progress;
   const done = standards.filter((s) => progress[s.code]?.completed).length;
   const total = standards.length;
-  const welcomeLine = pickSubjectWelcomeLine(key as Standard["subject"], store, done, total, done);
 
   const byStrand = standards.reduce<Record<string, typeof standards>>((acc, s) => {
     (acc[s.strand] ??= []).push(s);
@@ -37,15 +34,10 @@ export function SubjectBrowserPage() {
         ← Grade 2 Hub
       </Link>
       <h1 className="hero-title">{meta.title}</h1>
-      <p className="lead">Tap any skill to play. You have {standards.length} to choose from.</p>
-
-      <Reveal>
-        <CharacterGuide
-          subject={key as Standard["subject"]}
-          line={welcomeLine}
-          mood={done > 0 ? "happy" : "idle"}
-        />
-      </Reveal>
+      <p className="lead">
+        Tap any skill to play. You have {standards.length} to choose from
+        {done > 0 ? ` — ${done} of ${total} mastered.` : "."}
+      </p>
 
       {Object.entries(byStrand).map(([strand, items], strandIndex) => (
         <Reveal key={strand} delay={strandIndex * 60}>

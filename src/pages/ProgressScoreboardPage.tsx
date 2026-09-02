@@ -1,12 +1,10 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { AnimatedNumber } from "../components/AnimatedNumber";
-import { CharacterGuide } from "../components/CharacterGuide";
 import { PetSprite } from "../components/pets/PetSprite";
 import { Reveal, RevealGroup } from "../components/Reveal";
 import { PET_SPECIES, type PetSpeciesId } from "../data/pets";
 import { loadProgress, updateProfileName } from "../services/progress";
-import { pickScoreboardHintLine } from "../services/characterDialogue";
 import { getAchievementNavigationPath, getScoreboardSummary } from "../services/progressStats";
 import { getPetSpeciesId, isPetVisible, PET_PREFS_EVENT, setPetSpecies, setPetVisible } from "../services/pet";
 
@@ -100,7 +98,8 @@ export function ProgressScoreboardPage() {
           Lab Buddy
         </h2>
         <p className="pet-settings-lead">
-          Pick a lab buddy to hang out in the buddy lane at the bottom while you practice.
+          Pick Digits, Ripple, or Spark to hang out in the buddy lane while you practice. Tap them to
+          hear a greeting.
         </p>
         <label className="pet-pref-toggle" htmlFor="pet-visible">
           <input
@@ -109,11 +108,11 @@ export function ProgressScoreboardPage() {
             checked={petVisible}
             onChange={togglePet}
           />
-          <span>Show lab buddy (corner buddy)</span>
+          <span>Show lab buddy</span>
         </label>
         <div className="pet-species-picker" role="group" aria-labelledby="pet-species-heading">
           <p id="pet-species-heading" className="pet-species-picker-label">
-            Pick your lab buddy
+            Pick your buddy
           </p>
           <div className="pet-species-picker-grid">
             {PET_SPECIES.map((species) => (
@@ -220,17 +219,10 @@ export function ProgressScoreboardPage() {
             Achievement Badges
           </h2>
           {summary.nextAchievement && (
-            <>
-              <CharacterGuide
-                subject="ela"
-                line={pickScoreboardHintLine(store, summary.nextAchievement, summary.mastered)}
-                mood="thinking"
-              />
-              <p className="next-achievement-hint">
-                {summary.nextAchievement.icon} {summary.nextAchievement.title}:{" "}
-                {summary.nextAchievement.description}
-              </p>
-            </>
+            <p className="next-achievement-hint">
+              {summary.nextAchievement.icon} {summary.nextAchievement.title}:{" "}
+              {summary.nextAchievement.description}
+            </p>
           )}
           <RevealGroup className="achievement-grid">
             {summary.unlockedAchievements.map((achievement) => (
