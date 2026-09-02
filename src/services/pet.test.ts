@@ -13,7 +13,7 @@ import {
   setPetSpecies,
   setPetVisible,
 } from "./pet";
-import { isPetSpeechSupported, speakPetLine, stopPetSpeech } from "./petSpeech";
+import { isPetSpeechSupported, playPetCelebrationCue, stopPetSpeech } from "./petSpeech";
 
 const store = new Map<string, string>();
 const STORAGE_KEY = "funlab-pet";
@@ -162,37 +162,45 @@ describe("pickPetCelebrationLine", () => {
 });
 
 describe("petSpeech", () => {
-  const speak = vi.fn();
-  const cancel = vi.fn();
+  const play = vi.fn().mockResolvedValue(undefined);
+  const pause = vi.fn();
+  let lastAudio: {
+    src: string;
+    volume: number;
+    preload: string;
+    currentTime: number;
+    paused: boolean;
+    ended: boolean;
+    play: ReturnType<typeof vi.fn>;
+    pause: ReturnType<typeof vi.fn>;
+    addEventListener: ReturnType<typeof vi.fn>;
+  } | null = null;
 
   beforeEach(() => {
-    speak.mockClear();
-    cancel.mockClear();
-    class MockUtterance {
-      text: string;
-      pitch = 1;
-      rate = 1;
+    play.mockClear();
+    pause.mockClear();
+    lastAudio = null;
+
+    class MockAudio {
+      src = "";
       volume = 1;
-      onend: (() => void) | null = null;
-      onerror: (() => void) | null = null;
-      constructor(text: string) {
-        this.text = text;
+      preload = "";
+      currentTime = 0;
+      paused = false;
+      ended = false;
+      play = play;
+      pause = pause;
+      addEventListener = vi.fn();
+      constructor(src?: string) {
+        if (src) this.src = src;
+        lastAudio = this;
       }
     }
-    Object.defineProperty(globalThis, "SpeechSynthesisUtterance", {
+
+    Object.defineProperty(globalThis, "Audio", {
       configurable: true,
       writable: true,
-      value: MockUtterance,
-    });
-    Object.defineProperty(globalThis, "window", {
-      configurable: true,
-      value: {
-        speechSynthesis: {
-          speak,
-          cancel,
-        },
-        dispatchEvent: vi.fn(),
-      },
+      value: MockAudio,
     });
     savePetPrefs({
       version: 4,
@@ -202,33 +210,45 @@ describe("petSpeech", () => {
     });
   });
 
-  it("detects speech synthesis support", () => {
+  it("detects audio playback support", () => {
     expect(isPetSpeechSupported()).toBe(true);
   });
 
-  it("speaks celebration lines when sound is enabled", () => {
-    const spoke = speakPetLine("Woof! You got it!", { speciesId: "dog" });
-    expect(spoke).toBe(true);
-    expect(speak).toHaveBeenCalledTimes(1);
-    expect(speak.mock.calls[0][0]).toBeInstanceOf(SpeechSynthesisUtterance);
-    expect(speak.mock.calls[0][0].text).toBe("Woof! You got it!");
+  it("plays recorded celebration clips when sound is enabled", () => {
+    const played = playPetCelebrationCue({
+      id: "dog-correct-02",
+      text: "Woof! You got it!",
+      audio: "/pets/voice/dog/correct-02.mp3",
+    });
+    expect(played).toBe(true);
+    expect(lastAudio?.src).toBe("/pets/voice/dog/correct-02.mp3");
+    expect(play).toHaveBeenCalledTimes(1);
   });
 
-  it("skips speech when sound is disabled", () => {
+  it("skips playback when sound is disabled", () => {
     savePetPrefs({
       version: 4,
       visible: true,
       speciesId: "dog",
       soundEnabled: false,
     });
-    const spoke = speakPetLine("Woof! You got it!", { speciesId: "dog" });
-    expect(spoke).toBe(false);
-    expect(speak).not.toHaveBeenCalled();
+    const played = playPetCelebrationCue({
+      id: "dog-correct-02",
+      text: "Woof! You got it!",
+      audio: "/pets/voice/dog/correct-02.mp3",
+    });
+    expect(played).toBe(false);
+    expect(play).not.toHaveBeenCalled();
   });
 
-  it("cancels speech on stop", () => {
-    speakPetLine("Hop hop!", { speciesId: "rabbit" });
+  it("stops active playback", () => {
+    playPetCelebrationCue({
+      id: "rabbit-correct-01",
+      text: "Hop hop hooray!",
+      audio: "/pets/voice/rabbit/correct-01.mp3",
+    });
     stopPetSpeech();
-    expect(cancel).toHaveBeenCalled();
+    expect(pause).toHaveBeenCalled();
+    expect(lastAudio?.currentTime).toBe(0);
   });
 });

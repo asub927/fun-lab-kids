@@ -3,14 +3,14 @@ import { getPetSpecies } from "../data/pets";
 import { useApp } from "../context/AppContext";
 import type { PetDialogueContext } from "../data/petDialogue";
 import { getPetSpeciesId, isPetVisible, PET_PREFS_EVENT, setPetVisible } from "../services/pet";
-import { pickPetCelebrationLine } from "../services/petDialogue";
+import { pickPetCelebrationCue } from "../services/petDialogue";
 import {
   deriveAmbientMood,
   PET_REACTION_MS,
   reactionFromAppEvent,
 } from "../services/petActivity";
 import { loadProgress } from "../services/progress";
-import { speakPetLine, stopPetSpeech } from "../services/petSpeech";
+import { playPetCelebrationCue, stopPetSpeech } from "../services/petSpeech";
 import { CharacterSpeech } from "./CharacterSpeech";
 import { PetSprite } from "./pets/PetSprite";
 
@@ -87,14 +87,14 @@ export function IslandPet() {
           ? "achievement"
           : "correct";
       const store = loadProgress();
-      const line = pickPetCelebrationLine(
+      const celebration = pickPetCelebrationCue(
         speciesId,
         context,
         store,
         store.gamification.lifetimeChecks,
       );
-      setSpeechLine(line);
-      speakPetLine(line, { speciesId });
+      setSpeechLine(celebration.text);
+      playPetCelebrationCue(celebration);
     }
 
     const timer = window.setTimeout(() => {

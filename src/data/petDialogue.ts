@@ -2,53 +2,77 @@ import type { PetSpeciesId } from "./pets";
 
 export type PetDialogueContext = "correct" | "mastery" | "achievement";
 
-export const PET_DIALOGUE_POOLS: Record<PetSpeciesId, Record<PetDialogueContext, string[]>> = {
+export type PetCelebrationCue = {
+  id: string;
+  text: string;
+  /** Public URL path to a pre-recorded voice clip matching `text`. */
+  audio: string;
+};
+
+function cue(
+  speciesId: PetSpeciesId,
+  context: PetDialogueContext,
+  index: number,
+  text: string,
+): PetCelebrationCue {
+  const slot = String(index + 1).padStart(2, "0");
+  return {
+    id: `${speciesId}-${context}-${slot}`,
+    text,
+    audio: `/pets/voice/${speciesId}/${context}-${slot}.mp3`,
+  };
+}
+
+export const PET_DIALOGUE_POOLS: Record<
+  PetSpeciesId,
+  Record<PetDialogueContext, PetCelebrationCue[]>
+> = {
   dog: {
     correct: [
-      "Yes! Good job!",
-      "Woof! You got it!",
-      "That's the one! Nice work!",
-      "Tail wag! You nailed it!",
+      cue("dog", "correct", 0, "Yes! Good job!"),
+      cue("dog", "correct", 1, "Woof! You got it!"),
+      cue("dog", "correct", 2, "That's the one! Nice work!"),
+      cue("dog", "correct", 3, "Tail wag! You nailed it!"),
     ],
     mastery: [
-      "Skill mastered! Woof woof!",
-      "You did it! I'm so proud!",
+      cue("dog", "mastery", 0, "Skill mastered! Woof woof!"),
+      cue("dog", "mastery", 1, "You did it! I'm so proud!"),
     ],
     achievement: [
-      "New badge! Woof!",
-      "Look at you go!",
+      cue("dog", "achievement", 0, "New badge! Woof!"),
+      cue("dog", "achievement", 1, "Look at you go!"),
     ],
   },
   cat: {
     correct: [
-      "Purrrfect!",
-      "Meow! That's right!",
-      "Nice one, friend!",
-      "You got it! Yum!",
+      cue("cat", "correct", 0, "Purrrfect!"),
+      cue("cat", "correct", 1, "Meow! That's right!"),
+      cue("cat", "correct", 2, "Nice one, friend!"),
+      cue("cat", "correct", 3, "You got it! Yum!"),
     ],
     mastery: [
-      "Mastered! Meow!",
-      "Amazing work!",
+      cue("cat", "mastery", 0, "Mastered! Meow!"),
+      cue("cat", "mastery", 1, "Amazing work!"),
     ],
     achievement: [
-      "A new badge! Meow!",
-      "So sweet!",
+      cue("cat", "achievement", 0, "A new badge! Meow!"),
+      cue("cat", "achievement", 1, "So sweet!"),
     ],
   },
   rabbit: {
     correct: [
-      "Hop hop hooray!",
-      "You got it! Bounce!",
-      "Woo hoo! Nice one!",
-      "That's right! Hop hop!",
+      cue("rabbit", "correct", 0, "Hop hop hooray!"),
+      cue("rabbit", "correct", 1, "You got it! Bounce!"),
+      cue("rabbit", "correct", 2, "Woo hoo! Nice one!"),
+      cue("rabbit", "correct", 3, "That's right! Hop hop!"),
     ],
     mastery: [
-      "Skill mastered! Hop hop!",
-      "Big win! So bouncy!",
+      cue("rabbit", "mastery", 0, "Skill mastered! Hop hop!"),
+      cue("rabbit", "mastery", 1, "Big win! So bouncy!"),
     ],
     achievement: [
-      "Badge unlocked! Hop!",
-      "You did it! Yay!",
+      cue("rabbit", "achievement", 0, "Badge unlocked! Hop!"),
+      cue("rabbit", "achievement", 1, "You did it! Yay!"),
     ],
   },
 };
