@@ -259,34 +259,34 @@ export function LabShell({ title, children }: LabShellProps) {
               )}
             </div>
           )}
-
-          {hasQuestionPager && (
-            <nav className="question-nav" aria-label="Question navigation">
-              <button
-                type="button"
-                className="btn secondary question-nav-btn"
-                onClick={previousQuestion}
-                disabled={!canGoPreviousQuestion}
-                aria-label="Previous question"
-              >
-                <span aria-hidden="true">←</span> Previous
-              </button>
-              <p className="question-nav-status" aria-live="polite">
-                Question <span className="tabular">{questionIndex + 1}</span> of{" "}
-                <span className="tabular">{questionTotal}</span>
-              </p>
-              <button
-                type="button"
-                className="btn primary question-nav-btn"
-                onClick={advanceQuestion}
-                disabled={!canAdvanceQuestion}
-                aria-label="Next question"
-              >
-                Next <span aria-hidden="true">→</span>
-              </button>
-            </nav>
-          )}
         </div>
+
+        {hasQuestionPager && (
+          <nav className="question-nav lab-work-footer" aria-label="Question navigation">
+            <button
+              type="button"
+              className="btn secondary question-nav-btn"
+              onClick={previousQuestion}
+              disabled={!canGoPreviousQuestion}
+              aria-label="Previous question"
+            >
+              <span aria-hidden="true">←</span> Previous
+            </button>
+            <p className="question-nav-status" aria-live="polite">
+              Question <span className="tabular">{questionIndex + 1}</span> of{" "}
+              <span className="tabular">{questionTotal}</span>
+            </p>
+            <button
+              type="button"
+              className="btn primary question-nav-btn"
+              onClick={advanceQuestion}
+              disabled={!canAdvanceQuestion}
+              aria-label="Next question"
+            >
+              Next <span aria-hidden="true">→</span>
+            </button>
+          </nav>
+        )}
       </article>
 
       {strategy && (

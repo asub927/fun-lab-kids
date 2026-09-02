@@ -548,7 +548,14 @@ main:focus {
   flex: 1;
   min-height: 0;
   gap: 0.75rem;
-  overflow: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lab-work-footer {
+  flex-shrink: 0;
+  margin-top: 0.65rem;
 }
 
 .lab-help-card {
@@ -575,12 +582,8 @@ main:focus {
 .lab-board {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-height: 0;
+  flex-shrink: 0;
   min-width: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
 }
 
 @media (max-width: 860px) {
@@ -972,7 +975,6 @@ main[data-accent="pink"] .lab-help-card .strategy-panel {
   align-items: center;
   gap: 0.5rem var(--space-2);
   flex-shrink: 0;
-  margin-top: 0.65rem;
   padding: 0.45rem 0.65rem;
   border: var(--border-width) solid var(--color-ink);
   border-radius: var(--radius-tablet);
