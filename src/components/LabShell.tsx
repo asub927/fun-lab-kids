@@ -29,12 +29,10 @@ function focusPrimaryAnswerInput() {
   const root = document.querySelector(".lab-board");
   if (!root) return;
 
-  const input = root.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+  const input = root.querySelector<HTMLInputElement>(
     [
       ".answer-field input:not([type='hidden'])",
-      ".answer-field textarea",
       "input:not([type='checkbox']):not([type='radio']):not([type='hidden'])",
-      "textarea",
     ].join(", "),
   );
   if (!input) return;
