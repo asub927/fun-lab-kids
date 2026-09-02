@@ -7,6 +7,7 @@ import { generateScienceQuestion } from "../generators/science";
 import { enrichParamsWithStrategy } from "../curriculumStrategies";
 import {
   GENERIC_FALLBACK_MARKERS,
+  QUESTION_POOL_SIZE,
   QUESTIONS_PER_STANDARD,
   type QuestionSet,
 } from "./types";
@@ -19,32 +20,32 @@ function enrichSet(standardCode: string, questions: ActivityParams[]): ActivityP
   return questions.map((q) => enrichParamsWithStrategy(standardCode, standard.activityType, q));
 }
 
-function buildMathSet(standardCode: string): ActivityParams[] {
+function buildMathPool(standardCode: string): ActivityParams[] {
   const standard = findStandard(standardCode);
   if (!standard) return [];
   return enrichSet(
     standardCode,
-    Array.from({ length: QUESTIONS_PER_STANDARD }, (_, seed) => generateMathQuestion(standard, seed)),
+    Array.from({ length: QUESTION_POOL_SIZE }, (_, seed) => generateMathQuestion(standard, seed)),
   );
 }
 
-function buildElaSet(standardCode: string): ActivityParams[] {
-  const questions = Array.from({ length: QUESTIONS_PER_STANDARD }, (_, seed) =>
+function buildElaPool(standardCode: string): ActivityParams[] {
+  const questions = Array.from({ length: QUESTION_POOL_SIZE }, (_, seed) =>
     generateElaQuestion(standardCode, seed),
   ).filter((q): q is ActivityParams => q !== null);
   if (questions.length === 0) return [];
   return enrichSet(standardCode, questions);
 }
 
-function buildScienceSet(standardCode: string): ActivityParams[] {
-  const questions = Array.from({ length: QUESTIONS_PER_STANDARD }, (_, seed) =>
+function buildSciencePool(standardCode: string): ActivityParams[] {
+  const questions = Array.from({ length: QUESTION_POOL_SIZE }, (_, seed) =>
     generateScienceQuestion(standardCode, seed),
   ).filter((q): q is ActivityParams => q !== null);
   if (questions.length === 0) return [];
   return enrichSet(standardCode, questions);
 }
 
-export function getQuestionSet(standardCode: string): ActivityParams[] {
+export function getQuestionPool(standardCode: string): ActivityParams[] {
   if (SHOWCASE_CODES.has(standardCode)) {
     return [];
   }
@@ -55,14 +56,24 @@ export function getQuestionSet(standardCode: string): ActivityParams[] {
   const labId = labIdFromStandardActivity(standard.activityType);
   if (!labId || isShowcaseLab(labId)) return [];
 
-  if (standard.subject === "math") return buildMathSet(standardCode);
-  if (standard.subject === "ela") return buildElaSet(standardCode);
-  if (standard.subject === "science") return buildScienceSet(standardCode);
+  if (standard.subject === "math") return buildMathPool(standardCode);
+  if (standard.subject === "ela") return buildElaPool(standardCode);
+  if (standard.subject === "science") return buildSciencePool(standardCode);
   return [];
 }
 
+function slicePool(pool: ActivityParams[], visitIndex = 0): ActivityParams[] {
+  if (pool.length === 0) return [];
+  const start = (Math.max(0, visitIndex) * QUESTIONS_PER_STANDARD) % pool.length;
+  return pool.slice(start, start + QUESTIONS_PER_STANDARD);
+}
+
+export function getQuestionSet(standardCode: string, visitIndex = 0): ActivityParams[] {
+  return slicePool(getQuestionPool(standardCode), visitIndex);
+}
+
 export function isQuestionSetStandard(standardCode: string): boolean {
-  return getQuestionSet(standardCode).length === QUESTIONS_PER_STANDARD;
+  return getQuestionPool(standardCode).length === QUESTION_POOL_SIZE;
 }
 
 export function validateQuestionSets(): string[] {
@@ -70,19 +81,26 @@ export function validateQuestionSets(): string[] {
   const playable = listGrade2Standards().filter((s) => !SHOWCASE_CODES.has(s.code));
 
   for (const standard of playable) {
-    const questions = getQuestionSet(standard.code);
+    const pool = getQuestionPool(standard.code);
 
-    if (questions.length !== QUESTIONS_PER_STANDARD) {
-      errors.push(`${standard.code}: expected ${QUESTIONS_PER_STANDARD} questions, got ${questions.length}`);
+    if (pool.length !== QUESTION_POOL_SIZE) {
+      errors.push(`${standard.code}: expected pool of ${QUESTION_POOL_SIZE}, got ${pool.length}`);
       continue;
     }
 
-    const serialized = questions.map((q) => JSON.stringify(q));
-    if (new Set(serialized).size !== questions.length) {
-      errors.push(`${standard.code}: duplicate questions in set`);
+    const serialized = pool.map((q) => JSON.stringify(q));
+    if (new Set(serialized).size !== pool.length) {
+      errors.push(`${standard.code}: duplicate questions in pool`);
     }
 
-    for (const q of questions) {
+    for (let visit = 0; visit < QUESTION_POOL_SIZE / QUESTIONS_PER_STANDARD; visit++) {
+      const session = slicePool(pool, visit);
+      if (session.length !== QUESTIONS_PER_STANDARD) {
+        errors.push(`${standard.code}: visit ${visit} expected ${QUESTIONS_PER_STANDARD}, got ${session.length}`);
+      }
+    }
+
+    for (const q of pool) {
       const blob = JSON.stringify(q);
       for (const marker of GENERIC_FALLBACK_MARKERS) {
         if (blob.includes(marker)) {
@@ -111,4 +129,9 @@ export function getQuestionSetMeta(standardCode: string): QuestionSet | null {
   return { standardCode, questions };
 }
 
-export { QUESTIONS_PER_STANDARD, QUESTIONS_TO_MASTER, SMART_SCORE_TARGET } from "./types";
+export {
+  QUESTION_POOL_SIZE,
+  QUESTIONS_PER_STANDARD,
+  QUESTIONS_TO_MASTER,
+  SMART_SCORE_TARGET,
+} from "./types";

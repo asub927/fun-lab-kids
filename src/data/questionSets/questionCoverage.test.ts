@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { listGrade2Standards } from "../standards";
-import { getQuestionSet, validateQuestionSets } from "../questionSets";
+import {
+  getQuestionPool,
+  getQuestionSet,
+  validateQuestionSets,
+  QUESTION_POOL_SIZE,
+  QUESTIONS_PER_STANDARD,
+} from "../questionSets";
 import { labIdFromActivityType } from "../activities";
 
 const SHOWCASE = new Set(["NC.2.NBT.1", "W.2.1", "2.P.2.1"]);
@@ -27,17 +33,23 @@ describe("question set coverage", () => {
     expect(validateQuestionSets()).toEqual([]);
   });
 
-  it("gives every playable standard 10 unique questions with displayable prompts", () => {
+  it("gives every playable standard a 30-question unique pool and 10-question sessions", () => {
     const playable = listGrade2Standards().filter((standard) => !SHOWCASE.has(standard.code));
 
     for (const standard of playable) {
-      const questions = getQuestionSet(standard.code);
-      expect(questions, `${standard.code} question count`).toHaveLength(10);
+      const pool = getQuestionPool(standard.code);
+      expect(pool, `${standard.code} pool count`).toHaveLength(QUESTION_POOL_SIZE);
 
-      const serialized = questions.map((question) => JSON.stringify(question));
-      expect(new Set(serialized).size, `${standard.code} duplicates`).toBe(10);
+      const serialized = pool.map((question) => JSON.stringify(question));
+      expect(new Set(serialized).size, `${standard.code} pool duplicates`).toBe(QUESTION_POOL_SIZE);
 
-      for (const [index, question] of questions.entries()) {
+      for (let visit = 0; visit < QUESTION_POOL_SIZE / QUESTIONS_PER_STANDARD; visit++) {
+        const questions = getQuestionSet(standard.code, visit);
+        expect(questions, `${standard.code} visit ${visit} count`).toHaveLength(QUESTIONS_PER_STANDARD);
+        expect(questions[0]).toEqual(pool[visit * QUESTIONS_PER_STANDARD]);
+      }
+
+      for (const [index, question] of pool.entries()) {
         expect(
           questionHasPrompt(question as Record<string, unknown>),
           `${standard.code} Q${index} missing prompt/story`,
@@ -45,6 +57,17 @@ describe("question set coverage", () => {
         expect(labIdFromActivityType(standard.activityType), `${standard.code} lab mapping`).toBeTruthy();
       }
     }
+  });
+
+  it("rotates session slices across visits and wraps after the pool", () => {
+    const visit0 = getQuestionSet("NC.2.OA.1", 0);
+    const visit1 = getQuestionSet("NC.2.OA.1", 1);
+    const visit2 = getQuestionSet("NC.2.OA.1", 2);
+    const visit3 = getQuestionSet("NC.2.OA.1", 3);
+
+    expect(visit0).not.toEqual(visit1);
+    expect(visit1).not.toEqual(visit2);
+    expect(visit3).toEqual(visit0);
   });
 
   it("uses standard-specific measurement modes", () => {

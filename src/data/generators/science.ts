@@ -13,6 +13,26 @@ const SOUND_PROMPTS = [
   "What vibrates when you tap two sticks together?",
   "What makes a bee's wings buzz?",
   "What vibrates in a speaker to play music?",
+  "What vibrates when you tap a glass with a spoon?",
+  "What vibrates when you slam a door?",
+  "What vibrates when rain hits a metal roof?",
+  "What vibrates on a violin to make music?",
+  "What vibrates when you clap your hands?",
+  "What vibrates when wind shakes a window?",
+  "What vibrates when you bounce a basketball?",
+  "What vibrates when a phone buzzes?",
+  "What vibrates when you snap your fingers?",
+  "What vibrates when a whistle is blown?",
+  "What vibrates when you strum a ukulele?",
+  "What vibrates when thunder booms?",
+  "What vibrates when you shake a maraca?",
+  "What vibrates when a fire truck siren sounds?",
+  "What vibrates when you tap a xylophone key?",
+  "What vibrates when leaves rustle in the wind?",
+  "What vibrates when you hum into a paper tube?",
+  "What vibrates when a gong is struck?",
+  "What vibrates when you tap a desk with a pencil?",
+  "What vibrates when a frog croaks?",
 ];
 
 const SOUND_ANSWERS = [
@@ -26,6 +46,26 @@ const SOUND_ANSWERS = [
   "the sticks vibrate",
   "the wings vibrate",
   "the speaker cone vibrates",
+  "the glass vibrates",
+  "the door vibrates",
+  "the roof vibrates",
+  "the violin string vibrates",
+  "your hands vibrate the air",
+  "the window vibrates",
+  "the ball and floor vibrate",
+  "the phone vibrates",
+  "your fingers make air vibrate",
+  "air in the whistle vibrates",
+  "the ukulele string vibrates",
+  "the air vibrates",
+  "seeds or beads inside vibrate",
+  "the siren vibrates air",
+  "the bar vibrates",
+  "the leaves vibrate",
+  "air in the tube vibrates",
+  "the gong vibrates",
+  "the desk vibrates",
+  "the frog's throat vibrates",
 ];
 
 const MATTER_PROMPTS = [
@@ -39,6 +79,26 @@ const MATTER_PROMPTS = [
   "What happens to puddles on a sunny day?",
   "Does a rock change shape when heated a little?",
   "What state is the air around you?",
+  "What state is an ice cube?",
+  "What happens to chocolate left in a warm hand?",
+  "Can a liquid turn into a gas?",
+  "What state is smoke from a candle?",
+  "What happens to butter in a hot pan?",
+  "Does a sealed bag of air have mass?",
+  "What state is snow before it melts?",
+  "What happens when water vapor cools on a cold glass?",
+  "Can matter change from liquid to solid?",
+  "What state is syrup?",
+  "What happens to wax when a candle burns near it?",
+  "Is clay a solid even if you can reshape it?",
+  "What state is helium in a balloon?",
+  "What happens to frozen juice as it warms?",
+  "Does melting change the material into something new?",
+  "What state is fog?",
+  "What happens to an ice pop on a hot day?",
+  "Can water exist as solid, liquid, and gas?",
+  "What state is a metal spoon at room temperature?",
+  "What happens to water when it boils?",
 ];
 
 const MATTER_ANSWERS = [
@@ -52,6 +112,26 @@ const MATTER_ANSWERS = [
   "evaporates",
   "no not much",
   "gas",
+  "solid",
+  "it melts",
+  "yes evaporates",
+  "gas",
+  "it melts",
+  "yes",
+  "solid",
+  "it condenses",
+  "yes it freezes",
+  "liquid",
+  "it softens or melts",
+  "yes",
+  "gas",
+  "it melts",
+  "no same matter",
+  "gas or tiny droplets",
+  "it melts",
+  "yes",
+  "solid",
+  "it turns into gas",
 ];
 
 const WEATHER_PROMPTS = [
@@ -65,6 +145,26 @@ const WEATHER_PROMPTS = [
   "What season is typically warmest?",
   "What source of energy warms the land during the day?",
   "Name one thing the sun's energy helps plants do.",
+  "Is it usually warmer at noon or at midnight?",
+  "What falls from clouds as liquid water?",
+  "Which season often has falling leaves?",
+  "What tool helps you track weather over many days?",
+  "What kind of weather has lots of snow falling?",
+  "Why are sunny days often warmer than cloudy days?",
+  "What might you see every afternoon in summer?",
+  "When is it usually cooler, early morning or mid-afternoon?",
+  "What do we call a very strong spinning storm over land?",
+  "What energy from the sun helps Earth stay bright?",
+  "What happens to sidewalks in bright sunlight?",
+  "Name one weather word that describes how the air feels.",
+  "What does a weather vane tell you?",
+  "What does a rain gauge help you measure?",
+  "What season is often coldest?",
+  "What can block some sunlight on a cloudy day?",
+  "What weather brings thunder and lightning?",
+  "What do plants need from the sun besides warmth?",
+  "What tool would you use to check if today is hotter than yesterday?",
+  "What pattern means weather that repeats in a season?",
 ];
 
 const WEATHER_ANSWERS = [
@@ -78,6 +178,26 @@ const WEATHER_ANSWERS = [
   "summer",
   "sun",
   "grow or photosynthesis",
+  "noon",
+  "rain",
+  "fall or autumn",
+  "weather journal or chart",
+  "snowstorm",
+  "more sunlight reaches the ground",
+  "afternoon storms or heat",
+  "early morning",
+  "tornado",
+  "light energy",
+  "they get warmer",
+  "hot or cold",
+  "wind direction",
+  "rainfall",
+  "winter",
+  "clouds",
+  "thunderstorm",
+  "light",
+  "thermometer",
+  "seasonal pattern",
 ];
 
 const LIFE_PROMPTS = [
@@ -91,6 +211,26 @@ const LIFE_PROMPTS = [
   "Name one animal that starts as an egg.",
   "What do plants need to grow from a seed?",
   "What changes as a seed grows into a plant?",
+  "Does a frog start life as an egg or an adult?",
+  "How is a butterfly life cycle different from a mammal's?",
+  "Name one animal whose young look different from adults.",
+  "What stage comes after birth in many animals?",
+  "What do adults often do in a life cycle?",
+  "What is the beginning stage for many animals?",
+  "What changes as an animal grows from young to adult?",
+  "What stage comes before death?",
+  "Name the four stages of an animal life cycle in order.",
+  "What does a caterpillar eat to grow?",
+  "What hatches from a bird egg?",
+  "What grows after a seed sprouts?",
+  "What does a pupa become?",
+  "Why do young animals need care?",
+  "What is metamorphosis?",
+  "What comes after an adult butterfly lays eggs?",
+  "How does a plant life cycle begin?",
+  "What do tadpoles use to swim?",
+  "What do adult frogs use to live on land?",
+  "What happens to a seed after it gets water and warmth?",
 ];
 
 const LIFE_ANSWERS = [
@@ -104,6 +244,26 @@ const LIFE_ANSWERS = [
   "bird or butterfly",
   "water and sunlight",
   "it gets taller",
+  "egg",
+  "metamorphosis",
+  "frog or butterfly",
+  "developing into adult",
+  "reproduce",
+  "birth or egg",
+  "size or body features",
+  "aging",
+  "birth adult reproduce death",
+  "leaves",
+  "a chick",
+  "roots and stem",
+  "adult butterfly",
+  "to grow and stay safe",
+  "a big body change",
+  "new eggs hatch into larvae",
+  "with a seed",
+  "tails",
+  "legs and lungs",
+  "it germinates or sprouts",
 ];
 
 const HEREDITY_PROMPTS = [
@@ -117,6 +277,26 @@ const HEREDITY_PROMPTS = [
   "How can two plants from the same seed packet differ?",
   "What makes twins look similar but not identical?",
   "Name one learned behavior a bird teaches its young.",
+  "How can a kitten look similar to its mother?",
+  "Name one way puppies in the same litter can vary.",
+  "What is one inherited trait in people?",
+  "What is one learned behavior in people?",
+  "How might brothers and sisters share traits?",
+  "How might brothers and sisters look different?",
+  "What trait might a duckling inherit?",
+  "What behavior might a wolf pup learn?",
+  "Why do not all roses from one bush look identical?",
+  "What does variation help scientists notice?",
+  "Name a trait you can observe in pets.",
+  "Name a behavior pets can learn from people.",
+  "How can seedlings from one packet differ in height?",
+  "What is one reason offspring resemble parents?",
+  "What is one reason offspring are not copies of parents?",
+  "How might fur color show inheritance?",
+  "How might a hunting skill show learning?",
+  "What word describes traits passed from parents?",
+  "Give one example of plant variation.",
+  "Give one example of animal variation.",
 ];
 
 const HEREDITY_ANSWERS = [
@@ -130,6 +310,26 @@ const HEREDITY_ANSWERS = [
   "different height or leaf shape",
   "same genes but small differences",
   "finding food or flying",
+  "same fur color",
+  "different spots or size",
+  "eye color or hair color",
+  "tying shoes or reading",
+  "shared hair or eye color",
+  "different height or freckles",
+  "webbed feet or feather color",
+  "hunting or packing",
+  "variation in blooms",
+  "differences within a group",
+  "fur length or color",
+  "sit or fetch",
+  "some grow taller",
+  "inherited traits",
+  "variation",
+  "offspring match parent color",
+  "taught by parents",
+  "inherited",
+  "leaf shape or height",
+  "spot patterns or size",
 ];
 
 function inquiryPool(standardCode: string): { prompts: string[]; answers: string[] } | null {
@@ -144,18 +344,26 @@ function inquiryPool(standardCode: string): { prompts: string[]; answers: string
 export function generateScienceQuestion(standardCode: string, seed: number): ActivityParams | null {
   const tier = difficultyForSeed(seed);
   const pool = inquiryPool(standardCode);
+  const base = scienceQuestionSets[standardCode];
+
+  // Prefer hand-authored bases for the first slice of the pool, then topic prompts.
+  if (base && seed < base.length) {
+    const q = base[seed];
+    return { ...q, difficulty: tier, practiceId: seed + 1 };
+  }
 
   if (pool) {
+    const idx = seed % pool.prompts.length;
     return {
       scenario: "inquiry",
-      prompt: pool.prompts[seed % pool.prompts.length],
-      answer: pool.answers[seed % pool.answers.length],
+      prompt: pool.prompts[idx],
+      answer: pool.answers[idx],
       difficulty: tier,
+      practiceId: seed + 1,
     };
   }
 
-  const base = scienceQuestionSets[standardCode];
   if (!base) return null;
-  const q = base[seed % 3];
-  return { ...q, difficulty: tier };
+  const q = base[seed % base.length];
+  return { ...q, difficulty: tier, practiceId: seed + 1 };
 }
