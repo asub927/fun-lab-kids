@@ -7,9 +7,10 @@ import type { Subject } from "../types";
 import {
   pickAchievementLine,
   pickBuddyLine,
+  pickCharacterLine,
   pickCharacterLineById,
   pickLabLine,
-  pickMasteryLine,
+  pickSubjectWelcomeLine,
   type DialogueVars,
 } from "./characterDialogue";
 import type { ProgressStore } from "./progress";
@@ -110,7 +111,7 @@ export function speechForRoute(
     const codes = listGrade2Standards(subject).map((s) => s.code);
     const done = codes.filter((c) => store.progress[c]?.completed).length;
     const total = codes.length;
-    return pickBuddyLine(speciesId, "subjectWelcome", store, { ...routeVars, done, total }, done);
+    return pickSubjectWelcomeLine(subject, store, done, total, done, routeVars);
   }
 
   if (pathname === "/grade-2/progress") {
@@ -153,9 +154,10 @@ export function speechForCelebration(
   activeSubject?: Subject | null,
 ): string {
   const subject = subjectForSpeech(pathname, activeSubject);
+  const routeVars = dialogueVarsForPath(pathname, {}, activeSubject);
   if (celebration.isNewMastery) {
-    if (subject) return pickMasteryLine(subject, store, checkCount);
-    return pickCharacterLineById(getCharacterIdForPet(speciesId), "mastery", store, {}, checkCount);
+    if (subject) return pickCharacterLine(subject, "mastery", store, routeVars, checkCount);
+    return pickCharacterLineById(getCharacterIdForPet(speciesId), "mastery", store, routeVars, checkCount);
   }
   const first = celebration.newAchievements[0];
   if (first) {
@@ -168,8 +170,8 @@ export function speechForCelebration(
       checkCount,
     );
   }
-  if (subject) return pickMasteryLine(subject, store, checkCount);
-  return pickCharacterLineById(getCharacterIdForPet(speciesId), "mastery", store, {}, checkCount);
+  if (subject) return pickCharacterLine(subject, "mastery", store, routeVars, checkCount);
+  return pickCharacterLineById(getCharacterIdForPet(speciesId), "mastery", store, routeVars, checkCount);
 }
 
 export function speechForWave(

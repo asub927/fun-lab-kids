@@ -97,8 +97,9 @@ export function pickSubjectWelcomeLine(
   done: number,
   total: number,
   seed = 0,
+  vars: DialogueVars = {},
 ): string {
-  return pickCharacterLine(subject, "subjectWelcome", store, { done, total }, seed);
+  return pickCharacterLine(subject, "subjectWelcome", store, { done, total, ...vars }, seed);
 }
 
 export function pickLabLine(

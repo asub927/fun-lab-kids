@@ -78,6 +78,13 @@ describe("speechForRoute", () => {
     expect(line).not.toContain("Math Lab");
   });
 
+  it("uses reading tone on ELA subject browse regardless of pet species", () => {
+    const store = makeStore();
+    const line = speechForRoute("/grade-2/ela", "dog", store);
+    expect(line).toMatch(/reading|pages|sentence|story/i);
+    expect(line).not.toMatch(/keep counting|numbers|solve/i);
+  });
+
   it("uses Science Lab on science pages regardless of pet species", () => {
     const store = makeStore();
     const line = speechForRoute("/grade-2/science", "dog", store);
@@ -118,6 +125,13 @@ describe("speechForCheck", () => {
     const store = makeStore();
     const line = speechForCheck(false, "/lab/NC.2.NBT.1", "cat", store, 2);
     expect(line).toMatch(/mathematician|check your work|try again/i);
+  });
+
+  it("uses ELA correct lines in ELA labs regardless of pet species", () => {
+    const store = makeStore();
+    const line = speechForCheck(true, "/lab/W.2.1", "dog", store, 2);
+    expect(line).toMatch(/reading|storyteller|words|rhythm/i);
+    expect(line).not.toMatch(/cracked it|number sense|digits/i);
   });
 });
 

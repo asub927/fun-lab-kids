@@ -39,7 +39,7 @@ export const DIALOGUE_POOLS: Record<CharacterId, Record<DialogueContext, string[
     mastery: [
       "You read like a real storyteller! New treasure unlocked.",
       "Skill mastered! Your reading powers just leveled up.",
-      "Amazing, {name}! Word Lab is proud of you.",
+      "Amazing, {name}! {labName} is proud of you.",
       "What a reader! This skill is yours now.",
     ],
     achievement: [
