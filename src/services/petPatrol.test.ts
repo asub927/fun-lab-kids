@@ -7,10 +7,10 @@ import {
 } from "./petPatrol";
 
 describe("petPatrol", () => {
-  it("computes a horizontal patrol lane", () => {
+  it("computes a horizontal patrol lane inside a container", () => {
     const bounds = patrolLaneWidth(400, 68);
-    expect(bounds.minX).toBeGreaterThan(0);
-    expect(bounds.maxX).toBeLessThan(400);
+    expect(bounds.minX).toBe(8);
+    expect(bounds.maxX).toBe(324);
     expect(bounds.maxX).toBeGreaterThan(bounds.minX);
   });
 

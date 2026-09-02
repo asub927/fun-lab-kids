@@ -25,6 +25,8 @@
   --color-yellow: var(--color-mustard);
   --color-on-dark: var(--color-paper);
 
+  --pet-footer-height: 5rem;
+
   /* Semantic aliases */
   --color-surface: var(--color-bone);
   --color-surface-soft: var(--color-paper);
@@ -163,7 +165,9 @@ a:hover {
 }
 
 .app {
-  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100dvh;
   touch-action: manipulation;
 }
 
@@ -3799,19 +3803,26 @@ main:has(.home-page) {
   transition: transform var(--duration-fast) var(--ease-out-expo);
 }
 
-/* Island Pet — Codex-style bottom patrol rail */
-.island-pet-anchor {
-  position: fixed;
-  left: 0;
-  bottom: max(0.85rem, env(safe-area-inset-bottom));
-  z-index: 34;
-  width: 4.25rem;
-  height: 4.25rem;
-  pointer-events: none;
+/* Lab buddy footer lane */
+.pet-footer {
+  position: relative;
+  flex-shrink: 0;
+  border-top: var(--border-width) solid var(--color-ink);
+  background: var(--color-paper);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
-.island-pet-anchor.is-reduced-motion {
-  left: max(0.75rem, env(safe-area-inset-left));
+.pet-footer-lane {
+  position: relative;
+  height: var(--pet-footer-height);
+  overflow: hidden;
+}
+
+/* Island Pet — Codex-style patrol inside footer lane */
+.island-pet-anchor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
 .island-pet-rail {
@@ -3847,9 +3858,9 @@ main:has(.home-page) {
 
 .island-pet-hint {
   pointer-events: auto;
-  position: fixed;
-  left: max(0.75rem, env(safe-area-inset-left));
-  bottom: calc(max(0.85rem, env(safe-area-inset-bottom)) + 4.6rem);
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 0.35rem);
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -4277,14 +4288,6 @@ main:has(.home-page) {
 }
 
 @media (max-width: 640px) {
-  main {
-    padding-bottom: max(var(--space-3), calc(5rem + env(safe-area-inset-bottom)));
-  }
-
-  main:has(.lab-page) {
-    padding-bottom: max(0.65rem, calc(5rem + env(safe-area-inset-bottom)));
-  }
-
   .top-nav {
     flex-wrap: wrap;
   }

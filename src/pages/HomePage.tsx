@@ -17,7 +17,7 @@ const FEATURES = [
   {
     icon: "🐕",
     title: "Lab buddy",
-    text: "Pick a lab buddy on Progress — they patrol along the bottom while you practice.",
+    text: "Pick a lab buddy on Progress — they hang out in the buddy lane at the bottom while you practice.",
     accent: "pink",
   },
   {

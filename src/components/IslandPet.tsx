@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { getPetSpecies } from "../data/pets";
 import { useApp } from "../context/AppContext";
 import { usePetPatrol } from "../hooks/usePetPatrol";
-import { getPetSpeciesId, isPetVisible, PET_PREFS_EVENT, setPetVisible } from "../services/pet";
+import { getPetSpeciesId, PET_PREFS_EVENT, setPetVisible } from "../services/pet";
 import {
   deriveAmbientMood,
   PET_REACTION_MS,
@@ -10,14 +10,17 @@ import {
 } from "../services/petActivity";
 import { PetSprite } from "./pets/PetSprite";
 
+type IslandPetProps = {
+  laneRef: RefObject<HTMLDivElement | null>;
+};
+
 /**
- * Codex-like ambient pet: patrols left-to-right along the bottom rail when calm,
+ * Codex-like ambient pet: patrols left-to-right inside the footer lane when calm,
  * and plays in-place Codex sprite actions for waiting, failed, jumping, and waving.
  */
-export function IslandPet() {
+export function IslandPet({ laneRef }: IslandPetProps) {
   const app = useApp();
   const railRef = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(() => isPetVisible());
   const [speciesId, setSpeciesId] = useState(() => getPetSpeciesId());
   const [reaction, setReaction] = useState<"celebrating" | "working" | "waiting" | "waving" | null>(
     null,
@@ -41,8 +44,9 @@ export function IslandPet() {
   );
 
   const patrol = usePetPatrol({
-    enabled: visible && !reducedMotion,
+    enabled: !reducedMotion,
     mood,
+    laneRef,
     railRef,
   });
 
@@ -58,9 +62,7 @@ export function IslandPet() {
 
   useEffect(() => {
     const onPrefs = (event: Event) => {
-      const detail = (event as CustomEvent<{ visible?: boolean; speciesId?: string }>).detail;
-      if (detail && typeof detail.visible === "boolean") setVisible(detail.visible);
-      else setVisible(isPetVisible());
+      const detail = (event as CustomEvent<{ speciesId?: string }>).detail;
       if (detail?.speciesId === "dog" || detail?.speciesId === "cat" || detail?.speciesId === "rabbit") {
         setSpeciesId(detail.speciesId);
       } else {
@@ -92,8 +94,6 @@ export function IslandPet() {
     };
   }, []);
 
-  if (!visible) return null;
-
   const onPointerDown = () => {
     if (pressTimer.current) window.clearTimeout(pressTimer.current);
     pressTimer.current = window.setTimeout(() => {
@@ -118,7 +118,6 @@ export function IslandPet() {
 
   const confirmHide = () => {
     setPetVisible(false);
-    setVisible(false);
     setHint(null);
   };
 

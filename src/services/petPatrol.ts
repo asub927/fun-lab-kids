@@ -13,12 +13,10 @@ export const PATROL_IDLE_TIMING: PatrolTiming = {
   pauseMs: 2200,
 };
 
-export function patrolLaneWidth(viewportWidth: number, petSize: number): PatrolBounds {
-  const safeLeft = 12;
-  const safeRight = 12;
-  const lanePadding = Math.min(48, viewportWidth * 0.08);
-  const minX = safeLeft + lanePadding;
-  const maxX = Math.max(minX, viewportWidth - petSize - safeRight - lanePadding);
+export function patrolLaneWidth(containerWidth: number, petSize: number): PatrolBounds {
+  const lanePadding = 8;
+  const minX = lanePadding;
+  const maxX = Math.max(minX, containerWidth - petSize - lanePadding);
   return { minX, maxX };
 }
 

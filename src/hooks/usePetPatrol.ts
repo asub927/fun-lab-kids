@@ -22,6 +22,7 @@ type PatrolState = {
 type UsePetPatrolOptions = {
   enabled: boolean;
   mood: PetMood;
+  laneRef: RefObject<HTMLDivElement | null>;
   railRef: RefObject<HTMLDivElement | null>;
 };
 
@@ -29,15 +30,21 @@ function shouldPatrol(mood: PetMood): boolean {
   return mood === "idle";
 }
 
-function readBounds(): PatrolBounds {
-  return patrolLaneWidth(window.innerWidth, petSizeForViewport(window.innerWidth));
+function readBounds(laneRef: RefObject<HTMLDivElement | null>): PatrolBounds {
+  const lane = laneRef.current;
+  const containerWidth = lane?.getBoundingClientRect().width ?? 0;
+  const petSize = petSizeForViewport(window.innerWidth);
+  if (containerWidth <= 0) {
+    return { minX: 0, maxX: 0 };
+  }
+  return patrolLaneWidth(containerWidth, petSize);
 }
 
-export function usePetPatrol({ enabled, mood, railRef }: UsePetPatrolOptions): PatrolState {
-  const boundsRef = useRef<PatrolBounds>(readBounds());
+export function usePetPatrol({ enabled, mood, laneRef, railRef }: UsePetPatrolOptions): PatrolState {
+  const boundsRef = useRef<PatrolBounds>({ minX: 0, maxX: 0 });
   const pauseTimerRef = useRef<number | null>(null);
   const stateRef = useRef<PatrolState>({
-    x: readBounds().minX,
+    x: 0,
     facing: "right",
     phase: "paused",
     walkMs: 0,
@@ -57,13 +64,13 @@ export function usePetPatrol({ enabled, mood, railRef }: UsePetPatrolOptions): P
   }, []);
 
   const refreshBounds = useCallback(() => {
-    const bounds = readBounds();
+    const bounds = readBounds(laneRef);
     boundsRef.current = bounds;
     commitState({
       ...stateRef.current,
       x: clampPatrolX(stateRef.current.x, bounds),
     });
-  }, [commitState]);
+  }, [commitState, laneRef]);
 
   const beginWalk = useCallback(
     (facing: "left" | "right") => {
@@ -98,7 +105,7 @@ export function usePetPatrol({ enabled, mood, railRef }: UsePetPatrolOptions): P
     clearPauseTimer();
 
     if (!enabled || !shouldPatrol(mood)) {
-      const bounds = readBounds();
+      const bounds = readBounds(laneRef);
       boundsRef.current = bounds;
       commitState({
         x: clampPatrolX(bounds.minX, bounds),
@@ -109,6 +116,7 @@ export function usePetPatrol({ enabled, mood, railRef }: UsePetPatrolOptions): P
       return;
     }
 
+    refreshBounds();
     commitState({
       x: boundsRef.current.minX,
       facing: "right",
@@ -117,16 +125,24 @@ export function usePetPatrol({ enabled, mood, railRef }: UsePetPatrolOptions): P
     });
     beginWalk("right");
 
+    const lane = laneRef.current;
+    let observer: ResizeObserver | null = null;
+    if (lane && typeof ResizeObserver !== "undefined") {
+      observer = new ResizeObserver(() => refreshBounds());
+      observer.observe(lane);
+    }
+
     const onResize = () => refreshBounds();
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onResize);
 
     return () => {
       clearPauseTimer();
+      observer?.disconnect();
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onResize);
     };
-  }, [beginWalk, clearPauseTimer, commitState, enabled, mood, refreshBounds]);
+  }, [beginWalk, clearPauseTimer, commitState, enabled, laneRef, mood, refreshBounds]);
 
   useEffect(() => {
     if (!enabled || !shouldPatrol(mood)) return;

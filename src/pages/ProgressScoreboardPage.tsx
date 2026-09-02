@@ -100,7 +100,7 @@ export function ProgressScoreboardPage() {
           Lab Buddy
         </h2>
         <p className="pet-settings-lead">
-          Pick a lab buddy to walk along the bottom of the screen while you practice.
+          Pick a lab buddy to hang out in the buddy lane at the bottom while you practice.
         </p>
         <label className="pet-pref-toggle" htmlFor="pet-visible">
           <input
