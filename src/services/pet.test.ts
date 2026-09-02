@@ -4,6 +4,7 @@ import { emptyGamificationState } from "./gamification";
 import { pickPetCelebrationLine } from "./petDialogue";
 import type { ProgressStore } from "./progress";
 import {
+  getPetDisplayName,
   getPetSpeciesId,
   isPetSoundEnabled,
   isPetVisible,
@@ -70,7 +71,7 @@ describe("ambient pet activity", () => {
 });
 
 describe("ambient pet prefs", () => {
-  it("defaults to visible dog with sound on", () => {
+  it("defaults to visible dog named Digits with sound on", () => {
     const prefs = loadPetPrefs();
     expect(prefs.visible).toBe(true);
     expect(prefs.speciesId).toBe("dog");
@@ -78,6 +79,7 @@ describe("ambient pet prefs", () => {
     expect(prefs.version).toBe(4);
     expect(isPetVisible()).toBe(true);
     expect(getPetSpeciesId()).toBe("dog");
+    expect(getPetDisplayName("dog")).toBe("Digits");
     expect(isPetSoundEnabled()).toBe(true);
   });
 
@@ -91,9 +93,11 @@ describe("ambient pet prefs", () => {
   it("persists species choice", () => {
     setPetSpecies("cat");
     expect(getPetSpeciesId()).toBe("cat");
+    expect(getPetDisplayName("cat")).toBe("Ripple");
     expect(loadPetPrefs().speciesId).toBe("cat");
     setPetSpecies("rabbit");
     expect(getPetSpeciesId()).toBe("rabbit");
+    expect(getPetDisplayName("rabbit")).toBe("Spark");
   });
 
   it("can toggle celebration voice", () => {

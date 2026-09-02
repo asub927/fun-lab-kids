@@ -1,11 +1,7 @@
 import { Link } from "react-router-dom";
-import { CharacterGuide } from "../components/CharacterGuide";
 import { HeroBackdrop } from "../components/HeroBackdrop";
 import { Reveal, RevealGroup } from "../components/Reveal";
-import { CHARACTERS } from "../data/characters";
 import { listGrade2Standards } from "../data/standards";
-import { loadProgress } from "../services/progress";
-import { pickHubGreetingLine } from "../services/characterDialogue";
 
 const FEATURES = [
   {
@@ -15,16 +11,10 @@ const FEATURES = [
     accent: "green",
   },
   {
-    icon: "🐕",
-    title: "Lab buddy",
-    text: "Pick a lab buddy on Progress — they hang out in the corner while you practice.",
-    accent: "pink",
-  },
-  {
     icon: "🦜",
-    title: "Lab guides",
-    text: "Ripple, Digits, and Spark welcome you in each lab. They cheer you on and celebrate every win.",
-    accent: "green",
+    title: "Your lab buddy",
+    text: "Pick Digits, Ripple, or Spark on Progress. They patrol the buddy lane, cheer you on, and speak up when you tap them.",
+    accent: "pink",
   },
   {
     icon: "⭐",
@@ -63,7 +53,6 @@ export function HomePage() {
   const mathCount = listGrade2Standards("math").length;
   const elaCount = listGrade2Standards("ela").length;
   const scienceCount = listGrade2Standards("science").length;
-  const store = loadProgress();
 
   return (
     <div className="page home-page">
@@ -102,29 +91,6 @@ export function HomePage() {
           <span className="home-stat-label">Questions per round</span>
         </div>
       </RevealGroup>
-
-      <Reveal delay={100}>
-        <section className="home-section home-guides" aria-labelledby="guides-heading">
-          <p className="home-eyebrow">Meet your guides</p>
-          <h2 id="guides-heading" className="home-section-title">
-            Friends who cheer you on.
-          </h2>
-          <p className="home-section-lead">
-            Ripple, Digits, and Spark live in the labs. They cheer louder every time you practice.
-          </p>
-          <RevealGroup className="character-crew">
-            {CHARACTERS.map((character, index) => (
-              <CharacterGuide
-                key={character.id}
-                subject={character.subject}
-                line={pickHubGreetingLine(character.subject, store, index)}
-                mood="idle"
-                featured={character.subject === "ela"}
-              />
-            ))}
-          </RevealGroup>
-        </section>
-      </Reveal>
 
       <Reveal delay={50}>
         <section className="home-section" aria-labelledby="why-heading">

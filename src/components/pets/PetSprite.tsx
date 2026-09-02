@@ -6,12 +6,19 @@ type PetSpriteProps = {
   speciesId: PetSpeciesId;
   mood: PetMood;
   facing?: "left" | "right";
+  patrolling?: boolean;
   /** Larger scale for picker previews. */
   preview?: boolean;
 };
 
 /** Lab buddy renderer — Codex spritesheet when available, otherwise inline SVG. */
-export function PetSprite({ speciesId, mood, facing = "right", preview = false }: PetSpriteProps) {
+export function PetSprite({
+  speciesId,
+  mood,
+  facing = "right",
+  patrolling = false,
+  preview = false,
+}: PetSpriteProps) {
   const species = getPetSpecies(speciesId);
 
   if (species.codexPackageId) {
@@ -21,6 +28,7 @@ export function PetSprite({ speciesId, mood, facing = "right", preview = false }
           packageId={species.codexPackageId}
           mood={mood}
           facing={facing}
+          patrolling={patrolling}
           scale={preview ? 0.42 : 0.34}
           className="pet-sprite"
         />

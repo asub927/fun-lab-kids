@@ -1,16 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { CelebrationBurst } from "./CelebrationBurst";
-import { CharacterGuide } from "./CharacterGuide";
 import { hasStrategyContent, parseStrategyParams, StrategyPanel } from "./StrategyPanel";
 import { useApp } from "../context/AppContext";
+import { pickBuddyLine } from "../services/characterDialogue";
 import { loadProgress } from "../services/progress";
-import {
-  pickAchievementLine,
-  pickLabLine,
-  pickMasteryLine,
-  pickStreakLine,
-} from "../services/characterDialogue";
+import { getPetSpeciesId } from "../services/pet";
 
 type LabShellProps = {
   title: string;
@@ -71,8 +66,6 @@ export function LabShell({ title, children }: LabShellProps) {
   } = useApp();
 
   const store = loadProgress();
-  const subject = activeStandard?.subject ?? "math";
-  const checkCount = store.gamification.lifetimeChecks;
   const hasQuestionPager = questionTotal > 1;
   const lastCheckKey = lastCheck
     ? `${lastCheck.ok ? "ok" : "miss"}:${lastCheck.feedback}`
@@ -129,30 +122,16 @@ export function LabShell({ title, children }: LabShellProps) {
   const showCelebration =
     lastCelebration && (lastCelebration.isNewMastery || lastCelebration.newAchievements.length > 0);
 
-  const celebrationLine = (() => {
-    if (!lastCelebration) return "";
-    if (lastCelebration.isNewMastery) {
-      return pickMasteryLine(subject, store, checkCount);
-    }
-    const first = lastCelebration.newAchievements[0];
-    if (first) {
-      return pickAchievementLine(subject, store, first, checkCount);
-    }
-    return pickMasteryLine(subject, store, checkCount);
-  })();
-
   const streakLine =
     lastCelebration && lastCelebration.streakDays > 1
-      ? pickStreakLine(subject, store, lastCelebration.streakDays)
+      ? pickBuddyLine(
+          getPetSpeciesId(),
+          "streak",
+          store,
+          { streak: lastCelebration.streakDays },
+          lastCelebration.streakDays,
+        )
       : null;
-
-  const inlineLine = lastCheck
-    ? lastCheck.ok
-      ? pickLabLine(subject, "labCorrect", store, checkCount)
-      : pickLabLine(subject, "labEncourage", store, checkCount)
-    : "";
-
-  const inlineMood = lastCheck?.ok ? "happy" : "thinking";
 
   const strategy = useMemo(() => {
     if (!boardState || !("params" in boardState) || !boardState.params) return null;
@@ -206,7 +185,6 @@ export function LabShell({ title, children }: LabShellProps) {
         {showCelebration && lastCelebration && (
           <div className="mastery-panel" role="status" aria-live="polite">
             <CelebrationBurst />
-            <CharacterGuide subject={subject} line={celebrationLine} mood="cheering" live />
             <div className="mastery-panel-body">
               <p className="mastery-panel-heading">
                 {lastCelebration.isNewMastery ? "Skill mastered!" : "Badge unlocked!"}
@@ -246,47 +224,36 @@ export function LabShell({ title, children }: LabShellProps) {
                   <span className="inline-xp">+{lastCelebration.xpEarned} Fun Points</span>
                 )}
               </div>
-              {!showCelebration && (
-                <div className="character-lab-reaction">
-                  <CharacterGuide
-                    subject={subject}
-                    line={inlineLine}
-                    mood={inlineMood}
-                    compact
-                    live
-                  />
-                </div>
-              )}
             </div>
           )}
-
-          {hasQuestionPager && (
-            <nav className="question-nav" aria-label="Question navigation">
-              <button
-                type="button"
-                className="btn secondary question-nav-btn"
-                onClick={previousQuestion}
-                disabled={!canGoPreviousQuestion}
-                aria-label="Previous question"
-              >
-                <span aria-hidden="true">←</span> Previous
-              </button>
-              <p className="question-nav-status" aria-live="polite">
-                Question <span className="tabular">{questionIndex + 1}</span> of{" "}
-                <span className="tabular">{questionTotal}</span>
-              </p>
-              <button
-                type="button"
-                className="btn primary question-nav-btn"
-                onClick={advanceQuestion}
-                disabled={!canAdvanceQuestion}
-                aria-label="Next question"
-              >
-                Next <span aria-hidden="true">→</span>
-              </button>
-            </nav>
-          )}
         </div>
+
+        {hasQuestionPager && (
+          <nav className="question-nav lab-work-footer" aria-label="Question navigation">
+            <button
+              type="button"
+              className="btn secondary question-nav-btn"
+              onClick={previousQuestion}
+              disabled={!canGoPreviousQuestion}
+              aria-label="Previous question"
+            >
+              <span aria-hidden="true">←</span> Previous
+            </button>
+            <p className="question-nav-status" aria-live="polite">
+              Question <span className="tabular">{questionIndex + 1}</span> of{" "}
+              <span className="tabular">{questionTotal}</span>
+            </p>
+            <button
+              type="button"
+              className="btn primary question-nav-btn"
+              onClick={advanceQuestion}
+              disabled={!canAdvanceQuestion}
+              aria-label="Next question"
+            >
+              Next <span aria-hidden="true">→</span>
+            </button>
+          </nav>
+        )}
       </article>
 
       {strategy && (
