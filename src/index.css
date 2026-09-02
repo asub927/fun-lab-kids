@@ -3974,59 +3974,73 @@ main:has(.home-page) {
   animation: motion-pop-in 0.3s var(--ease-spring) both;
 }
 
-.pet-footer-speech-dock {
+.island-pet-side-speech {
   pointer-events: none;
   position: absolute;
-  bottom: calc(var(--pet-footer-height) + 0.35rem);
-  max-width: min(calc(100vw - 1.5rem), 16rem);
+  top: 50%;
+  translate: 0 -50%;
+  max-width: min(calc(100vw - 5rem), 16rem);
   z-index: 5;
   animation: motion-pop-in 0.3s var(--ease-spring) both;
 }
 
-.pet-footer-speech-dock--left {
-  left: 0.75rem;
+.island-pet-side-speech--right {
+  left: calc(100% + 0.35rem);
 }
 
-.pet-footer-speech-dock--right {
-  right: 0.75rem;
+.island-pet-side-speech--left {
+  right: calc(100% + 0.35rem);
 }
 
-.pet-footer-speech-dock .character-speech::before {
-  left: 50%;
-  translate: -50% 0;
-  top: auto;
-  bottom: -10px;
-  border-top: 10px solid var(--color-ink);
-  border-right: 8px solid transparent;
-  border-left: 8px solid transparent;
-  border-bottom: none;
+.island-pet-side-speech--right .character-speech::before {
+  left: -10px;
+  right: auto;
+  top: 50%;
+  bottom: auto;
+  translate: 0 -50%;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 10px solid var(--color-ink);
+  border-left: none;
 }
 
-.pet-footer-speech-dock .character-speech::after {
-  left: 50%;
-  translate: -50% 0;
-  top: auto;
-  bottom: -6px;
-  border-top: 8px solid var(--color-bone);
-  border-right: 6px solid transparent;
-  border-left: 6px solid transparent;
-  border-bottom: none;
+.island-pet-side-speech--right .character-speech::after {
+  left: -6px;
+  right: auto;
+  top: 50%;
+  bottom: auto;
+  translate: 0 calc(-50% + 2px);
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-right: 8px solid var(--color-bone);
+  border-left: none;
 }
 
-.pet-footer-speech-dock--left .character-speech::before,
-.pet-footer-speech-dock--left .character-speech::after {
-  left: 1.25rem;
-  translate: none;
-}
-
-.pet-footer-speech-dock--right .character-speech::before,
-.pet-footer-speech-dock--right .character-speech::after {
+.island-pet-side-speech--left .character-speech::before {
   left: auto;
-  right: 1.25rem;
-  translate: none;
+  right: -10px;
+  top: 50%;
+  bottom: auto;
+  translate: 0 -50%;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 10px solid var(--color-ink);
+  border-right: none;
 }
 
-.pet-footer-speech-dock .island-pet-hint {
+.island-pet-side-speech--left .character-speech::after {
+  left: auto;
+  right: -6px;
+  top: 50%;
+  bottom: auto;
+  translate: 0 calc(-50% + 2px);
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 8px solid var(--color-bone);
+  border-right: none;
+}
+
+.island-pet-side-speech .island-pet-hint {
   pointer-events: auto;
 }
 
@@ -4505,8 +4519,8 @@ main:has(.home-page) {
     font-size: 0.8125rem;
   }
 
-  .pet-footer-speech-dock {
-    max-width: min(calc(100vw - 1.5rem), 18rem);
+  .island-pet-side-speech {
+    max-width: min(calc(100vw - 4.5rem), 18rem);
   }
 
   .home-hero {
