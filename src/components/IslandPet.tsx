@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getPetSpecies } from "../data/pets";
 import { useApp } from "../context/AppContext";
+import { usePetPatrol } from "../hooks/usePetPatrol";
 import { getPetSpeciesId, isPetVisible, PET_PREFS_EVENT, setPetVisible } from "../services/pet";
 import {
   deriveAmbientMood,
@@ -10,18 +11,17 @@ import {
 import { PetSprite } from "./pets/PetSprite";
 
 /**
- * Codex-like ambient pet: stays in a quiet nest (bottom-left),
- * paces a tiny bit locally, and animates by activity — never roams the page.
+ * Codex-like ambient pet: patrols left-to-right along the bottom rail when calm,
+ * and plays in-place Codex sprite actions for waiting, failed, jumping, and waving.
  */
 export function IslandPet() {
   const app = useApp();
+  const railRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(() => isPetVisible());
   const [speciesId, setSpeciesId] = useState(() => getPetSpeciesId());
   const [reaction, setReaction] = useState<"celebrating" | "working" | "waiting" | "waving" | null>(
     null,
   );
-  const [facing, setFacing] = useState<"left" | "right">("right");
-  const [pace, setPace] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(() =>
     typeof window !== "undefined" && window.matchMedia
       ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -39,6 +39,14 @@ export function IslandPet() {
     () => deriveAmbientMood({ reaction, inLab, needsAnswer }),
     [reaction, inLab, needsAnswer],
   );
+
+  const patrol = usePetPatrol({
+    enabled: visible && !reducedMotion,
+    mood,
+    railRef,
+  });
+
+  const patrolling = mood === "idle" && patrol.phase === "walking";
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -76,20 +84,6 @@ export function IslandPet() {
     const timer = window.setTimeout(() => setReaction(null), PET_REACTION_MS);
     return () => window.clearTimeout(timer);
   }, [app.lastCheck, app.lastCelebration]);
-
-  // Tiny local pace inside the nest — not a full-page wander.
-  useEffect(() => {
-    if (!visible || reducedMotion) return;
-    const tick = () => {
-      setPace((value) => {
-        const next = value >= 1 ? 0 : value + 1;
-        setFacing(next === 0 ? "right" : "left");
-        return next;
-      });
-    };
-    const id = window.setInterval(tick, mood === "working" ? 2200 : 4800);
-    return () => window.clearInterval(id);
-  }, [visible, reducedMotion, mood]);
 
   useEffect(() => {
     return () => {
@@ -131,30 +125,44 @@ export function IslandPet() {
   return (
     <div
       className={[
-        "island-pet-nest",
+        "island-pet-anchor",
         `pet-mood-${mood}`,
-        `pet-pace-${pace}`,
         reducedMotion ? "is-reduced-motion" : "",
+        patrolling ? "is-patrolling" : "",
       ]
         .filter(Boolean)
         .join(" ")}
       aria-hidden={hint ? undefined : true}
     >
       <div
-        className="island-pet-nest-hit"
-        onPointerDown={onPointerDown}
-        onPointerUp={onPointerUp}
-        onPointerLeave={onPointerUp}
-        onClick={onWaveClick}
-        role="img"
-        aria-label={`${species.name}, your lab buddy`}
+        ref={railRef}
+        className="island-pet-rail"
+        style={{
+          transform: reducedMotion ? undefined : `translateX(${patrol.x}px)`,
+          transitionDuration: patrol.walkMs > 0 ? `${patrol.walkMs}ms` : undefined,
+        }}
       >
-        <PetSprite speciesId={speciesId} mood={mood} facing={facing} />
+        <div
+          className="island-pet-hit"
+          onPointerDown={onPointerDown}
+          onPointerUp={onPointerUp}
+          onPointerLeave={onPointerUp}
+          onClick={onWaveClick}
+          role="img"
+          aria-label={`${species.name}, your lab buddy`}
+        >
+          <PetSprite
+            speciesId={speciesId}
+            mood={mood}
+            facing={patrol.facing}
+            patrolling={patrolling}
+          />
+        </div>
       </div>
       {hint && (
-        <div className="island-pet-nest-hint" role="dialog" aria-label="Hide pet">
+        <div className="island-pet-hint" role="dialog" aria-label="Hide pet">
           <span>{hint}</span>
-          <button type="button" className="island-pet-nest-hide" onClick={confirmHide}>
+          <button type="button" className="island-pet-hide" onClick={confirmHide}>
             Hide
           </button>
         </div>

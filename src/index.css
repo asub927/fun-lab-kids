@@ -3799,10 +3799,10 @@ main:has(.home-page) {
   transition: transform var(--duration-fast) var(--ease-out-expo);
 }
 
-/* Island Pet — quiet nest (Codex-style), no roam / no action chrome */
-.island-pet-nest {
+/* Island Pet — Codex-style bottom patrol rail */
+.island-pet-anchor {
   position: fixed;
-  left: max(0.75rem, env(safe-area-inset-left));
+  left: 0;
   bottom: max(0.85rem, env(safe-area-inset-bottom));
   z-index: 34;
   width: 4.25rem;
@@ -3810,7 +3810,23 @@ main:has(.home-page) {
   pointer-events: none;
 }
 
-.island-pet-nest-hit {
+.island-pet-anchor.is-reduced-motion {
+  left: max(0.75rem, env(safe-area-inset-left));
+}
+
+.island-pet-rail {
+  width: 4.25rem;
+  height: 4.25rem;
+  transition-property: transform;
+  transition-timing-function: linear;
+  will-change: transform;
+}
+
+.island-pet-anchor.is-reduced-motion .island-pet-rail {
+  transition: none;
+}
+
+.island-pet-hit {
   pointer-events: auto;
   width: 4.25rem;
   height: 4.25rem;
@@ -3821,32 +3837,19 @@ main:has(.home-page) {
   background: transparent;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 1.8s var(--ease-out-expo);
 }
 
-.island-pet-nest.pet-pace-1 .island-pet-nest-hit {
-  transform: translateX(14px);
-}
-
-.island-pet-nest.pet-mood-working .island-pet-nest-hit {
-  transition-duration: 0.9s;
-}
-
-.island-pet-nest.pet-mood-working.pet-pace-1 .island-pet-nest-hit {
-  transform: translateX(18px);
-}
-
-.island-pet-nest-hit .pet-sprite {
+.island-pet-hit .pet-sprite {
   width: 3.85rem;
   height: 3.85rem;
   filter: drop-shadow(2px 3px 0 rgba(10, 10, 10, 0.16));
 }
 
-.island-pet-nest-hint {
+.island-pet-hint {
   pointer-events: auto;
-  position: absolute;
-  left: 0;
-  bottom: calc(100% + 0.35rem);
+  position: fixed;
+  left: max(0.75rem, env(safe-area-inset-left));
+  bottom: calc(max(0.85rem, env(safe-area-inset-bottom)) + 4.6rem);
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -3865,7 +3868,7 @@ main:has(.home-page) {
   animation: motion-pop-in 0.3s var(--ease-spring) both;
 }
 
-.island-pet-nest-hide {
+.island-pet-hide {
   border: 2px solid var(--color-ink);
   border-radius: 999px;
   background: var(--color-bone);
@@ -3875,7 +3878,7 @@ main:has(.home-page) {
   color: var(--color-ink);
 }
 
-.island-pet-nest-hide:hover {
+.island-pet-hide:hover {
   background: var(--color-cream);
 }
 
@@ -3907,7 +3910,7 @@ main:has(.home-page) {
   filter: drop-shadow(2px 3px 0 rgba(10, 10, 10, 0.12));
 }
 
-.island-pet-nest-hit .codex-pet-sprite {
+.island-pet-hit .codex-pet-sprite {
   filter: drop-shadow(2px 3px 0 rgba(10, 10, 10, 0.16));
 }
 
@@ -4342,7 +4345,7 @@ main:has(.home-page) {
     font-size: 0.8125rem;
   }
 
-  .island-pet-nest-hint {
+  .island-pet-hint {
     white-space: normal;
     max-width: min(16rem, calc(100% - 1.5rem));
     font-size: 0.8125rem;
@@ -4387,20 +4390,16 @@ main:has(.home-page) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .island-pet-nest,
-  .island-pet-nest-hit {
+  .island-pet-anchor,
+  .island-pet-rail,
+  .island-pet-hit {
     width: 3.6rem;
     height: 3.6rem;
   }
 
-  .island-pet-nest-hit .pet-sprite {
+  .island-pet-hit .pet-sprite {
     width: 3.25rem;
     height: 3.25rem;
-  }
-
-  .island-pet-nest.pet-pace-1 .island-pet-nest-hit,
-  .island-pet-nest.pet-mood-working.pet-pace-1 .island-pet-nest-hit {
-    transform: translateX(10px);
   }
 }
 
@@ -4411,8 +4410,8 @@ main:has(.home-page) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .island-pet-nest-hit,
-  .island-pet-nest-hint,
+  .island-pet-hit,
+  .island-pet-hint,
   .pet-sprite--idle,
   .pet-sprite--working,
   .pet-sprite--waiting,
@@ -4438,10 +4437,5 @@ main:has(.home-page) {
   .pet-part--bubble {
     animation: none !important;
     transition: none !important;
-  }
-
-  .island-pet-nest.pet-pace-1 .island-pet-nest-hit,
-  .island-pet-nest.pet-mood-working.pet-pace-1 .island-pet-nest-hit {
-    transform: none;
   }
 }

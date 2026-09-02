@@ -5,10 +5,10 @@ import {
   CODEX_CELL_HEIGHT,
   CODEX_CELL_WIDTH,
   CODEX_COLUMNS,
+  resolveCodexAction,
   codexAtlasHeight,
   codexFramePosition,
   getCodexPetPackage,
-  moodToCodexAction,
   type CodexAction,
 } from "../../data/codexPets";
 
@@ -16,6 +16,8 @@ type CodexPetSpriteProps = {
   packageId: string;
   mood: PetMood;
   facing?: "left" | "right";
+  /** True while the pet is walking a horizontal patrol lane. */
+  patrolling?: boolean;
   /** Display scale relative to native 192×208 cells. */
   scale?: number;
   className?: string;
@@ -73,12 +75,13 @@ export function CodexPetSprite({
   packageId,
   mood,
   facing = "right",
+  patrolling = false,
   scale = 0.34,
   className = "",
 }: CodexPetSpriteProps) {
   const pkg = getCodexPetPackage(packageId);
   const reducedMotion = useReducedMotion();
-  const action = moodToCodexAction(mood, facing);
+  const action = resolveCodexAction({ mood, facing, patrolling });
   const frame = useCodexFrame(action, reducedMotion);
 
   const style = useMemo(() => {
