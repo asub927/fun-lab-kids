@@ -2,9 +2,16 @@ import type { CelebrationPayload } from "../context/AppContext";
 import type { PetCelebrationCue } from "../data/petDialogue";
 import { getCharacterBySubject } from "../data/characters";
 import { getCharacterIdForPet, type PetSpeciesId } from "../data/pets";
-import { listGrade2Standards } from "../data/standards";
+import { findStandard, listGrade2Standards } from "../data/standards";
 import type { Subject } from "../types";
-import { pickBuddyLine, pickCharacterLineById, type DialogueVars } from "./characterDialogue";
+import {
+  pickAchievementLine,
+  pickBuddyLine,
+  pickCharacterLineById,
+  pickLabLine,
+  pickMasteryLine,
+  type DialogueVars,
+} from "./characterDialogue";
 import type { ProgressStore } from "./progress";
 import { getNextAchievement } from "./progressStats";
 import { isPetSoundEnabled } from "./pet";
@@ -18,14 +25,23 @@ function parseSubjectFromPath(pathname: string): Subject | null {
   return match ? (match[1] as Subject) : null;
 }
 
-export function labNameForPath(pathname: string): string {
-  const subject = parseSubjectFromPath(pathname);
+export function subjectForSpeech(pathname: string, activeSubject?: Subject | null): Subject | null {
+  if (activeSubject) return activeSubject;
+  const fromSubjectRoute = parseSubjectFromPath(pathname);
+  if (fromSubjectRoute) return fromSubjectRoute;
+  const labMatch = pathname.match(/^\/lab\/([^/?#]+)/);
+  if (!labMatch) return null;
+  return findStandard(decodeURIComponent(labMatch[1]))?.subject ?? null;
+}
+
+export function labNameForPath(pathname: string, activeSubject?: Subject | null): string {
+  const subject = subjectForSpeech(pathname, activeSubject);
   if (subject) return getCharacterBySubject(subject).lab;
   return "Fun Lab";
 }
 
-function dialogueVarsForPath(pathname: string, extra: DialogueVars = {}): DialogueVars {
-  return { labName: labNameForPath(pathname), ...extra };
+function dialogueVarsForPath(pathname: string, extra: DialogueVars = {}, activeSubject?: Subject | null): DialogueVars {
+  return { labName: labNameForPath(pathname, activeSubject), ...extra };
 }
 
 export function isPetSpeechSupported(): boolean {
@@ -114,26 +130,36 @@ export function speechForRoute(
 
 export function speechForCheck(
   ok: boolean,
+  pathname: string,
   speciesId: PetSpeciesId,
   store: ProgressStore,
   checkCount: number,
+  activeSubject?: Subject | null,
 ): string {
   const context = ok ? "labCorrect" : "labEncourage";
+  const subject = subjectForSpeech(pathname, activeSubject);
+  if (subject) {
+    return pickLabLine(subject, context, store, checkCount);
+  }
   return pickBuddyLine(speciesId, context, store, {}, checkCount);
 }
 
 export function speechForCelebration(
   celebration: CelebrationPayload,
+  pathname: string,
   speciesId: PetSpeciesId,
   store: ProgressStore,
   checkCount: number,
+  activeSubject?: Subject | null,
 ): string {
-  const characterId = getCharacterIdForPet(speciesId);
+  const subject = subjectForSpeech(pathname, activeSubject);
   if (celebration.isNewMastery) {
-    return pickCharacterLineById(characterId, "mastery", store, {}, checkCount);
+    if (subject) return pickMasteryLine(subject, store, checkCount);
+    return pickCharacterLineById(getCharacterIdForPet(speciesId), "mastery", store, {}, checkCount);
   }
   const first = celebration.newAchievements[0];
   if (first) {
+    if (subject) return pickAchievementLine(subject, store, first, checkCount);
     return pickBuddyLine(
       speciesId,
       "achievement",
@@ -142,7 +168,8 @@ export function speechForCelebration(
       checkCount,
     );
   }
-  return pickCharacterLineById(characterId, "mastery", store, {}, checkCount);
+  if (subject) return pickMasteryLine(subject, store, checkCount);
+  return pickCharacterLineById(getCharacterIdForPet(speciesId), "mastery", store, {}, checkCount);
 }
 
 export function speechForWave(

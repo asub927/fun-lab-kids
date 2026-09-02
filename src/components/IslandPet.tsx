@@ -147,8 +147,10 @@ export function IslandPet({ laneRef }: IslandPetProps) {
       showCelebrationCue("correct", store.gamification.lifetimeChecks);
       return;
     }
-    showSpeech(speechForCheck(false, speciesId, store, checkCount));
-  }, [app.lastCheck, speciesId, checkCount, showSpeech, showCelebrationCue]);
+    showSpeech(
+      speechForCheck(false, pathname, speciesId, store, checkCount, app.activeStandard?.subject),
+    );
+  }, [app.lastCheck, app.activeStandard?.subject, pathname, speciesId, checkCount, showSpeech, showCelebrationCue]);
 
   useEffect(() => {
     if (!app.lastCelebration) return;
