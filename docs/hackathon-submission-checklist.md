@@ -1,7 +1,8 @@
 # WebMCP Challenge — Submission Completion Guide
 
-**Project:** Inquiry Island  
-**Repo:** https://github.com/asub927/inquiry-island  
+**Project:** Fun Lab  
+**Repo:** https://github.com/asub927/inquiry-island (`funlab`)  
+**Live demo:** https://inquiry-island.vercel.app  
 **Official rules:** https://webmcp.devpost.com/rules  
 **Deadline:** September 3, 2026 @ 1:00pm PDT  
 
@@ -18,15 +19,15 @@ Do **not** treat this file as the Devpost submission. Use it as the checklist an
 | Join / register on Devpost | Pending (entrant) | [§1 Devpost registration](#1-devpost-registration) |
 | WebMCP-powered web app using `document.modelContext.registerTool` | Met | [`src/webmcp/register.ts`](../src/webmcp/register.ts) |
 | Built during Submission Period (Aug 25–Sep 3, 2026) | Met | Git history from 2026-08-26 |
-| Working live URL (ChatGPT in-app browser or Chrome + WebMCP) | Pending | [§2 Working live URL](#2-working-live-url) |
+| Working live URL (ChatGPT in-app browser or Chrome + WebMCP) | Met | https://inquiry-island.vercel.app — still verify WebMCP in ChatGPT/Chrome |
 | Text description (4 required explanation points) | Pending | [§3 Devpost text description](#3-devpost-text-description) |
 | Public code repository | Met | Public GitHub repo |
 | Open-source license (detectable on GitHub) | Met | MIT [`LICENSE`](../LICENSE) |
 | Demo video &lt;3 min, public YouTube, with audio | Pending | [§4 Demo YouTube video](#4-demo-youtube-video) |
-| Testing / judge access instructions | Pending | [§5 Judge testing instructions](#5-judge-testing-instructions) |
+| Testing / judge access instructions | Pending (paste to Devpost) | [§5 Judge testing instructions](#5-judge-testing-instructions) |
 | Submit all fields on Enter a Submission | Pending | [§6 Submission form assembly](#6-submission-form-assembly) |
 | Freeze repo + site + Devpost after deadline | Pending after submit | [§7 Post-deadline freeze](#7-post-deadline-freeze) |
-| Optional Netlify credits form (Sep 1 @ 12pm PT) | Optional | [§8 Optional Netlify credits](#8-optional-netlify-credits) |
+| Optional Netlify credits form (Sep 1 @ 12pm PT) | Optional / likely closed | [§8 Optional hosting credits](#8-optional-hosting-credits) |
 
 **Entrant-only (cannot be verified from the repo):** age-of-majority eligibility, OpenAI API–supported country/territory, not a disqualified person/org (Official Rules §3).
 
@@ -45,7 +46,7 @@ Without registration you cannot submit. This is an eligibility gate, not a judgi
 ### Done when
 
 - [ ] You are logged into Devpost
-- [ ] Inquiry Island / your account shows as joined on https://webmcp.devpost.com/
+- [ ] Fun Lab / your account shows as joined on https://webmcp.devpost.com/
 - [ ] You can open **Enter a Submission** (draft is fine)
 
 ### How to complete
@@ -70,54 +71,50 @@ Screenshot of the joined-hackathon confirmation or dashboard showing you are reg
 
 ### Rule satisfied
 
-Official Rules §4 *Submission Requirements*: provide a **working live URL** judges can access using ChatGPT’s in-app browser or Google Chrome with WebMCP enabled. Hosting may be Netlify (or ChatGPT Sites, Cloudflare, Vercel, Render, etc.). The Project must run consistently and function as depicted in the video/description (*Project Requirements — Functionality*).
+Official Rules §4 *Submission Requirements*: provide a **working live URL** judges can access using ChatGPT’s in-app browser or Google Chrome with WebMCP enabled. Hosting may be Vercel, Netlify, Cloudflare, Render, ChatGPT Sites, etc.
 
 ### Why it matters
 
-Pass/fail for submission completeness. Judges are not required to build from source. No live URL → high risk of ineligible or unscored entry.
+Pass/fail for submission completeness. Judges are not required to build from source.
 
 ### Done when
 
-- [ ] Production URL loads over HTTPS without login
-- [ ] `/grade-2` hub and at least one showcase lab load (e.g. `/lab/NC.2.NBT.1`)
-- [ ] In ChatGPT in-app browser **or** Chrome with `chrome://flags/#enable-webmcp-testing`, agent tools appear
+- [x] Production URL loads over HTTPS without login — https://inquiry-island.vercel.app
+- [ ] `/grade-2` hub and showcase labs load
+- [ ] In ChatGPT in-app browser **or** Chrome with `chrome://flags/#enable-webmcp-testing`, agent tools work
 - [ ] Agent can call at least `set_active_standard`, `apply_board_action`, and `run_check`
-- [ ] GitHub repo **About → Website** is set to the live URL
+- [ ] GitHub repo **About → Website** is set to the live URL (if not already)
 - [ ] Same URL is pasted into the Devpost submission form
 
 ### How to complete
 
-Netlify is already configured in [`netlify.toml`](../netlify.toml) (`npm run build` → `dist/`, SPA redirect).
+Live site is already on **Vercel** (`vercel.json` in repo). Remaining work is verification + Devpost paste.
 
-1. Local smoke before deploy:
-   ```bash
-   npm install
-   npm run typecheck
-   npm run test
-   npm run build
-   npm run preview
-   ```
-2. Confirm locally: home → Grade 2 → Math/ELA/Science → open a lab.
-3. Deploy (pick one):
-   - **Netlify UI:** Import `asub927/inquiry-island`, build command `npm run build`, publish `dist`
-   - **Netlify CLI:** `npm i -g netlify-cli && netlify login && netlify init && netlify deploy --prod`
-4. Open the production URL in ChatGPT’s in-app browser (WebMCP on by default).
-5. Alternate test: Chrome 149+, enable `chrome://flags/#enable-webmcp-testing`, restart, reload the site.
-6. If WebMCP is missing, the in-app banner should still appear and kid UI must work alone.
-7. GitHub → repo **About** (gear) → Website → paste live URL → Save.
-8. Paste the same URL into Devpost.
+1. Open https://inquiry-island.vercel.app/grade-2
+2. Smoke: Math / ELA / Science → open a lab
+3. Open the same URL in ChatGPT’s in-app browser (WebMCP on by default)
+4. Alternate: Chrome 149+, enable `chrome://flags/#enable-webmcp-testing`, restart, reload
+5. GitHub → repo **About** (gear) → Website → `https://inquiry-island.vercel.app` → Save
+6. Paste the same URL into Devpost
+
+Local rebuild (only if you change code before submit):
+
+```bash
+npm install
+npm run typecheck
+npm run test
+npm run build
+```
 
 ### Ready-to-use content
 
-After deploy, fill these placeholders:
-
 | Field | Value |
 | --- | --- |
-| Live URL | `https://_____.netlify.app` |
-| Grade 2 hub | `https://_____.netlify.app/grade-2` |
-| Math showcase | `https://_____.netlify.app/lab/NC.2.NBT.1` |
-| ELA showcase | `https://_____.netlify.app/lab/W.2.1` |
-| Science showcase | `https://_____.netlify.app/lab/2.P.2.1` |
+| Live URL | `https://inquiry-island.vercel.app` |
+| Grade 2 hub | `https://inquiry-island.vercel.app/grade-2` |
+| Math showcase | `https://inquiry-island.vercel.app/lab/NC.2.NBT.1` |
+| ELA showcase | `https://inquiry-island.vercel.app/lab/W.2.1` |
+| Science showcase | `https://inquiry-island.vercel.app/lab/2.P.2.1` |
 
 Auth: none required (guest mode, localStorage only). Leave Devpost login credentials blank.
 
@@ -125,7 +122,7 @@ Auth: none required (guest mode, localStorage only). Leave Devpost login credent
 
 - Screenshot of live `/grade-2`
 - Screenshot or recording of tools visible to the agent
-- Note of the exact production URL used on Devpost
+- Confirmation that Devpost uses this exact URL
 
 ---
 
@@ -146,40 +143,43 @@ Required submission field. Also feeds Stage Two judging: **WebMCP Leverage**, **
 
 ### Done when
 
-- [ ] All four points are covered in the Devpost description (and “Built With” / gallery as needed)
+- [ ] All four points are covered in the Devpost description
+- [ ] Copy uses the product name **Fun Lab** (not the old Inquiry Island name)
 - [ ] Copy mentions real tools from this repo
-- [ ] English only (or English translation provided)
+- [ ] English only
 
 ### How to complete
 
 1. Open Enter a Submission → Project description / “About the project”
-2. Paste the block below (edit the live URL when you have it)
-3. Optionally add 2–4 screenshots: hub, place-value lab, opinion builder, matter lab
+2. Paste the block below
+3. Optionally add 2–4 screenshots: hub, Place Value Lab, Opinion Builder, Matter Lab
 
 ### Ready-to-use content (paste into Devpost)
 
-**Tagline / elevator (optional short field):**  
-Inquiry Island — NC Grade 2 Math, ELA & Science boards that kids and AI agents share through WebMCP tools.
+**Project name:** Fun Lab  
+
+**Tagline:**  
+NC Grade 2 Math, ELA & Science — hands-on labs kids share with an AI teammate via WebMCP.
 
 **Full description:**
 
 ```text
-## What is Inquiry Island?
+## What is Fun Lab?
 
-Inquiry Island is a WebMCP-powered learning web app where a child and an AI teammate share the same manipulatives, writing board, and science sims. Built for the WebMCP Challenge around North Carolina Grade 2 standards (NCSCOS): 77 playable standards across Math, ELA, and Science, with three showcase labs (Place Value, Opinion Builder, Matter Lab).
+Fun Lab is a WebMCP-powered learning web app where a child and an AI teammate share the same manipulatives, writing board, and science sims. Built for the WebMCP Challenge around North Carolina Grade 2 standards (NCSCOS): playable standards across Math, ELA, and Science, with three showcase labs (Place Value, Opinion Builder, Matter Lab).
 
-Live app: https://_____.netlify.app
-Grade 2 hub: https://_____.netlify.app/grade-2
+Live app: https://inquiry-island.vercel.app
+Grade 2 hub: https://inquiry-island.vercel.app/grade-2
 
 ## Why this is a strong fit for WebMCP
 
-Classroom/learning agents usually either chat in a side panel or scrape the DOM. Neither is safe or reliable for shared math blocks, opinion essays, or science classifications. WebMCP lets Inquiry Island expose an explicit tool surface—curriculum navigation plus board actions—so the agent operates the same state the child sees, with schemas, confirmations for destructive/reveal actions, and a graceful banner when WebMCP is unavailable.
+Classroom/learning agents usually either chat in a side panel or scrape the DOM. Neither is safe or reliable for shared math blocks, opinion essays, or science classifications. WebMCP lets Fun Lab expose an explicit tool surface—curriculum navigation plus board actions—so the agent operates the same state the child sees, with schemas and child confirmations for reveal/reset/revision.
 
 ## How it creates a better user experience
 
 - The child stays in a kid-first UI (Grade 2 hub → subject → lab) while the agent helps without hijacking the screen.
 - Tools like request_hint and ask_guiding_question coach instead of spoiling; reveal_solution and reset_board require in-UI confirmation.
-- Progress and a scoreboard stay on-device (localStorage); guest mode collects no child PII.
+- Progress, Fun Points, and badges stay on-device (localStorage); guest mode collects no child PII.
 - If WebMCP is off, the kid UI still works—agents are additive, not required.
 
 ## What people and agents can do together that was hard before
@@ -194,18 +194,18 @@ Curriculum (always on): list_subjects, list_grades, list_standards, get_standard
 
 Lab (when a lab is active): get_board_state, apply_board_action, undo, run_check, request_hint, ask_guiding_question, reveal_solution, reset_board, and suggest_revision on Opinion Builder
 
-Each tool has a JSON Schema input, execute handler wired to React app state, and unregister-on-unmount. Stack: Vite + React + TypeScript, static Netlify host.
+Each tool has a JSON Schema input, execute handler wired to React app state, and unregister-on-unmount. Stack: Vite + React + TypeScript, hosted on Vercel.
 
 ## Judge quick start
 
-1. Open the live URL in ChatGPT’s in-app browser (or Chrome with chrome://flags/#enable-webmcp-testing).
+1. Open https://inquiry-island.vercel.app in ChatGPT’s in-app browser (or Chrome with chrome://flags/#enable-webmcp-testing).
 2. Go to /grade-2 (or /lab/NC.2.NBT.1).
-3. Try: “Open Place Value Island. Use tools to build 243 with hundreds, tens, and ones blocks, then run_check.”
+3. Try: “Open Place Value Lab. Use tools to build 243 with hundreds, tens, and ones blocks, then run_check.”
 
 Standards text is from NCSCOS with attribution to NC DPI; not endorsed by DPI or any district.
 ```
 
-**Built with (tags):** WebMCP, React, TypeScript, Vite, Netlify, NCSCOS
+**Built with (tags):** WebMCP, React, TypeScript, Vite, Vercel, NCSCOS
 
 ### Evidence to keep
 
@@ -232,8 +232,8 @@ Required for a complete Submission. Primary evidence for judges who may not deep
 ### Done when
 
 - [ ] Final cut ≤ 2:59
-- [ ] Narration or on-mic audio explains product + WebMCP
-- [ ] Screen shows live (or production-identical) app working
+- [ ] Narration or on-mic audio explains Fun Lab + WebMCP
+- [ ] Screen shows https://inquiry-island.vercel.app working
 - [ ] At least one agent tool call is visible (ChatGPT tool use or Chrome WebMCP)
 - [ ] YouTube visibility = **Public** or **Unlisted** (accessible via link; Public preferred)
 - [ ] No copyrighted music; no unlicensed logos
@@ -241,7 +241,7 @@ Required for a complete Submission. Primary evidence for judges who may not deep
 
 ### How to complete
 
-1. Deploy the live URL first (see §2) so the recording matches what judges open.
+1. Record against the **live** URL so the video matches the submission link.
 2. Record with OBS, QuickTime, or Loom (export MP4).
 3. Follow the shot list and script below.
 4. Upload to YouTube → Title / description from ready-to-use content → Public.
@@ -251,49 +251,46 @@ Required for a complete Submission. Primary evidence for judges who may not deep
 
 | Time | Visual | Audio focus |
 | --- | --- | --- |
-| 0:00–0:20 | Home or Grade 2 hub, brand visible | Pitch: kid + AI teammate, WebMCP Challenge |
-| 0:20–0:45 | Navigate hub → Math → Place Value lab | Human path: guest kid UI |
+| 0:00–0:20 | Home or Grade 2 hub, **Fun Lab** brand visible | Pitch: kid + AI teammate, WebMCP Challenge |
+| 0:20–0:45 | Navigate hub → Math → Place Value Lab | Human path: guest kid UI |
 | 0:45–1:10 | Child (or you) places a few blocks manually | Shared board is the product |
 | 1:10–1:35 | ChatGPT in-app browser (or Chrome) beside/over the lab | “WebMCP tools are registered on the page” |
 | 1:35–2:10 | Agent calls `get_board_state` / `apply_board_action` / `run_check` | Narrate each tool; show board updating |
-| 2:10–2:25 | Quick cut: Opinion Builder or Matter Lab tool hint | Breadth beyond one lab |
+| 2:10–2:25 | Quick cut: Opinion Builder or Matter Lab | Breadth beyond one lab |
 | 2:25–2:45 | Hub + closing frame with live URL + repo | Why WebMCP uniquely enables this |
 
 ### Spoken script (~2:30)
 
-Use this as a teleprompter; slight paraphrasing is fine.
-
 **0:00–0:20**  
-“Hi — this is Inquiry Island, our WebMCP Challenge project. It’s a Grade 2 learning app for North Carolina math, English, and science where a kid and an AI teammate share the same boards — not a chat bolted on the side.”
+“Hi — this is Fun Lab, our WebMCP Challenge project. It’s a Grade 2 learning app for North Carolina math, English, and science where a kid and an AI teammate share the same boards — not a chat bolted on the side.”
 
 **0:20–1:10**  
-“Here’s the kid experience. Guest mode, no child PII. From the Grade 2 hub I open Place Value Island. I can move hundreds, tens, and ones myself. Progress stays in localStorage on this device.”
+“Here’s the kid experience. Guest mode, no child PII. From the Grade 2 hub I open Place Value Lab. I can move hundreds, tens, and ones myself. Progress and Fun Points stay in localStorage on this device.”
 
 **1:10–2:20**  
 “Now the WebMCP part. The page registers tools with `document.modelContext.registerTool`. In ChatGPT’s browser I’m asking the agent to read the board, apply actions to build two hundred forty-three, and run check. You can see the same blocks update that the child sees — curriculum tools like `set_active_standard`, and lab tools like `apply_board_action` and `run_check`. Hints and guiding questions coach; reveal and reset ask the child to confirm in the UI.”
 
 **2:20–2:45**  
-“Without WebMCP, an agent would guess at the DOM or work in a disconnected chat. With WebMCP, human and agent truly share one learning board. Thanks for judging Inquiry Island — live demo and MIT source are linked on our Devpost.”
+“Without WebMCP, an agent would guess at the DOM or work in a disconnected chat. With WebMCP, human and agent truly share one learning board. Thanks for judging Fun Lab — live demo and MIT source are linked on our Devpost.”
 
 ### Recording tips
 
-- Prefer the **deployed** URL so the video matches the submission link
+- Prefer https://inquiry-island.vercel.app so the recording matches the submission link
 - Mic check; keep background quiet; no music bed
 - Zoom browser UI enough to read tool names
-- If ChatGPT UI is hard to capture, use Chrome + WebMCP flag and show the tool activity panel / board updates clearly while narrating tool names
 - Hard cap at 2:45 so encoding/title cards do not push past 3:00
 
 ### Ready-to-use YouTube metadata
 
 **Title:**  
-Inquiry Island — WebMCP Challenge Demo (Kid + AI Shared Learning Boards)
+Fun Lab — WebMCP Challenge Demo (Kid + AI Shared Learning Boards)
 
 **Description:**
 
 ```text
-Inquiry Island is a WebMCP-powered Grade 2 learning app (NC Math, ELA, Science) where kids and AI agents share manipulatives and boards via document.modelContext.registerTool.
+Fun Lab is a WebMCP-powered Grade 2 learning app (NC Math, ELA, Science) where kids and AI agents share manipulatives and boards via document.modelContext.registerTool.
 
-Live: https://_____.netlify.app
+Live: https://inquiry-island.vercel.app
 Repo: https://github.com/asub927/inquiry-island
 Devpost: WebMCP Challenge
 
@@ -302,7 +299,7 @@ Tools shown include set_active_standard, get_board_state, apply_board_action, an
 
 **Visibility:** Public  
 **Category:** Science & Technology  
-**Playlist / kids mode:** Do **not** mark as “Made for Kids” if that restricts comments/discoverability for judges; this is a developer demo.
+**Kids mode:** Do **not** mark as “Made for Kids” if that restricts discoverability for judges; this is a developer demo.
 
 ### Evidence to keep
 
@@ -316,29 +313,29 @@ Tools shown include set_active_standard, get_board_state, apply_board_action, an
 
 ### Rule satisfied
 
-Official Rules §4 *Testing*: access must be provided to a working Project for judging and testing via website/demo link; free of charge through the Judging Period. Judges may judge from description/images/video alone, but clear instructions improve WebMCP Leverage and Execution scores.
+Official Rules §4 *Testing*: access must be provided to a working Project for judging and testing via website/demo link; free of charge through the Judging Period.
 
 ### Why it matters
 
-Not always a separate Devpost field name, but required in practice for “how do we try this?” Put this in Devpost **Testing instructions** / supplemental text and keep aligned with the README.
+Clear instructions improve WebMCP Leverage and Execution scores even when judges also watch the video.
 
 ### Done when
 
 - [ ] Instructions list live URL, WebMCP test environments, and 3 copy-paste agent prompts
-- [ ] No login required (or credentials documented — N/A here)
-- [ ] Instructions match production routes
+- [ ] No login required
+- [ ] Instructions match production routes and the name **Fun Lab**
 
 ### How to complete
 
-Paste the block below into Devpost testing instructions (and keep README in sync if the URL changes).
+Paste the block below into Devpost testing instructions (aligned with README).
 
 ### Ready-to-use content
 
 ```text
-TESTING INSTRUCTIONS — Inquiry Island
+TESTING INSTRUCTIONS — Fun Lab
 
-Live URL: https://_____.netlify.app
-Grade 2 hub: https://_____.netlify.app/grade-2
+Live URL: https://inquiry-island.vercel.app
+Grade 2 hub: https://inquiry-island.vercel.app/grade-2
 
 How to enable WebMCP
 1) Preferred: open the live URL inside ChatGPT’s in-app browser (WebMCP on by default).
@@ -347,16 +344,17 @@ How to enable WebMCP
 No login. Guest mode. Progress is localStorage only.
 
 Suggested agent prompts
-• Math: Open Place Value Island. Use tools to build 243 with hundreds, tens, and ones blocks, then run_check.
+• Math: Open Place Value Lab. Use tools to build 243 with hundreds, tens, and ones blocks, then run_check.
 • ELA: Help me write an opinion about recess. Add two reasons and a linking word; suggest one revision and wait for my confirm.
 • Science: Classify the objects, heat the ice, predict the state, then run_check.
 
 Deep links
-• /lab/NC.2.NBT.1 — Place Value
+• /lab/NC.2.NBT.1 — Place Value Lab
 • /lab/W.2.1 — Opinion Builder
 • /lab/2.P.2.1 — Matter Lab
 
-If WebMCP is unavailable, a banner appears; the kid UI still works.
+Legacy redirects: /demo/math, /demo/ela, /demo/science
+
 Source: https://github.com/asub927/inquiry-island (MIT)
 ```
 
@@ -380,28 +378,28 @@ A partial draft does not count. Everything above must land on one submitted entr
 
 - [ ] Status is **Submitted** (not only Saved Draft) before Sep 3, 2026 1:00pm PDT
 - [ ] Every required field has a value
-- [ ] Live URL, repo URL, license, video URL, and description are consistent
+- [ ] Live URL, repo URL, license, video URL, and description are consistent and say **Fun Lab**
 
 ### How to complete — field map
 
 | Devpost field | What to enter | Source section |
 | --- | --- | --- |
-| Project name | Inquiry Island | — |
+| Project name | Fun Lab | — |
 | Tagline | NC Grade 2 Math, ELA & Science — learn with your AI teammate via WebMCP | §3 |
-| Project URL / Live demo | `https://_____.netlify.app` | §2 |
+| Project URL / Live demo | `https://inquiry-island.vercel.app` | §2 |
 | Demo video | YouTube link | §4 |
 | Repo URL | https://github.com/asub927/inquiry-island | Verified appendix |
 | Open source license | MIT (detectable on GitHub) | Verified appendix |
 | Description | Paste from §3 | §3 |
 | Testing instructions | Paste from §5 | §5 |
-| Built with | WebMCP, React, TypeScript, Vite, Netlify | §3 |
+| Built with | WebMCP, React, TypeScript, Vite, Vercel | §3 |
 | Images | Hub + 1–3 lab screenshots | Capture from live site |
 | Team | Your Devpost user / teammates | §1 |
 | Opt-in emails / rules agree | Accept Official Rules | https://webmcp.devpost.com/rules |
 
 Steps:
 
-1. Finish §1–§5 first  
+1. Finish §1, §3–§5 (live URL already ready)  
 2. Enter a Submission → fill using the table  
 3. **Save Draft** and click every link (live, repo, video) in a private window  
 4. **Submit** before the deadline  
@@ -426,19 +424,19 @@ Eligibility risk after an otherwise valid submit.
 ### Done when
 
 - [ ] Calendar reminder set for Sep 3, 2026 12:30pm PDT (“submit + freeze”)
-- [ ] After submit: no pushes to the judged default branch that change the demo, no Netlify prod deploys that change behavior, no Devpost edits
-- [ ] Any continued work happens on a **fork** or clearly separate branch not tied to the submission URL (prefer fork per FAQ)
+- [ ] After submit: no pushes that change the judged demo, no production deploys that change behavior, no Devpost edits
+- [ ] Any continued work happens on a **fork**
 
 ### How to complete
 
 1. Submit on Devpost  
 2. Tag the submitted commit: `git tag webmcp-submission-2026 && git push origin webmcp-submission-2026`  
-3. Mute auto-deploys on Netlify for `main` during judging, or freeze the prod deploy  
+3. Freeze Vercel production deploys for the judged project during judging, or avoid merging demo-changing PRs  
 4. If you must fix a rules violation (IP, PII) only, wait for Sponsor/Devpost permission per §6  
 
 ### Ready-to-use content
 
-Calendar title: `WebMCP FREEZE — do not edit Inquiry Island Devpost/repo/prod`  
+Calendar title: `WebMCP FREEZE — do not edit Fun Lab Devpost/repo/prod`  
 Date: Sep 3, 2026 1:00pm PDT → through winner announcement (~Sep 23, 2026).
 
 ### Evidence to keep
@@ -447,70 +445,70 @@ Tag name + commit SHA that matches what is deployed and linked on Devpost.
 
 ---
 
-## 8. Optional: Netlify credits
+## 8. Optional hosting credits
 
 ### Rule satisfied
 
-Official Rules §4 *How To Enter* (optional): registered Entrants may request free Netlify credits via the Google form while supplies last; request by **September 1, 2026 at 12:00pm PT**; redeem by October 3, 2026. Credits are not required to enter or win.
+Official Rules §4 *How To Enter* (optional): registered Entrants may request free Netlify credits via the Google form while supplies last; request by **September 1, 2026 at 12:00pm PT**. Credits are not required to enter or win.
 
 ### Why it matters
 
-Does **not** affect eligibility. Only helps pay for hosting during the hackathon.
+Does **not** affect eligibility. Fun Lab is already hosted on **Vercel**; Netlify credits are optional and the request window may already be closed.
 
 ### Done when
 
 - [ ] Form submitted before Sep 1, 2026 12:00pm PT **or** you consciously skip it
-- [ ] Credits redeemed by Oct 3, 2026 if approved
+- [ ] Production remains reachable on the Devpost live URL through judging
 
 ### How to complete
 
-1. Confirm you joined the hackathon (§1)  
-2. Open the form linked from the rules/resources (Official Rules cite https://forms.gle/xw75XGUQzCXEiALc7)  
-3. Submit with the Devpost / project details they ask for  
-4. Deploy using credits if granted (§2)  
+Skip if the Sep 1 noon PT window has passed or you are staying on Vercel. If still open and desired: Official Rules cite https://forms.gle/xw75XGUQzCXEiALc7.
 
 ### Evidence to keep
 
-Form confirmation email/screenshot.
+Form confirmation (if used) or note that hosting is Vercel-only.
 
 ---
 
 ## Appendix A — Already met (verified in repo)
 
-These do **not** need new work for eligibility, but confirm they still hold at submit time.
-
 ### A1. Public repository
 
 - **Rule:** Public GitHub/GitLab/Bitbucket URL with all source, assets, and instructions  
-- **Evidence:** https://github.com/asub927/inquiry-island (`isPrivate: false`)  
+- **Evidence:** https://github.com/asub927/inquiry-island  
+- **Package / product name:** `funlab` / **Fun Lab**  
 - **Instructions:** [`README.md`](../README.md)
 
 ### A2. Open-source license
 
 - **Rule:** OSS license file detectable/visible on the repository  
-- **Evidence:** MIT [`LICENSE`](../LICENSE); GitHub `licenseInfo.key = mit`
+- **Evidence:** MIT [`LICENSE`](../LICENSE)
 
 ### A3. WebMCP `registerTool` implementation
 
-- **Rule:** Submission / repo should demonstrate `document.modelContext.registerTool({ name, description, inputSchema, execute })`  
+- **Rule:** Demonstrate `document.modelContext.registerTool({ name, description, inputSchema, execute })`  
 - **Evidence:** [`src/webmcp/register.ts`](../src/webmcp/register.ts)  
 - **Curriculum tools:** `list_subjects`, `list_grades`, `list_standards`, `get_standard`, `search_standards`, `set_active_standard`, `get_progress`, `get_scoreboard`  
 - **Lab tools:** `get_board_state`, `apply_board_action`, `undo`, `run_check`, `request_hint`, `ask_guiding_question`, `reveal_solution`, `reset_board`, `suggest_revision`
 
 ### A4. Built during Submission Period
 
-- **Rule:** New during Aug 25–Sep 3, 2026, or meaningfully extended with WebMCP in-period (with docs if pre-existing)  
-- **Evidence:** Initial commit 2026-08-26; project is new for this hackathon — no prior-vs-new split doc required
+- **Rule:** New during Aug 25–Sep 3, 2026, or meaningfully extended with WebMCP in-period  
+- **Evidence:** Initial commit 2026-08-26; project is new for this hackathon
 
 ### A5. Language
 
-- **Rule:** Submission materials in English (or with English translation)  
+- **Rule:** Submission materials in English  
 - **Evidence:** README, UI, and this guide are English
 
 ### A6. Theme fit
 
 - **Rule:** WebMCP-powered web app where humans and agents interact/collaborate  
-- **Evidence:** Shared boards + agent tools + kid UI; degradation path when WebMCP missing
+- **Evidence:** Shared boards + agent tools + kid UI
+
+### A7. Working live URL
+
+- **Evidence:** https://inquiry-island.vercel.app (Vercel)
 
 ---
 
@@ -518,28 +516,25 @@ These do **not** need new work for eligibility, but confirm they still hold at s
 
 After eligibility, Stage Two weights these equally (Official Rules §7):
 
-1. **WebMCP Leverage** — non-trivial `registerTool` surface (this project: curriculum + lab tools)  
-2. **Execution** — coherent product, not only a POC (Grade 2 hub + labs + progress)  
+1. **WebMCP Leverage** — non-trivial `registerTool` surface  
+2. **Execution** — coherent product (Grade 2 hub + labs + progress)  
 3. **Potential Impact** — real learner audience, NC standards framing  
 4. **Creativity & Ambition** — shared-board teammate vs chat sidebar  
 
-Strengthen these by shipping §2 live URL and §4 video that *show* tool calls, not only slides.
+Strengthen these with a video that *shows* tool calls on Fun Lab, not only slides.
 
 ---
 
 ## Appendix C — Final pre-submit checklist
 
-Copy this into a note and tick on submit day:
-
 - [ ] Devpost Join Hackathon done  
-- [ ] Live URL works in ChatGPT browser or Chrome WebMCP flag  
-- [ ] GitHub Website field = live URL  
-- [ ] YouTube demo ≤3 min with audio, public, no copyrighted music  
-- [ ] Description includes all 4 required explanation bullets  
+- [ ] Live URL verified in ChatGPT browser or Chrome WebMCP flag  
+- [ ] GitHub Website field = `https://inquiry-island.vercel.app`  
+- [ ] YouTube demo ≤3 min with audio, public, branded **Fun Lab**, no copyrighted music  
+- [ ] Description includes all 4 required explanation bullets and says **Fun Lab**  
 - [ ] Testing instructions pasted  
 - [ ] Repo public + MIT visible  
 - [ ] Submission status = Submitted  
 - [ ] Freeze plan armed (§7)  
-- [ ] (Optional) Netlify credits form if still before Sep 1 12pm PT  
 
 **Hard stop:** September 3, 2026 @ 1:00pm PDT.
