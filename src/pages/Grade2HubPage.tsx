@@ -1,14 +1,9 @@
 import { Link } from "react-router-dom";
 import { AnimatedNumber } from "../components/AnimatedNumber";
-import { CharacterGuide } from "../components/CharacterGuide";
 import { RevealGroup } from "../components/Reveal";
 import { listGrade2Standards } from "../data/standards";
 import { countCompleted, loadProgress } from "../services/progress";
-import { pickHubGreetingLine } from "../services/characterDialogue";
 import { getScoreboardSummary } from "../services/progressStats";
-import type { Subject } from "../types";
-
-const CREW_SUBJECTS: Subject[] = ["ela", "math", "science"];
 
 export function Grade2HubPage() {
   const all = listGrade2Standards();
@@ -26,7 +21,7 @@ export function Grade2HubPage() {
       <p className="eyebrow">Grade 2</p>
       <h1 className="hero-title">{summary.displayName}&apos;s Learning Hub</h1>
       <p className="lead">
-        Pick a subject and explore with Ripple, Digits, and Spark. Your progress saves on this device.
+        Pick a subject and explore with your lab buddy. Your progress saves on this device.
       </p>
 
       <div className="hub-stats-strip" role="status">
@@ -63,24 +58,9 @@ export function Grade2HubPage() {
           My Progress →
         </Link>
         <Link to="/grade-2/progress#lab-buddy" className="hub-pet-link">
-          Pick corner buddy →
+          Pick your buddy →
         </Link>
       </div>
-
-      <RevealGroup className="character-crew" aria-labelledby="crew-heading">
-        <p id="crew-heading" className="character-crew-label">
-          Meet your crew
-        </p>
-        {CREW_SUBJECTS.map((subject, index) => (
-          <CharacterGuide
-            key={subject}
-            subject={subject}
-            line={pickHubGreetingLine(subject, store, summary.currentStreak + index)}
-            mood={summary.currentStreak > 0 ? "happy" : "idle"}
-            featured={subject === "ela"}
-          />
-        ))}
-      </RevealGroup>
 
       <p className="progress-summary" role="status">
         {done} of {total} skills completed

@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { emptyGamificationState } from "./gamification";
 import {
   getCharacterIdForSubject,
+  pickBuddyLine,
   pickCharacterLine,
+  pickCharacterLineById,
   pickHubGreetingLine,
   pickScoreboardHintLine,
   pickSubjectWelcomeLine,
@@ -58,6 +60,32 @@ describe("pickCharacterLine", () => {
   });
 });
 
+describe("pickCharacterLineById", () => {
+  it("speaks in the chosen character voice", () => {
+    const store = makeStore({ profile: { name: "Sam" } });
+    const ripple = pickCharacterLineById("ripple", "hubGreeting", store, {}, 0);
+    const digits = pickCharacterLineById("digits", "hubGreeting", store, {}, 0);
+    expect(ripple).toContain("Sam");
+    expect(digits).toContain("Sam");
+    expect(ripple).not.toBe(digits);
+  });
+});
+
+describe("pickBuddyLine", () => {
+  it("maps cat pet to Ripple dialogue", () => {
+    const store = makeStore({ profile: { name: "Alex" } });
+    const line = pickBuddyLine("cat", "hubGreeting", store, {}, 0);
+    expect(line).toContain("Alex");
+    expect(pickCharacterLineById("ripple", "hubGreeting", store, {}, 0)).toBe(line);
+  });
+
+  it("maps dog pet to Digits dialogue", () => {
+    const store = makeStore();
+    const line = pickBuddyLine("dog", "labCorrect", store, {}, 1);
+    expect(line).toBe(pickCharacterLineById("digits", "labCorrect", store, {}, 1));
+  });
+});
+
 describe("pickHubGreetingLine", () => {
   it("returns a non-empty greeting per subject", () => {
     const store = makeStore({ profile: { name: "Emma" } });
@@ -70,16 +98,20 @@ describe("pickHubGreetingLine", () => {
 });
 
 describe("pickScoreboardHintLine", () => {
-  it("uses Ripple for scoreboard hints", () => {
+  it("uses the chosen buddy for scoreboard hints", () => {
     const store = makeStore({ profile: { name: "Leo" } });
-    const line = pickScoreboardHintLine(store, {
+    const achievement = {
       id: "word-captain",
       title: "Word Captain",
       description: "Master 5 ELA standards",
       icon: "📖",
       evaluate: () => false,
-    }, 2);
-    expect(line).toContain("Word Captain");
-    expect(line).toContain("Leo");
+    };
+    const rippleLine = pickScoreboardHintLine(store, achievement, "cat", 2);
+    const digitsLine = pickScoreboardHintLine(store, achievement, "dog", 2);
+    expect(rippleLine).toContain("Word Captain");
+    expect(rippleLine).toContain("Leo");
+    expect(digitsLine).toContain("Word Captain");
+    expect(rippleLine).not.toBe(digitsLine);
   });
 });
