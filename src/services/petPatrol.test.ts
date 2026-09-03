@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   clampPatrolX,
+  defaultExclusionRects,
+  facingForDeltaX,
   oppositeFacing,
   patrolLaneWidth,
   patrolTargetX,
+  pickWanderPoint,
+  pointClearOfExclusions,
+  wanderBoundsForViewport,
 } from "./petPatrol";
 
 describe("petPatrol", () => {
@@ -29,5 +34,30 @@ describe("petPatrol", () => {
   it("flips facing", () => {
     expect(oppositeFacing("left")).toBe("right");
     expect(oppositeFacing("right")).toBe("left");
+  });
+
+  it("builds a 2D wander box inside the viewport", () => {
+    const bounds = wanderBoundsForViewport(1280, 800, 72);
+    expect(bounds.minX).toBeGreaterThan(0);
+    expect(bounds.minY).toBeGreaterThan(0);
+    expect(bounds.maxX).toBeLessThan(1280);
+    expect(bounds.maxY).toBeLessThan(800);
+    expect(bounds.maxX).toBeGreaterThan(bounds.minX);
+    expect(bounds.maxY).toBeGreaterThan(bounds.minY);
+  });
+
+  it("picks wander points clear of exclusion pads", () => {
+    const bounds = wanderBoundsForViewport(1000, 700, 64);
+    const exclusions = defaultExclusionRects(1000, 700);
+    const point = pickWanderPoint(bounds, 64, exclusions, () => 0.5);
+    expect(pointClearOfExclusions(point, 64, exclusions)).toBe(true);
+    expect(point.x).toBeGreaterThanOrEqual(bounds.minX);
+    expect(point.y).toBeGreaterThanOrEqual(bounds.minY);
+  });
+
+  it("faces left or right from delta X", () => {
+    expect(facingForDeltaX(-12, "right")).toBe("left");
+    expect(facingForDeltaX(12, "left")).toBe("right");
+    expect(facingForDeltaX(0, "left")).toBe("left");
   });
 });

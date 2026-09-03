@@ -2,7 +2,7 @@ import type { CelebrationPayload } from "../context/AppContext";
 import type { PetCelebrationCue } from "../data/petDialogue";
 import { getCharacterBySubject } from "../data/characters";
 import { getCharacterIdForPet, type PetSpeciesId } from "../data/pets";
-import { findStandard, listGrade2Standards } from "../data/standards";
+import { findStandard } from "../data/standards";
 import type { Subject } from "../types";
 import {
   pickAchievementLine,
@@ -10,7 +10,6 @@ import {
   pickCharacterLine,
   pickCharacterLineById,
   pickLabLine,
-  pickSubjectWelcomeLine,
   type DialogueVars,
 } from "./characterDialogue";
 import type { ProgressStore } from "./progress";
@@ -99,21 +98,7 @@ export function speechForRoute(
   speciesId: PetSpeciesId,
   store: ProgressStore,
 ): string | null {
-  const routeVars = dialogueVarsForPath(pathname);
-
-  if (pathname === "/" || pathname === "/grade-2") {
-    const seed = store.gamification.currentStreak;
-    return pickBuddyLine(speciesId, "hubGreeting", store, routeVars, seed);
-  }
-
-  const subject = parseSubjectFromPath(pathname);
-  if (subject) {
-    const codes = listGrade2Standards(subject).map((s) => s.code);
-    const done = codes.filter((c) => store.progress[c]?.completed).length;
-    const total = codes.length;
-    return pickSubjectWelcomeLine(subject, store, done, total, done, routeVars);
-  }
-
+  // Keep ambient speech sparse — Progress only. Celebrate / check / wave still speak elsewhere.
   if (pathname === "/grade-2/progress") {
     const next = getNextAchievement(store);
     if (!next) return null;

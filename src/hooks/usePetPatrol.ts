@@ -1,66 +1,69 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { PetMood } from "../data/pets";
 import {
-  clampPatrolX,
-  oppositeFacing,
+  clampPoint,
+  defaultExclusionRects,
+  facingForDeltaX,
   PATROL_IDLE_TIMING,
-  patrolLaneWidth,
-  patrolTargetX,
+  PATROL_WORKING_TIMING,
   petSizeForViewport,
-  type PatrolBounds,
+  pickWanderPoint,
+  type Point,
+  wanderBoundsForViewport,
 } from "../services/petPatrol";
 
 type PatrolPhase = "walking" | "paused";
 
-type PatrolState = {
+export type WanderState = {
   x: number;
+  y: number;
   facing: "left" | "right";
   phase: PatrolPhase;
   walkMs: number;
 };
 
-type UsePetPatrolOptions = {
+type UsePetWanderOptions = {
   enabled: boolean;
-  /** Pause patrol in place without resetting position (e.g. while speaking). */
+  /** Pause in place without resetting (e.g. while speaking). */
   suspended?: boolean;
   mood: PetMood;
-  laneRef: RefObject<HTMLDivElement | null>;
-  railRef: RefObject<HTMLDivElement | null>;
 };
 
-function shouldPatrol(mood: PetMood): boolean {
-  return mood === "idle";
+function shouldWander(mood: PetMood): boolean {
+  return mood === "idle" || mood === "working" || mood === "waiting";
 }
 
-function readBounds(laneRef: RefObject<HTMLDivElement | null>): PatrolBounds {
-  const lane = laneRef.current;
-  const containerWidth = lane?.getBoundingClientRect().width ?? 0;
-  const petSize = petSizeForViewport(window.innerWidth);
-  if (containerWidth <= 0) {
-    return { minX: 0, maxX: 0 };
-  }
-  return patrolLaneWidth(containerWidth, petSize);
+function timingForMood(mood: PetMood) {
+  return mood === "working" || mood === "waiting" ? PATROL_WORKING_TIMING : PATROL_IDLE_TIMING;
 }
 
+function parkCorner(bounds: { minX: number; maxX: number; minY: number; maxY: number }): Point {
+  return {
+    x: bounds.minX,
+    y: Math.max(bounds.minY, bounds.maxY - 8),
+  };
+}
+
+/**
+ * Free-float wander across the viewport with exclusion pads for nav / lab actions / companion.
+ */
 export function usePetPatrol({
   enabled,
   suspended = false,
   mood,
-  laneRef,
-  railRef,
-}: UsePetPatrolOptions): PatrolState {
-  const boundsRef = useRef<PatrolBounds>({ minX: 0, maxX: 0 });
+}: UsePetWanderOptions): WanderState {
   const pauseTimerRef = useRef<number | null>(null);
   const wasSuspendedRef = useRef(false);
-  const stateRef = useRef<PatrolState>({
-    x: 0,
+  const stateRef = useRef<WanderState>({
+    x: 24,
+    y: 120,
     facing: "right",
     phase: "paused",
     walkMs: 0,
   });
-  const [state, setState] = useState<PatrolState>(() => stateRef.current);
+  const [state, setState] = useState<WanderState>(() => stateRef.current);
 
-  const commitState = useCallback((next: PatrolState) => {
+  const commit = useCallback((next: WanderState) => {
     stateRef.current = next;
     setState(next);
   }, []);
@@ -72,51 +75,56 @@ export function usePetPatrol({
     }
   }, []);
 
-  const refreshBounds = useCallback(() => {
-    const bounds = readBounds(laneRef);
-    boundsRef.current = bounds;
-    commitState({
-      ...stateRef.current,
-      x: clampPatrolX(stateRef.current.x, bounds),
+  const readScene = useCallback(() => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const petSize = petSizeForViewport(width);
+    const bounds = wanderBoundsForViewport(width, height, petSize);
+    const exclusions = defaultExclusionRects(width, height);
+    return { width, height, petSize, bounds, exclusions };
+  }, []);
+
+  const beginWalk = useCallback(() => {
+    if (suspended) return;
+    const scene = readScene();
+    const start = clampPoint(
+      { x: stateRef.current.x, y: stateRef.current.y },
+      scene.bounds,
+    );
+    const target = pickWanderPoint(scene.bounds, scene.petSize, scene.exclusions);
+    const timing = timingForMood(mood);
+    const facing = facingForDeltaX(target.x - start.x, stateRef.current.facing);
+
+    commit({
+      x: start.x,
+      y: start.y,
+      facing,
+      phase: "walking",
+      walkMs: timing.walkMs,
     });
-  }, [commitState, laneRef]);
 
-  const beginWalk = useCallback(
-    (facing: "left" | "right") => {
-      if (suspended) return;
-      const bounds = boundsRef.current;
-      const startX = clampPatrolX(stateRef.current.x, bounds);
-      const targetX = patrolTargetX(facing, bounds);
-      commitState({
-        x: startX,
+    window.requestAnimationFrame(() => {
+      commit({
+        ...stateRef.current,
+        x: target.x,
+        y: target.y,
         facing,
-        phase: "walking",
-        walkMs: PATROL_IDLE_TIMING.walkMs,
       });
-      window.requestAnimationFrame(() => {
-        commitState({
-          ...stateRef.current,
-          x: targetX,
-        });
-      });
-    },
-    [commitState, suspended],
-  );
+    });
+  }, [commit, mood, readScene, suspended]);
 
-  const scheduleNextWalk = useCallback(
-    (facing: "left" | "right") => {
-      if (suspended) return;
-      clearPauseTimer();
-      pauseTimerRef.current = window.setTimeout(() => beginWalk(facing), PATROL_IDLE_TIMING.pauseMs);
-    },
-    [beginWalk, clearPauseTimer, suspended],
-  );
+  const scheduleNextWalk = useCallback(() => {
+    if (suspended) return;
+    clearPauseTimer();
+    const timing = timingForMood(mood);
+    pauseTimerRef.current = window.setTimeout(() => beginWalk(), timing.pauseMs);
+  }, [beginWalk, clearPauseTimer, mood, suspended]);
 
   useEffect(() => {
     if (suspended) {
       wasSuspendedRef.current = true;
       clearPauseTimer();
-      commitState({
+      commit({
         ...stateRef.current,
         phase: "paused",
         walkMs: 0,
@@ -124,79 +132,80 @@ export function usePetPatrol({
       return;
     }
 
-    if (wasSuspendedRef.current && enabled && shouldPatrol(mood)) {
+    if (wasSuspendedRef.current && enabled && shouldWander(mood)) {
       wasSuspendedRef.current = false;
-      scheduleNextWalk(stateRef.current.facing);
+      scheduleNextWalk();
     }
-  }, [suspended, clearPauseTimer, commitState, enabled, mood, scheduleNextWalk]);
+  }, [clearPauseTimer, commit, enabled, mood, scheduleNextWalk, suspended]);
 
   useEffect(() => {
     clearPauseTimer();
+    const scene = readScene();
 
-    if (!enabled || !shouldPatrol(mood)) {
-      const bounds = readBounds(laneRef);
-      boundsRef.current = bounds;
-      commitState({
-        x: clampPatrolX(bounds.minX, bounds),
-        facing: "right",
+    if (!enabled || !shouldWander(mood)) {
+      const parked = clampPoint(
+        enabled ? { x: stateRef.current.x, y: stateRef.current.y } : parkCorner(scene.bounds),
+        scene.bounds,
+      );
+      commit({
+        x: parked.x,
+        y: parked.y,
+        facing: stateRef.current.facing,
         phase: "paused",
         walkMs: 0,
       });
       return;
     }
 
-    refreshBounds();
-    commitState({
-      x: boundsRef.current.minX,
+    const start = pickWanderPoint(scene.bounds, scene.petSize, scene.exclusions);
+    commit({
+      x: start.x,
+      y: start.y,
       facing: "right",
       phase: "paused",
       walkMs: 0,
     });
-    beginWalk("right");
+    beginWalk();
 
-    const lane = laneRef.current;
-    let observer: ResizeObserver | null = null;
-    if (lane && typeof ResizeObserver !== "undefined") {
-      observer = new ResizeObserver(() => refreshBounds());
-      observer.observe(lane);
-    }
-
-    const onResize = () => refreshBounds();
+    const onResize = () => {
+      const next = readScene();
+      commit({
+        ...stateRef.current,
+        ...clampPoint({ x: stateRef.current.x, y: stateRef.current.y }, next.bounds),
+        phase: "paused",
+        walkMs: 0,
+      });
+    };
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onResize);
 
     return () => {
       clearPauseTimer();
-      observer?.disconnect();
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onResize);
     };
-  }, [beginWalk, clearPauseTimer, commitState, enabled, laneRef, mood, refreshBounds]);
+  }, [beginWalk, clearPauseTimer, commit, enabled, mood, readScene]);
 
   useEffect(() => {
-    if (!enabled || !shouldPatrol(mood) || suspended) return;
-
-    const node = railRef.current;
-    if (!node) return;
+    if (!enabled || !shouldWander(mood) || suspended) return;
 
     const onTransitionEnd = (event: TransitionEvent) => {
-      if (event.target !== node) return;
+      if (!(event.target instanceof HTMLElement)) return;
+      if (!event.target.classList.contains("island-pet-float")) return;
       if (event.propertyName !== "transform") return;
       if (stateRef.current.phase !== "walking") return;
 
-      const nextFacing = oppositeFacing(stateRef.current.facing);
-      commitState({
+      commit({
         ...stateRef.current,
         phase: "paused",
         walkMs: 0,
-        facing: nextFacing,
       });
-      scheduleNextWalk(nextFacing);
+      scheduleNextWalk();
     };
 
-    node.addEventListener("transitionend", onTransitionEnd);
-    return () => node.removeEventListener("transitionend", onTransitionEnd);
-  }, [commitState, enabled, mood, railRef, scheduleNextWalk, suspended]);
+    document.addEventListener("transitionend", onTransitionEnd);
+    return () => document.removeEventListener("transitionend", onTransitionEnd);
+  }, [commit, enabled, mood, scheduleNextWalk, suspended]);
 
   return state;
 }

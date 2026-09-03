@@ -54,43 +54,13 @@ describe("labNameForPath", () => {
 });
 
 describe("speechForRoute", () => {
-  it("greets on the hub with Fun Lab", () => {
+  it("stays quiet on hub and subject browse (ambient)", () => {
     const store = makeStore();
-    const line = speechForRoute("/grade-2", "dog", store);
-    expect(line).toBeTruthy();
-    expect(line).toContain("Jordan");
-    expect(line).toContain("Fun Lab");
-    expect(line).not.toContain("Math Lab");
-  });
-
-  it("welcomes on math subject pages", () => {
-    const store = makeStore();
-    const line = speechForRoute("/grade-2/math", "dog", store);
-    expect(line).toBeTruthy();
-    expect(line).toContain("Math Lab");
-  });
-
-  it("uses Word Lab on ELA pages regardless of pet species", () => {
-    const store = makeStore();
-    const line = speechForRoute("/grade-2/ela", "dog", store);
-    expect(line).toBeTruthy();
-    expect(line).toContain("Word Lab");
-    expect(line).not.toContain("Math Lab");
-  });
-
-  it("uses reading tone on ELA subject browse regardless of pet species", () => {
-    const store = makeStore();
-    const line = speechForRoute("/grade-2/ela", "dog", store);
-    expect(line).toMatch(/reading|pages|sentence|story/i);
-    expect(line).not.toMatch(/keep counting|numbers|solve/i);
-  });
-
-  it("uses Science Lab on science pages regardless of pet species", () => {
-    const store = makeStore();
-    const line = speechForRoute("/grade-2/science", "dog", store);
-    expect(line).toBeTruthy();
-    expect(line).toContain("Science Lab");
-    expect(line).not.toContain("Math Lab");
+    expect(speechForRoute("/", "dog", store)).toBeNull();
+    expect(speechForRoute("/grade-2", "dog", store)).toBeNull();
+    expect(speechForRoute("/grade-2/math", "dog", store)).toBeNull();
+    expect(speechForRoute("/grade-2/ela", "dog", store)).toBeNull();
+    expect(speechForRoute("/grade-2/science", "dog", store)).toBeNull();
   });
 
   it("hints on progress when achievements remain", () => {

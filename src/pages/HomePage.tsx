@@ -13,7 +13,7 @@ const FEATURES = [
   {
     icon: "🦜",
     title: "Your lab buddy",
-    text: "Pick Digits, Ripple, or Spark on Progress. They patrol the buddy lane, cheer you on, and speak up when you tap them.",
+    text: "A tiny island friend floats with you while you practice. Pick Digits, Ripple, or Spark on Progress — hide anytime in settings.",
     accent: "pink",
   },
   {

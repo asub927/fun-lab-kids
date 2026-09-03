@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { IslandPet } from "./IslandPet";
 import { isPetVisible, PET_PREFS_EVENT } from "../services/pet";
 
-/** Reserved bottom lane for the lab buddy — collapses when hidden. */
+/** Viewport overlay for the ambient lab buddy — no reserved footer lane. */
 export function PetFooter() {
-  const laneRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(() => isPetVisible());
 
   useEffect(() => {
@@ -20,10 +19,8 @@ export function PetFooter() {
   if (!visible) return null;
 
   return (
-    <footer className="pet-footer" aria-label="Lab buddy area">
-      <div ref={laneRef} className="pet-footer-lane">
-        <IslandPet laneRef={laneRef} />
-      </div>
-    </footer>
+    <div className="pet-ambient" aria-label="Lab buddy">
+      <IslandPet />
+    </div>
   );
 }

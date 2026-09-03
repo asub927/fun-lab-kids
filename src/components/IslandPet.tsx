@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { getPetSpecies } from "../data/pets";
 import { useApp } from "../context/AppContext";
 import type { PetDialogueContext } from "../data/petDialogue";
 import { usePetPatrol } from "../hooks/usePetPatrol";
-import { petSizeForViewport } from "../services/petPatrol";
 import { loadProgress } from "../services/progress";
 import { getPetSpeciesId, PET_PREFS_EVENT, setPetVisible } from "../services/pet";
 import { pickPetCelebrationCue } from "../services/petDialogue";
@@ -26,38 +25,18 @@ import {
 import { CharacterSpeech } from "./CharacterSpeech";
 import { PetSprite } from "./pets/PetSprite";
 
-type IslandPetProps = {
-  laneRef: RefObject<HTMLDivElement | null>;
-};
-
-function computeSpeechSide(
-  laneRef: RefObject<HTMLDivElement | null>,
-  patrolX: number,
-): "left" | "right" {
-  const laneWidth = laneRef.current?.getBoundingClientRect().width ?? 0;
-  if (laneWidth <= 0) return "right";
-
-  const petSize =
-    laneRef.current?.querySelector(".island-pet-rail")?.getBoundingClientRect().width ??
-    petSizeForViewport(window.innerWidth);
-  const minSpeechWidth = window.innerWidth <= 640 ? 208 : 224;
-  const edgeGap = 12;
-  const spaceRight = laneWidth - patrolX - petSize - edgeGap;
-  const spaceLeft = patrolX - edgeGap;
-
-  if (spaceRight >= minSpeechWidth) return "right";
-  if (spaceLeft >= minSpeechWidth) return "left";
-  return spaceRight >= spaceLeft ? "right" : "left";
+function computeSpeechSide(x: number): "left" | "right" {
+  return x < window.innerWidth / 2 ? "right" : "left";
 }
 
 /**
- * Codex-like ambient pet: patrols left-to-right inside the footer lane when calm,
- * plays in-place Codex sprite actions for activity, and speaks in a bubble.
+ * Codex-like ambient pet: free-floats across the viewport, reacts through animation,
+ * and speaks sparingly on celebrate / check / wave (and Progress).
  */
-export function IslandPet({ laneRef }: IslandPetProps) {
+export function IslandPet() {
   const app = useApp();
   const { pathname } = useLocation();
-  const railRef = useRef<HTMLDivElement>(null);
+  const floatRef = useRef<HTMLDivElement>(null);
   const [speciesId, setSpeciesId] = useState(() => getPetSpeciesId());
   const [speechLine, setSpeechLine] = useState<string | null>(null);
   const [waveSeed, setWaveSeed] = useState(0);
@@ -70,7 +49,6 @@ export function IslandPet({ laneRef }: IslandPetProps) {
       : false,
   );
   const [hint, setHint] = useState<string | null>(null);
-  const [laneWidth, setLaneWidth] = useState(0);
   const hideTimer = useRef<number | null>(null);
   const pressTimer = useRef<number | null>(null);
   const speechTimer = useRef<number | null>(null);
@@ -90,43 +68,13 @@ export function IslandPet({ laneRef }: IslandPetProps) {
     enabled: !reducedMotion,
     suspended: speaking,
     mood,
-    laneRef,
-    railRef,
   });
 
-  const patrolling = mood === "idle" && patrol.phase === "walking" && !speaking;
-  const speechSide = computeSpeechSide(laneRef, patrol.x);
-
-  useEffect(() => {
-    const lane = laneRef.current;
-    if (!lane) return;
-
-    const updateLaneWidth = () => {
-      setLaneWidth(lane.getBoundingClientRect().width);
-    };
-
-    updateLaneWidth();
-
-    let observer: ResizeObserver | null = null;
-    if (typeof ResizeObserver !== "undefined") {
-      observer = new ResizeObserver(updateLaneWidth);
-      observer.observe(lane);
-    }
-
-    window.addEventListener("resize", updateLaneWidth);
-    window.addEventListener("orientationchange", updateLaneWidth);
-
-    return () => {
-      observer?.disconnect();
-      window.removeEventListener("resize", updateLaneWidth);
-      window.removeEventListener("orientationchange", updateLaneWidth);
-    };
-  }, [laneRef]);
-
-  const anchorStyle = {
-    "--pet-x": `${patrol.x}px`,
-    "--lane-width": `${laneWidth}px`,
-  } as CSSProperties;
+  const patrolling =
+    (mood === "idle" || mood === "working" || mood === "waiting") &&
+    patrol.phase === "walking" &&
+    !speaking;
+  const speechSide = computeSpeechSide(patrol.x);
 
   const clearSpeechTimer = useCallback(() => {
     if (speechTimer.current) {
@@ -305,8 +253,9 @@ export function IslandPet({ laneRef }: IslandPetProps) {
 
   return (
     <div
+      ref={floatRef}
       className={[
-        "island-pet-anchor",
+        "island-pet-float",
         `pet-mood-${mood}`,
         reducedMotion ? "is-reduced-motion" : "",
         patrolling ? "is-patrolling" : "",
@@ -314,7 +263,10 @@ export function IslandPet({ laneRef }: IslandPetProps) {
       ]
         .filter(Boolean)
         .join(" ")}
-      style={anchorStyle}
+      style={{
+        transform: `translate3d(${patrol.x}px, ${patrol.y}px, 0)`,
+        transitionDuration: !reducedMotion && patrol.walkMs > 0 ? `${patrol.walkMs}ms` : "0ms",
+      }}
     >
       {speechLine && !hint && (
         <div
@@ -335,29 +287,20 @@ export function IslandPet({ laneRef }: IslandPetProps) {
         </div>
       )}
       <div
-        ref={railRef}
-        className="island-pet-rail"
-        style={{
-          transform: reducedMotion ? undefined : `translateX(${patrol.x}px)`,
-          transitionDuration: patrol.walkMs > 0 ? `${patrol.walkMs}ms` : undefined,
-        }}
+        className="island-pet-hit"
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
+        onPointerLeave={onPointerUp}
+        onClick={onWaveClick}
+        role="img"
+        aria-label={buddyLabel}
       >
-        <div
-          className="island-pet-hit"
-          onPointerDown={onPointerDown}
-          onPointerUp={onPointerUp}
-          onPointerLeave={onPointerUp}
-          onClick={onWaveClick}
-          role="img"
-          aria-label={buddyLabel}
-        >
-          <PetSprite
-            speciesId={speciesId}
-            mood={mood}
-            facing={patrol.facing}
-            patrolling={patrolling}
-          />
-        </div>
+        <PetSprite
+          speciesId={speciesId}
+          mood={mood}
+          facing={patrol.facing}
+          patrolling={patrolling}
+        />
       </div>
     </div>
   );
