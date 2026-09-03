@@ -1,3 +1,5 @@
+import type { PetMood } from "../data/pets";
+
 export type PatrolBounds = {
   minX: number;
   maxX: number;
@@ -12,6 +14,27 @@ export const PATROL_IDLE_TIMING: PatrolTiming = {
   walkMs: 5200,
   pauseMs: 2200,
 };
+
+/** Quieter lab contract uses route presence, not sticky lab session state. */
+export function isLabRoute(pathname: string): boolean {
+  return pathname.startsWith("/lab/");
+}
+
+/**
+ * Patrol (L→R roam) only when calm, motion is allowed, and the kid is off a lab route.
+ */
+export function shouldAllowPetPatrol(options: {
+  mood: PetMood;
+  onLabRoute: boolean;
+  enabled: boolean;
+}): boolean {
+  return options.enabled && options.mood === "idle" && !options.onLabRoute;
+}
+
+/** When patrol stops, keep X in-lane instead of snapping to the left edge. */
+export function parkPatrolX(currentX: number, bounds: PatrolBounds): number {
+  return clampPatrolX(currentX, bounds);
+}
 
 export function patrolLaneWidth(containerWidth: number, petSize: number): PatrolBounds {
   const lanePadding = 8;

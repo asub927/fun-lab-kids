@@ -4,7 +4,7 @@ import { getPetSpecies } from "../data/pets";
 import { useApp } from "../context/AppContext";
 import type { PetDialogueContext } from "../data/petDialogue";
 import { usePetPatrol } from "../hooks/usePetPatrol";
-import { petSizeForViewport } from "../services/petPatrol";
+import { isLabRoute, petSizeForViewport } from "../services/petPatrol";
 import { loadProgress } from "../services/progress";
 import { getPetSpeciesId, PET_PREFS_EVENT, setPetVisible } from "../services/pet";
 import { pickPetCelebrationCue } from "../services/petDialogue";
@@ -74,7 +74,10 @@ export function IslandPet({ laneRef }: IslandPetProps) {
   const speechTimer = useRef<number | null>(null);
 
   const species = getPetSpecies(speciesId);
-  const inLab = Boolean(app.activeStandard);
+  const onLabRoute = isLabRoute(pathname);
+  // Sticky activeStandard is still used for speech/subject context only — quieter
+  // gating and needs-answer pulses use the route (KTD1), not session latch.
+  const inLab = onLabRoute;
   const needsAnswer = inLab && boardLooksEmpty(app.boardState);
   const checkCount = loadProgress().gamification.lifetimeChecks;
   const speaking = Boolean(speechLine || hint);
@@ -88,6 +91,7 @@ export function IslandPet({ laneRef }: IslandPetProps) {
     enabled: !reducedMotion,
     suspended: speaking,
     mood,
+    onLabRoute,
     laneRef,
     railRef,
   });

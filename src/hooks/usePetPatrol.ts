@@ -3,10 +3,12 @@ import type { PetMood } from "../data/pets";
 import {
   clampPatrolX,
   oppositeFacing,
+  parkPatrolX,
   PATROL_IDLE_TIMING,
   patrolLaneWidth,
   patrolTargetX,
   petSizeForViewport,
+  shouldAllowPetPatrol,
   type PatrolBounds,
 } from "../services/petPatrol";
 
@@ -24,13 +26,11 @@ type UsePetPatrolOptions = {
   /** Pause patrol in place without resetting position (e.g. while speaking). */
   suspended?: boolean;
   mood: PetMood;
+  /** When true, idle mood parks instead of roaming (lab quieter contract). */
+  onLabRoute?: boolean;
   laneRef: RefObject<HTMLDivElement | null>;
   railRef: RefObject<HTMLDivElement | null>;
 };
-
-function shouldPatrol(mood: PetMood): boolean {
-  return mood === "idle";
-}
 
 function readBounds(laneRef: RefObject<HTMLDivElement | null>): PatrolBounds {
   const lane = laneRef.current;
@@ -46,6 +46,7 @@ export function usePetPatrol({
   enabled,
   suspended = false,
   mood,
+  onLabRoute = false,
   laneRef,
   railRef,
 }: UsePetPatrolOptions): PatrolState {
@@ -71,6 +72,8 @@ export function usePetPatrol({
       pauseTimerRef.current = null;
     }
   }, []);
+
+  const canPatrol = shouldAllowPetPatrol({ mood, onLabRoute, enabled });
 
   const refreshBounds = useCallback(() => {
     const bounds = readBounds(laneRef);
@@ -124,21 +127,21 @@ export function usePetPatrol({
       return;
     }
 
-    if (wasSuspendedRef.current && enabled && shouldPatrol(mood)) {
+    if (wasSuspendedRef.current && canPatrol) {
       wasSuspendedRef.current = false;
       scheduleNextWalk(stateRef.current.facing);
     }
-  }, [suspended, clearPauseTimer, commitState, enabled, mood, scheduleNextWalk]);
+  }, [suspended, clearPauseTimer, commitState, canPatrol, scheduleNextWalk]);
 
   useEffect(() => {
     clearPauseTimer();
 
-    if (!enabled || !shouldPatrol(mood)) {
+    if (!canPatrol) {
       const bounds = readBounds(laneRef);
       boundsRef.current = bounds;
       commitState({
-        x: clampPatrolX(bounds.minX, bounds),
-        facing: "right",
+        x: parkPatrolX(stateRef.current.x, bounds),
+        facing: stateRef.current.facing,
         phase: "paused",
         walkMs: 0,
       });
@@ -147,12 +150,12 @@ export function usePetPatrol({
 
     refreshBounds();
     commitState({
-      x: boundsRef.current.minX,
-      facing: "right",
+      x: parkPatrolX(stateRef.current.x, boundsRef.current),
+      facing: stateRef.current.facing === "left" ? "left" : "right",
       phase: "paused",
       walkMs: 0,
     });
-    beginWalk("right");
+    beginWalk(stateRef.current.facing === "left" ? "left" : "right");
 
     const lane = laneRef.current;
     let observer: ResizeObserver | null = null;
@@ -171,10 +174,10 @@ export function usePetPatrol({
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onResize);
     };
-  }, [beginWalk, clearPauseTimer, commitState, enabled, laneRef, mood, refreshBounds]);
+  }, [beginWalk, canPatrol, clearPauseTimer, commitState, laneRef, refreshBounds]);
 
   useEffect(() => {
-    if (!enabled || !shouldPatrol(mood) || suspended) return;
+    if (!canPatrol || suspended) return;
 
     const node = railRef.current;
     if (!node) return;
@@ -196,7 +199,7 @@ export function usePetPatrol({
 
     node.addEventListener("transitionend", onTransitionEnd);
     return () => node.removeEventListener("transitionend", onTransitionEnd);
-  }, [commitState, enabled, mood, railRef, scheduleNextWalk, suspended]);
+  }, [canPatrol, commitState, railRef, scheduleNextWalk, suspended]);
 
   return state;
 }
