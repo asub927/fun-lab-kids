@@ -109,6 +109,16 @@ export function LabShell({ title, children }: LabShellProps) {
     return () => window.cancelAnimationFrame(frame);
   }, [questionIndex, activeStandard?.code, lastCheckKey]);
 
+  useEffect(() => {
+    if (!lastCheck) return;
+    const frame = window.requestAnimationFrame(() => {
+      document
+        .querySelector(".check-result")
+        ?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [lastCheckKey]);
+
   const resultClass = lastCheck
     ? lastCheck.ok
       ? "ok"
