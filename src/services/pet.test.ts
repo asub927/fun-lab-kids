@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { deriveAmbientMood, reactionFromAppEvent } from "./petActivity";
+import {
+  deriveAmbientMood,
+  reactionDurationMs,
+  reactionFromAppEvent,
+  reactionIntensity,
+} from "./petActivity";
+import { shouldAllowPetPatrol } from "./petPatrol";
 import { emptyGamificationState } from "./gamification";
 import { pickPetCelebrationLine } from "./petDialogue";
 import type { ProgressStore } from "./progress";
@@ -54,12 +60,42 @@ describe("ambient pet activity", () => {
     ).toBe("celebrating");
     expect(deriveAmbientMood({ reaction: "working", inLab: false })).toBe("working");
     expect(deriveAmbientMood({ reaction: "waving", inLab: false })).toBe("waving");
+    expect(deriveAmbientMood({ reaction: "waiting", inLab: true })).toBe("waiting");
   });
 
-  it("stays calm in labs unless waiting for an answer", () => {
-    expect(deriveAmbientMood({ reaction: null, inLab: true, needsAnswer: true })).toBe("waiting");
+  it("does not latch waiting on needs-answer alone (KTD4 / AE7)", () => {
+    expect(deriveAmbientMood({ reaction: null, inLab: true, needsAnswer: true })).toBe("idle");
     expect(deriveAmbientMood({ reaction: null, inLab: true, needsAnswer: false })).toBe("idle");
     expect(deriveAmbientMood({ reaction: null, inLab: false })).toBe("idle");
+  });
+
+  it("returns to idle when a waiting reaction is cleared (AE7 / R4)", () => {
+    expect(deriveAmbientMood({ reaction: "waiting", inLab: true, needsAnswer: false })).toBe(
+      "waiting",
+    );
+    expect(deriveAmbientMood({ reaction: null, inLab: false, needsAnswer: false })).toBe("idle");
+    expect(
+      shouldAllowPetPatrol({ mood: "idle", onLabRoute: false, enabled: true }),
+    ).toBe(true);
+    expect(
+      shouldAllowPetPatrol({ mood: "waiting", onLabRoute: false, enabled: true }),
+    ).toBe(false);
+  });
+
+  it("keeps waiting/working softer and shorter than celebrate (AE3)", () => {
+    expect(reactionDurationMs("waiting")).toBeLessThan(reactionDurationMs("celebrating"));
+    expect(reactionDurationMs("working")).toBeLessThan(reactionDurationMs("celebrating"));
+    expect(reactionIntensity("waiting")).toBe("soft");
+    expect(reactionIntensity("working")).toBe("soft");
+    expect(reactionIntensity("celebrating")).toBe("strong");
+  });
+
+  it("keeps invite-cheer wave as a short timed reaction (AE4)", () => {
+    expect(reactionDurationMs("waving")).toBeGreaterThan(0);
+    expect(reactionDurationMs("waving")).toBeLessThan(reactionDurationMs("celebrating"));
+    expect(deriveAmbientMood({ reaction: "waving", inLab: true, needsAnswer: true })).toBe(
+      "waving",
+    );
   });
 
   it("builds reactions from check events", () => {

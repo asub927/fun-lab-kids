@@ -101,7 +101,8 @@ export function codexAtlasHeight(version: CodexSpriteVersion): number {
 export function moodToCodexAction(mood: PetMood, _facing: "left" | "right"): CodexAction {
   switch (mood) {
     case "working":
-      return "failed";
+      // Gentler than `failed` so stuck cues stay softer than celebrate (KTD5).
+      return "review";
     case "celebrating":
       return "jumping";
     case "waiting":

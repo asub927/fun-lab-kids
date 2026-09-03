@@ -38,7 +38,7 @@ describe("codexPets", () => {
 
   it("maps moods to Codex animation rows", () => {
     expect(moodToCodexAction("idle", "right")).toBe("idle");
-    expect(moodToCodexAction("working", "right")).toBe("failed");
+    expect(moodToCodexAction("working", "right")).toBe("review");
     expect(moodToCodexAction("celebrating", "right")).toBe("jumping");
     expect(moodToCodexAction("waiting", "right")).toBe("waiting");
     expect(moodToCodexAction("waving", "right")).toBe("waving");
