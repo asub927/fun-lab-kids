@@ -222,10 +222,20 @@ export function IslandPet({ laneRef }: IslandPetProps) {
   }, [app.lastCheck, app.lastCelebration]);
 
   // Rising edge of needs-answer → soft timed waiting pulse (KTD4), not a sustained latch.
+  // Falling edge clears waiting immediately so park/home patrol can resume (AE7 / R4).
   useEffect(() => {
     const wasNeedsAnswer = prevNeedsAnswerRef.current;
     prevNeedsAnswerRef.current = needsAnswer;
-    if (!needsAnswer || wasNeedsAnswer) return;
+
+    if (!needsAnswer) {
+      if (wasNeedsAnswer) {
+        setReaction((current) => (current === "waiting" ? null : current));
+      }
+      return;
+    }
+
+    if (wasNeedsAnswer) return;
+
     setReaction((current) => {
       // Do not interrupt a stronger celebrate / wave / working beat.
       if (current === "celebrating" || current === "waving" || current === "working") {

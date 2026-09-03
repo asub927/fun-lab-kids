@@ -5,6 +5,7 @@ import {
   reactionFromAppEvent,
   reactionIntensity,
 } from "./petActivity";
+import { shouldAllowPetPatrol } from "./petPatrol";
 import { emptyGamificationState } from "./gamification";
 import { pickPetCelebrationLine } from "./petDialogue";
 import type { ProgressStore } from "./progress";
@@ -66,6 +67,19 @@ describe("ambient pet activity", () => {
     expect(deriveAmbientMood({ reaction: null, inLab: true, needsAnswer: true })).toBe("idle");
     expect(deriveAmbientMood({ reaction: null, inLab: true, needsAnswer: false })).toBe("idle");
     expect(deriveAmbientMood({ reaction: null, inLab: false })).toBe("idle");
+  });
+
+  it("returns to idle when a waiting reaction is cleared (AE7 / R4)", () => {
+    expect(deriveAmbientMood({ reaction: "waiting", inLab: true, needsAnswer: false })).toBe(
+      "waiting",
+    );
+    expect(deriveAmbientMood({ reaction: null, inLab: false, needsAnswer: false })).toBe("idle");
+    expect(
+      shouldAllowPetPatrol({ mood: "idle", onLabRoute: false, enabled: true }),
+    ).toBe(true);
+    expect(
+      shouldAllowPetPatrol({ mood: "waiting", onLabRoute: false, enabled: true }),
+    ).toBe(false);
   });
 
   it("keeps waiting/working softer and shorter than celebrate (AE3)", () => {
