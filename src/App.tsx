@@ -1,5 +1,6 @@
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import { AnimatedLayout } from "./components/AnimatedLayout";
 import { AppProvider } from "./context/AppContext";
 import { PetFooter } from "./components/PetFooter";
@@ -103,6 +104,7 @@ function AppChrome() {
         </main>
         <PetFooter />
       </div>
+      <Analytics />
     </>
   );
 }
