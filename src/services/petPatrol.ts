@@ -36,6 +36,16 @@ export function parkPatrolX(currentX: number, bounds: PatrolBounds): number {
   return clampPatrolX(currentX, bounds);
 }
 
+/** First-load rest corner — right edge so greeting speech has room to the left. */
+export function restPatrolX(bounds: PatrolBounds): number {
+  return bounds.maxX;
+}
+
+/** True once the footer lane has a measurable width to park against. */
+export function hasPatrolLane(bounds: PatrolBounds): boolean {
+  return bounds.maxX > bounds.minX;
+}
+
 export function patrolLaneWidth(containerWidth: number, petSize: number): PatrolBounds {
   const lanePadding = 8;
   const minX = lanePadding;
