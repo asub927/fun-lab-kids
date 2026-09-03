@@ -18,6 +18,7 @@ export function createPlaceValueState(targetNumber = 243): PlaceValueState {
     labId: "place-value",
     targetNumber,
     blocks: [],
+    lastComparison: null,
   };
 }
 
@@ -61,7 +62,13 @@ export function applyPlaceValueAction(
       });
     }
     case "compare_values": {
-      return state;
+      const other = Number(action.other);
+      if (!Number.isFinite(other)) return state;
+      const comparison = comparePlaceValues(state, other);
+      return {
+        ...state,
+        lastComparison: { other, feedback: comparison.feedback },
+      };
     }
     default:
       return state;

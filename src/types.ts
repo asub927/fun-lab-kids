@@ -51,12 +51,15 @@ export type ToolCallLogEntry = {
   message?: string;
 };
 
+export type PendingConfirmKind = "reveal" | "reset";
+
 export type BlockType = "hundred" | "ten" | "one";
 
 export type PlaceValueState = {
   labId: "place-value";
   targetNumber: number;
   blocks: BlockType[];
+  lastComparison?: { other: number; feedback: string } | null;
 };
 
 export type SentencePart = "topic" | "opinion" | "reason" | "linking" | "closing";
@@ -68,6 +71,7 @@ export type OpinionState = {
   reasons: string[];
   linkingWords: string[];
   pendingRevision: string | null;
+  readAloudPreview?: string | null;
 };
 
 export type MatterObject = {

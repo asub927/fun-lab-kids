@@ -4699,3 +4699,37 @@ main:has(.home-page) {
     transition: none !important;
   }
 }
+
+/* Agent / WebMCP shared-board panels */
+.agent-confirm-panel,
+.agent-guide-panel {
+  margin: 0.75rem 1rem 0;
+  padding: 0.9rem 1rem;
+  border: 3px solid var(--ink, #1a1a1a);
+  background: color-mix(in srgb, var(--accent, #ffe566) 35%, white);
+  box-shadow: 4px 4px 0 var(--ink, #1a1a1a);
+}
+
+.agent-confirm-title,
+.agent-guide-label {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display, inherit);
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.agent-confirm-body,
+.agent-guide-question {
+  margin: 0 0 0.75rem;
+  line-height: 1.35;
+}
+
+.agent-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.agent-guide-dismiss {
+  margin-top: 0.15rem;
+}

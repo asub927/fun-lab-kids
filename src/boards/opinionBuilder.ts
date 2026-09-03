@@ -8,6 +8,7 @@ export function createOpinionState(): OpinionState {
     reasons: [],
     linkingWords: [],
     pendingRevision: null,
+    readAloudPreview: null,
   };
 }
 
@@ -54,7 +55,10 @@ export function applyOpinionAction(
       return { ...state, linkingWords: [...state.linkingWords, word] };
     }
     case "read_aloud_preview":
-      return state;
+      return {
+        ...state,
+        readAloudPreview: buildOpinionParagraph(state) || "Add topic, opinion, and reasons first.",
+      };
     case "accept_revision": {
       if (!state.pendingRevision) return state;
       return {
