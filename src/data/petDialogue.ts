@@ -23,6 +23,12 @@ function cue(
   };
 }
 
+/**
+ * Paired celebration lines + MP3 paths for each lab buddy.
+ * Inventory tables live in `public/pets/voice/README.md`.
+ * Drop in custom recordings using the same filenames under
+ * `/pets/voice/{species}/{context}-{NN}.mp3`.
+ */
 export const PET_DIALOGUE_POOLS: Record<
   PetSpeciesId,
   Record<PetDialogueContext, PetCelebrationCue[]>

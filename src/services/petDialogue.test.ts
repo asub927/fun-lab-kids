@@ -51,4 +51,17 @@ describe("pickPetCelebrationCue", () => {
     expect(cue.text.toLowerCase()).toMatch(/badge|meow/);
     expect(cue.audio).toBe("/pets/voice/cat/achievement-01.mp3");
   });
+
+  it("pairs every celebration context with an MP3 path for each pet", () => {
+    const store = makeStore();
+    for (const species of ["dog", "cat", "rabbit"] as const) {
+      for (const context of ["correct", "mastery", "achievement"] as const) {
+        const cue = pickPetCelebrationCue(species, context, store, 0);
+        expect(cue.audio).toMatch(
+          new RegExp(`^/pets/voice/${species}/${context}-\\d{2}\\.mp3$`),
+        );
+        expect(cue.text.trim().length).toBeGreaterThan(0);
+      }
+    }
+  });
 });
