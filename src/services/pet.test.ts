@@ -76,6 +76,14 @@ describe("ambient pet activity", () => {
     expect(reactionIntensity("celebrating")).toBe("strong");
   });
 
+  it("keeps invite-cheer wave as a short timed reaction (AE4)", () => {
+    expect(reactionDurationMs("waving")).toBeGreaterThan(0);
+    expect(reactionDurationMs("waving")).toBeLessThan(reactionDurationMs("celebrating"));
+    expect(deriveAmbientMood({ reaction: "waving", inLab: true, needsAnswer: true })).toBe(
+      "waving",
+    );
+  });
+
   it("builds reactions from check events", () => {
     expect(reactionFromAppEvent({ lastCheckOk: true, isCelebrating: false })).toBe("celebrating");
     expect(reactionFromAppEvent({ lastCheckOk: false, isCelebrating: false })).toBe("working");
