@@ -321,24 +321,6 @@ export function IslandPet({ laneRef }: IslandPetProps) {
         .join(" ")}
       style={anchorStyle}
     >
-      {speechLine && !hint && (
-        <div
-          className={`island-pet-side-speech island-pet-side-speech--${speechSide}`}
-          aria-live="polite"
-        >
-          <CharacterSpeech text={speechLine} compact live />
-        </div>
-      )}
-      {hint && (
-        <div className={`island-pet-side-speech island-pet-side-speech--${speechSide}`}>
-          <div className="island-pet-hint" role="dialog" aria-label="Hide pet">
-            <span>{hint}</span>
-            <button type="button" className="island-pet-hide" onClick={confirmHide}>
-              Hide
-            </button>
-          </div>
-        </div>
-      )}
       <div
         ref={railRef}
         className="island-pet-rail"
@@ -347,6 +329,24 @@ export function IslandPet({ laneRef }: IslandPetProps) {
           transitionDuration: patrol.walkMs > 0 ? `${patrol.walkMs}ms` : undefined,
         }}
       >
+        {speechLine && !hint && (
+          <div
+            className={`island-pet-side-speech island-pet-side-speech--${speechSide}`}
+            aria-live="polite"
+          >
+            <CharacterSpeech text={speechLine} compact live />
+          </div>
+        )}
+        {hint && (
+          <div className={`island-pet-side-speech island-pet-side-speech--${speechSide}`}>
+            <div className="island-pet-hint" role="dialog" aria-label="Hide pet">
+              <span>{hint}</span>
+              <button type="button" className="island-pet-hide" onClick={confirmHide}>
+                Hide
+              </button>
+            </div>
+          </div>
+        )}
         <div
           className="island-pet-hit"
           onPointerDown={onPointerDown}

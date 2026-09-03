@@ -3970,6 +3970,7 @@ main:has(.home-page) {
   position: relative;
   width: 4.25rem;
   height: 4.25rem;
+  overflow: visible;
   transition-property: transform;
   transition-timing-function: linear;
   will-change: transform;
@@ -4033,8 +4034,9 @@ main:has(.home-page) {
   box-sizing: border-box;
 }
 
+/* Position relative to the moving rail so speech stays attached during patrol. */
 .island-pet-side-speech--right {
-  left: calc(var(--pet-x, 0px) + var(--pet-size) + 0.35rem);
+  left: calc(100% + 0.35rem);
   width: min(
     var(--pet-speech-max),
     max(
@@ -4045,16 +4047,8 @@ main:has(.home-page) {
 }
 
 .island-pet-side-speech--left {
-  left: max(
-    0.75rem,
-    calc(
-      var(--pet-x, 0px) - 0.35rem -
-        min(
-          var(--pet-speech-max),
-          max(var(--pet-speech-min), calc(var(--pet-x, 0px) - 1rem))
-        )
-    )
-  );
+  right: calc(100% + 0.35rem);
+  left: auto;
   width: min(
     var(--pet-speech-max),
     max(var(--pet-speech-min), calc(var(--pet-x, 0px) - 1rem))
