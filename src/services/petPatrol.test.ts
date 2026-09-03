@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   clampPatrolX,
+  hasPatrolLane,
   isLabRoute,
   oppositeFacing,
   parkPatrolX,
   patrolLaneWidth,
   patrolTargetX,
+  restPatrolX,
   shouldAllowPetPatrol,
 } from "./petPatrol";
 
@@ -62,5 +64,12 @@ describe("petPatrol", () => {
     expect(parkPatrolX(180, bounds)).toBe(180);
     expect(parkPatrolX(2, bounds)).toBe(8);
     expect(parkPatrolX(400, bounds)).toBe(300);
+  });
+
+  it("rests at the right lane edge for first-load greeting", () => {
+    const bounds = { minX: 8, maxX: 300 };
+    expect(restPatrolX(bounds)).toBe(300);
+    expect(hasPatrolLane(bounds)).toBe(true);
+    expect(hasPatrolLane({ minX: 0, maxX: 0 })).toBe(false);
   });
 });

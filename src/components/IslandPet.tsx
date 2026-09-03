@@ -51,8 +51,8 @@ function computeSpeechSide(
 }
 
 /**
- * Codex-like ambient pet: patrols left-to-right inside the footer lane when calm,
- * plays in-place Codex sprite actions for activity, and speaks in a bubble.
+ * Codex-like ambient pet: rests at the footer’s right corner with greeting speech,
+ * then patrols the lane when calm; plays in-place Codex sprite actions for activity.
  */
 export function IslandPet({ laneRef }: IslandPetProps) {
   const app = useApp();

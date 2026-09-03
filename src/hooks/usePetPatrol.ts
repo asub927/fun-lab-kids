@@ -1,13 +1,22 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import type { PetMood } from "../data/pets";
 import {
   clampPatrolX,
+  hasPatrolLane,
   oppositeFacing,
   parkPatrolX,
   PATROL_IDLE_TIMING,
   patrolLaneWidth,
   patrolTargetX,
   petSizeForViewport,
+  restPatrolX,
   shouldAllowPetPatrol,
   type PatrolBounds,
 } from "../services/petPatrol";
@@ -53,9 +62,11 @@ export function usePetPatrol({
   const boundsRef = useRef<PatrolBounds>({ minX: 0, maxX: 0 });
   const pauseTimerRef = useRef<number | null>(null);
   const wasSuspendedRef = useRef(false);
+  /** Once the lane has been measured, keep in-place parks instead of re-resting right. */
+  const settledRef = useRef(false);
   const stateRef = useRef<PatrolState>({
     x: 0,
-    facing: "right",
+    facing: "left",
     phase: "paused",
     walkMs: 0,
   });
@@ -75,14 +86,23 @@ export function usePetPatrol({
 
   const canPatrol = shouldAllowPetPatrol({ mood, onLabRoute, enabled });
 
+  const placeForBounds = useCallback((bounds: PatrolBounds): number => {
+    if (!settledRef.current) {
+      if (!hasPatrolLane(bounds)) return stateRef.current.x;
+      settledRef.current = true;
+      return restPatrolX(bounds);
+    }
+    return clampPatrolX(stateRef.current.x, bounds);
+  }, []);
+
   const refreshBounds = useCallback(() => {
     const bounds = readBounds(laneRef);
     boundsRef.current = bounds;
     commitState({
       ...stateRef.current,
-      x: clampPatrolX(stateRef.current.x, bounds),
+      x: placeForBounds(bounds),
     });
-  }, [commitState, laneRef]);
+  }, [commitState, laneRef, placeForBounds]);
 
   const beginWalk = useCallback(
     (facing: "left" | "right") => {
@@ -133,14 +153,15 @@ export function usePetPatrol({
     }
   }, [suspended, clearPauseTimer, commitState, canPatrol, scheduleNextWalk]);
 
-  useEffect(() => {
+  // Layout effect so the first paint already rests at the right corner (no left→right skate).
+  useLayoutEffect(() => {
     clearPauseTimer();
 
     if (!canPatrol) {
       const bounds = readBounds(laneRef);
       boundsRef.current = bounds;
       commitState({
-        x: parkPatrolX(stateRef.current.x, bounds),
+        x: parkPatrolX(placeForBounds(bounds), bounds),
         facing: stateRef.current.facing,
         phase: "paused",
         walkMs: 0,
@@ -148,14 +169,20 @@ export function usePetPatrol({
       return;
     }
 
-    refreshBounds();
+    const bounds = readBounds(laneRef);
+    boundsRef.current = bounds;
+    const wasUnset = !settledRef.current;
+    const nextX = placeForBounds(bounds);
+    // First measurable lane: face left so the opening walk crosses the footer.
+    const nextFacing = wasUnset && hasPatrolLane(bounds) ? "left" : stateRef.current.facing;
     commitState({
-      x: parkPatrolX(stateRef.current.x, boundsRef.current),
-      facing: stateRef.current.facing,
+      x: nextX,
+      facing: nextFacing,
       phase: "paused",
       walkMs: 0,
     });
-    beginWalk(stateRef.current.facing);
+    // Rest first (right corner on first settle); walk only after the idle pause.
+    scheduleNextWalk(nextFacing);
 
     const lane = laneRef.current;
     let observer: ResizeObserver | null = null;
@@ -174,7 +201,15 @@ export function usePetPatrol({
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onResize);
     };
-  }, [beginWalk, canPatrol, clearPauseTimer, commitState, laneRef, refreshBounds]);
+  }, [
+    clearPauseTimer,
+    canPatrol,
+    commitState,
+    laneRef,
+    placeForBounds,
+    refreshBounds,
+    scheduleNextWalk,
+  ]);
 
   useEffect(() => {
     if (!canPatrol || suspended) return;
