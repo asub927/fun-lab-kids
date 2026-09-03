@@ -21,6 +21,24 @@ export const PET_SPEECH_MS = 4500;
 
 let activeAudio: HTMLAudioElement | null = null;
 
+/**
+ * Gate sticky AppContext events so speech/audio runs once per event object.
+ * `lastCheck` / `lastCelebration` stay set after answering; route changes must
+ * not re-play the same celebration MP3 until a new check/celebration arrives.
+ */
+export function consumeStickySpeechEvent<T>(
+  previous: { current: T | null },
+  event: T | null,
+): boolean {
+  if (!event) {
+    previous.current = null;
+    return false;
+  }
+  if (previous.current === event) return false;
+  previous.current = event;
+  return true;
+}
+
 function parseSubjectFromPath(pathname: string): Subject | null {
   const match = pathname.match(/^\/grade-2\/(math|ela|science)$/);
   return match ? (match[1] as Subject) : null;
