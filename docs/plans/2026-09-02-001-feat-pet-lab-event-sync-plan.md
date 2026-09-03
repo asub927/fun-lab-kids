@@ -245,7 +245,7 @@ stateDiagram-v2
 ### U1. Route-gated lab park + park-in-place
 
 - **Goal:** On `/lab/...`, stop L→R patrol while calm; park without snapping to the left edge; restore patrol off-lab.
-- **Requirements:** R1, R7, R9; AE1, AE5, AE7
+- **Requirements:** R1, R7, R9; AE1, AE5
 - **Dependencies:** None
 - **Files:**
   - Modify: `src/hooks/usePetPatrol.ts`
@@ -260,14 +260,14 @@ stateDiagram-v2
 - **Patterns to follow:** Existing `usePetPatrol` mood gate; `subjectForSpeech` already uses pathname prefixes.
 - **Test scenarios:**
   - Covers AE1. Given idle mood and onLabRoute true, patrol does not begin walks / phase stays paused.
-  - Covers AE5/AE7. Given idle mood and onLabRoute false, patrol walks are allowed (when enabled).
+  - Covers AE5. Given idle mood and onLabRoute false, patrol walks are allowed (when enabled).
   - Park-in-place: when walking is interrupted into non-patrol, x stays near prior position (not forced to minX).
-- **Verification:** Unit tests green; manual lab mid-solve shows no L→R roam; home after lab can roam again.
+- **Verification:** Unit tests green; manual lab mid-solve shows no L→R roam; off-lab idle can roam when mood is idle.
 
 ### U2. Softer timed waiting/working vs celebrate
 
 - **Goal:** Learning-synced auto reactions stay; waiting and stuck (working) are shorter/softer pulses that expire to parked calm.
-- **Requirements:** R2, R3, R4; AE2, AE3
+- **Requirements:** R2, R3, R4, R7; AE2, AE3, AE7
 - **Dependencies:** U1
 - **Files:**
   - Modify: `src/services/petActivity.ts`
@@ -279,6 +279,7 @@ stateDiagram-v2
   2. On rising edge of needs-answer (or equivalent), set a timed soft `waiting` reaction that clears after a shorter window than celebrate.
   3. Keep incorrect-check → `working` as stuck proxy; use a shorter reaction window and/or softer sprite mapping than celebrate.
   4. Celebrate / milestone paths keep a clear, stronger beat then return to parked calm.
+  5. With KTD4, leaving `/lab/` returns to idle-capable ambient so AE7 holds with U1's route gate.
 - **Execution note:** Implement mood/mapper helpers test-first in `pet.test.ts` before wiring IslandPet.
 - **Patterns to follow:** `reactionFromAppEvent`, `PET_REACTION_MS`, existing celebrate expiry effect.
 - **Test scenarios:**
@@ -286,7 +287,8 @@ stateDiagram-v2
   - Covers AE3. Waiting pulse duration (or intensity helper) is strictly less than celebrate duration.
   - Covers AE3. Working (miss) duration/intensity helper is strictly less than celebrate.
   - Needs-answer alone does not leave mood latched on `waiting` forever when reaction is null.
-- **Verification:** Updated unit tests; manual incorrect then correct shows softer then stronger beats; empty board does not permanently hold waiting pose.
+  - Covers AE7. After latched-waiting removal, off-lab idle is patrol-eligible again.
+- **Verification:** Updated unit tests; manual incorrect then correct shows softer then stronger beats; empty board does not permanently hold waiting pose; home after lab can roam.
 
 ### U3. Preserve invite cheer without helper chrome
 
