@@ -121,11 +121,16 @@ main[data-accent="yellow"] {
   box-sizing: border-box;
 }
 
+html {
+  height: -webkit-fill-available;
+}
+
 body {
   margin: 0;
   background: var(--color-cream);
   overflow: hidden;
   height: 100dvh;
+  min-height: -webkit-fill-available;
 }
 
 a {
@@ -177,6 +182,7 @@ a:hover {
     "content"
     "footer";
   height: 100dvh;
+  min-height: -webkit-fill-available;
   max-height: 100dvh;
   overflow: hidden;
   touch-action: manipulation;
@@ -616,19 +622,21 @@ main:focus {
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+    min-height: 0;
   }
 
-  /* Let the work card size to its question content; the layout above scrolls. */
+  /* Size the work card to its content and scroll the layout; keep overflow
+     hidden so feedback cannot paint over the pet footer lane. */
   .lab-layout--with-help > .lab-work-card {
     flex: 0 0 auto;
-    overflow: visible;
     min-height: auto;
+    overflow: hidden;
   }
 
   .lab-layout--with-help .lab-work-stage {
     flex: 0 0 auto;
-    overflow: visible;
     min-height: auto;
+    overflow: visible;
   }
 
   .lab-help-card,
