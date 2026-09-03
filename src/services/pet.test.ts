@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { deriveAmbientMood, reactionFromAppEvent } from "./petActivity";
+import {
+  deriveAmbientMood,
+  reactionDurationMs,
+  reactionFromAppEvent,
+  reactionIntensity,
+} from "./petActivity";
 import { emptyGamificationState } from "./gamification";
 import { pickPetCelebrationLine } from "./petDialogue";
 import type { ProgressStore } from "./progress";
@@ -54,12 +59,21 @@ describe("ambient pet activity", () => {
     ).toBe("celebrating");
     expect(deriveAmbientMood({ reaction: "working", inLab: false })).toBe("working");
     expect(deriveAmbientMood({ reaction: "waving", inLab: false })).toBe("waving");
+    expect(deriveAmbientMood({ reaction: "waiting", inLab: true })).toBe("waiting");
   });
 
-  it("stays calm in labs unless waiting for an answer", () => {
-    expect(deriveAmbientMood({ reaction: null, inLab: true, needsAnswer: true })).toBe("waiting");
+  it("does not latch waiting on needs-answer alone (KTD4 / AE7)", () => {
+    expect(deriveAmbientMood({ reaction: null, inLab: true, needsAnswer: true })).toBe("idle");
     expect(deriveAmbientMood({ reaction: null, inLab: true, needsAnswer: false })).toBe("idle");
     expect(deriveAmbientMood({ reaction: null, inLab: false })).toBe("idle");
+  });
+
+  it("keeps waiting/working softer and shorter than celebrate (AE3)", () => {
+    expect(reactionDurationMs("waiting")).toBeLessThan(reactionDurationMs("celebrating"));
+    expect(reactionDurationMs("working")).toBeLessThan(reactionDurationMs("celebrating"));
+    expect(reactionIntensity("waiting")).toBe("soft");
+    expect(reactionIntensity("working")).toBe("soft");
+    expect(reactionIntensity("celebrating")).toBe("strong");
   });
 
   it("builds reactions from check events", () => {

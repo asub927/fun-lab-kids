@@ -10,8 +10,9 @@ import { getPetSpeciesId, PET_PREFS_EVENT, setPetVisible } from "../services/pet
 import { pickPetCelebrationCue } from "../services/petDialogue";
 import {
   deriveAmbientMood,
-  PET_REACTION_MS,
+  reactionDurationMs,
   reactionFromAppEvent,
+  type PetReaction,
 } from "../services/petActivity";
 import {
   PET_SPEECH_MS,
@@ -59,9 +60,7 @@ export function IslandPet({ laneRef }: IslandPetProps) {
   const [speciesId, setSpeciesId] = useState(() => getPetSpeciesId());
   const [speechLine, setSpeechLine] = useState<string | null>(null);
   const [waveSeed, setWaveSeed] = useState(0);
-  const [reaction, setReaction] = useState<"celebrating" | "working" | "waiting" | "waving" | null>(
-    null,
-  );
+  const [reaction, setReaction] = useState<PetReaction | null>(null);
   const [reducedMotion, setReducedMotion] = useState(() =>
     typeof window !== "undefined" && window.matchMedia
       ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -72,11 +71,11 @@ export function IslandPet({ laneRef }: IslandPetProps) {
   const hideTimer = useRef<number | null>(null);
   const pressTimer = useRef<number | null>(null);
   const speechTimer = useRef<number | null>(null);
+  const prevNeedsAnswerRef = useRef(false);
 
   const species = getPetSpecies(speciesId);
   const onLabRoute = isLabRoute(pathname);
-  // Sticky activeStandard is still used for speech/subject context only — quieter
-  // gating and needs-answer pulses use the route (KTD1), not session latch.
+  // Quieter gating and needs-answer use the route (KTD1), not sticky activeStandard.
   const inLab = onLabRoute;
   const needsAnswer = inLab && boardLooksEmpty(app.boardState);
   const checkCount = loadProgress().gamification.lifetimeChecks;
@@ -223,9 +222,27 @@ export function IslandPet({ laneRef }: IslandPetProps) {
     });
     if (!next) return;
     setReaction(next);
-    const timer = window.setTimeout(() => setReaction(null), PET_REACTION_MS);
+    const timer = window.setTimeout(() => setReaction(null), reactionDurationMs(next));
     return () => window.clearTimeout(timer);
   }, [app.lastCheck, app.lastCelebration]);
+
+  // Rising edge of needs-answer → soft timed waiting pulse (KTD4), not a sustained latch.
+  useEffect(() => {
+    const wasNeedsAnswer = prevNeedsAnswerRef.current;
+    prevNeedsAnswerRef.current = needsAnswer;
+    if (!needsAnswer || wasNeedsAnswer) return;
+    setReaction((current) => {
+      // Do not interrupt a stronger celebrate / wave / working beat.
+      if (current === "celebrating" || current === "waving" || current === "working") {
+        return current;
+      }
+      return "waiting";
+    });
+    const timer = window.setTimeout(() => {
+      setReaction((current) => (current === "waiting" ? null : current));
+    }, reactionDurationMs("waiting"));
+    return () => window.clearTimeout(timer);
+  }, [needsAnswer]);
 
   useEffect(() => {
     return () => {
@@ -260,7 +277,7 @@ export function IslandPet({ laneRef }: IslandPetProps) {
     const nextSeed = waveSeed + 1;
     setWaveSeed(nextSeed);
     showSpeech(speechForWave(pathname, speciesId, loadProgress(), nextSeed));
-    window.setTimeout(() => setReaction(null), 1800);
+    window.setTimeout(() => setReaction(null), reactionDurationMs("waving"));
   };
 
   const confirmHide = () => {
