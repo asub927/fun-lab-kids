@@ -15,6 +15,7 @@ import {
   type PetReaction,
 } from "../services/petActivity";
 import {
+  consumeStickySpeechEvent,
   PET_SPEECH_MS,
   playPetCelebrationCue,
   speechForCheck,
@@ -72,6 +73,8 @@ export function IslandPet({ laneRef }: IslandPetProps) {
   const pressTimer = useRef<number | null>(null);
   const speechTimer = useRef<number | null>(null);
   const prevNeedsAnswerRef = useRef(false);
+  const spokenCheckRef = useRef<typeof app.lastCheck>(null);
+  const spokenCelebrationRef = useRef<typeof app.lastCelebration>(null);
 
   const species = getPetSpecies(speciesId);
   const onLabRoute = isLabRoute(pathname);
@@ -183,7 +186,9 @@ export function IslandPet({ laneRef }: IslandPetProps) {
   }, [pathname, speciesId, showSpeech]);
 
   useEffect(() => {
-    if (!app.lastCheck) return;
+    // Sticky lastCheck must not re-play the same celebration MP3 on route changes
+    // (e.g. answering in a lab, then navigating home).
+    if (!consumeStickySpeechEvent(spokenCheckRef, app.lastCheck) || !app.lastCheck) return;
     const store = loadProgress();
     if (app.lastCheck.ok) {
       // Always use paired pet text + MP3 for correct answers (labs included).
@@ -196,7 +201,9 @@ export function IslandPet({ laneRef }: IslandPetProps) {
   }, [app.lastCheck, app.activeStandard?.subject, pathname, speciesId, checkCount, showSpeech, showCelebrationCue]);
 
   useEffect(() => {
-    if (!app.lastCelebration) return;
+    if (!consumeStickySpeechEvent(spokenCelebrationRef, app.lastCelebration) || !app.lastCelebration) {
+      return;
+    }
     const celebrating =
       app.lastCelebration.isNewMastery || app.lastCelebration.newAchievements.length > 0;
     if (!celebrating) return;

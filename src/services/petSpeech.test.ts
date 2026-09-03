@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getCharacterIdForPet } from "../data/pets";
 import { emptyGamificationState } from "./gamification";
 import {
+  consumeStickySpeechEvent,
   labNameForPath,
   speechForCelebration,
   speechForCheck,
@@ -26,6 +27,24 @@ describe("getCharacterIdForPet", () => {
     expect(getCharacterIdForPet("cat")).toBe("ripple");
     expect(getCharacterIdForPet("dog")).toBe("digits");
     expect(getCharacterIdForPet("rabbit")).toBe("spark");
+  });
+});
+
+describe("consumeStickySpeechEvent", () => {
+  it("fires once per event object and ignores sticky repeats", () => {
+    const previous: { current: { id: number } | null } = { current: null };
+    const first = { id: 1 };
+    expect(consumeStickySpeechEvent(previous, first)).toBe(true);
+    expect(consumeStickySpeechEvent(previous, first)).toBe(false);
+    expect(consumeStickySpeechEvent(previous, { id: 2 })).toBe(true);
+  });
+
+  it("resets when the sticky event clears", () => {
+    const previous: { current: { id: number } | null } = { current: null };
+    const event = { id: 1 };
+    expect(consumeStickySpeechEvent(previous, event)).toBe(true);
+    expect(consumeStickySpeechEvent(previous, null)).toBe(false);
+    expect(consumeStickySpeechEvent(previous, event)).toBe(true);
   });
 });
 
