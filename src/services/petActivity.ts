@@ -17,9 +17,9 @@ export type PetReaction = "celebrating" | "working" | "waiting" | "waving";
 export type PetActivityInput = {
   /** Timed reaction from the latest check / celebration / waiting pulse. */
   reaction: PetReaction | null;
-  /** True when the kid is on a lab route (route gate, not sticky session). */
-  inLab: boolean;
-  /** True when the board looks empty / unanswered. */
+  /** @deprecated Unused after KTD4; kept optional for call-site compatibility. */
+  inLab?: boolean;
+  /** @deprecated Unused after KTD4; waiting is edge-pulsed in IslandPet. */
   needsAnswer?: boolean;
 };
 
@@ -42,9 +42,7 @@ export function reactionDurationMs(reaction: PetReaction): number {
 }
 
 export function reactionIntensity(reaction: PetReaction): ReactionIntensity {
-  if (reaction === "celebrating") return "strong";
-  if (reaction === "waiting" || reaction === "working") return "soft";
-  return "strong";
+  return reaction === "waiting" || reaction === "working" ? "soft" : "strong";
 }
 
 /**
@@ -53,19 +51,13 @@ export function reactionIntensity(reaction: PetReaction): ReactionIntensity {
  * Needs-answer is NOT a sustained latch — IslandPet fires a timed waiting pulse.
  */
 export function deriveAmbientMood(input: PetActivityInput): PetMood {
-  if (input.reaction === "celebrating") return "celebrating";
-  if (input.reaction === "waving") return "waving";
-  if (input.reaction === "working") return "working";
-  if (input.reaction === "waiting") return "waiting";
-  // Parked calm between pulses (idle), including empty board mid-lab (KTD4).
-  // `inLab` / `needsAnswer` remain on the input for callers; waiting is edge-pulsed in UI.
-  return "idle";
+  return input.reaction ?? "idle";
 }
 
 export function reactionFromAppEvent(options: {
   lastCheckOk: boolean | null;
   isCelebrating: boolean;
-}): "celebrating" | "working" | null {
+}): PetReaction | null {
   if (options.isCelebrating || options.lastCheckOk === true) return "celebrating";
   if (options.lastCheckOk === false) return "working";
   return null;

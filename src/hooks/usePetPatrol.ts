@@ -151,11 +151,11 @@ export function usePetPatrol({
     refreshBounds();
     commitState({
       x: parkPatrolX(stateRef.current.x, boundsRef.current),
-      facing: stateRef.current.facing === "left" ? "left" : "right",
+      facing: stateRef.current.facing,
       phase: "paused",
       walkMs: 0,
     });
-    beginWalk(stateRef.current.facing === "left" ? "left" : "right");
+    beginWalk(stateRef.current.facing);
 
     const lane = laneRef.current;
     let observer: ResizeObserver | null = null;

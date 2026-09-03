@@ -75,16 +75,11 @@ export function IslandPet({ laneRef }: IslandPetProps) {
 
   const species = getPetSpecies(speciesId);
   const onLabRoute = isLabRoute(pathname);
-  // Quieter gating and needs-answer use the route (KTD1), not sticky activeStandard.
-  const inLab = onLabRoute;
-  const needsAnswer = inLab && boardLooksEmpty(app.boardState);
+  const needsAnswer = onLabRoute && boardLooksEmpty(app.boardState);
   const checkCount = loadProgress().gamification.lifetimeChecks;
   const speaking = Boolean(speechLine || hint);
 
-  const mood = useMemo(
-    () => deriveAmbientMood({ reaction, inLab, needsAnswer }),
-    [reaction, inLab, needsAnswer],
-  );
+  const mood = useMemo(() => deriveAmbientMood({ reaction }), [reaction]);
 
   const patrol = usePetPatrol({
     enabled: !reducedMotion,
